@@ -1,13 +1,21 @@
-#' Prices of 50,000 round cut diamonds.
+#' Chart Quadrat Dataset for grassland species in CO, MT, KS, and AZ
 #'
-#' A dataset containing the prices and other attributes of almost 54,000
-#' diamonds.
+#' An example dataset that contains data from mapped plant chart quadrats. Each row is an observation of one unique plant.
 #'
-#' @format A data frame with 53940 rows and 10 variables:
+#' @format An sf data frame with 10405 rows and 15 variables:
 #' \describe{
-#'   \item{price}{price, in US dollars}
-#'   \item{carat}{weight of the diamond, in carats}
+#'   \item{Species}{A character string indicating the specific epithet for this observation. }
+#'   \item{Seedling}{An integer indicating whether this observation was a seedling (1), or not (0). This data was not collected for many observations, which have an NA in this column. }
+#'   \item{Stems}{An integer greater than 0 indicating how many stems were present for the observed plant. This data was not collected for many observations, which have an NA in this column.}
+#'   \item{Type}{A factor with two levels: 'point' or 'poly', which indicates whether the observation was originally mapped as a 'point' or a 'polygon'.}
+#'   \item{Site}{A character string indicating the sampling location of this observation. In this dataset, this value is either CO (Central Plains Experimental Range, Nunn, Colorado), KS (University Pasture, Hays, Kansas), AZs (Santa Rita Experimental Range, Tucson, AZ), or MT (Fort Keogh Livestock and Range Research Laboratory, Miles City, MT).}
+#'   \item{Quad}{A character string indicating the name of the quadrat where this plant was mapped.}
+#'   \item{Year}{An integer indicating the year when this plant was mapped.}
+#'   \item{sp_code_4}{A character string of the 4-letter species code for this observation (The first two letters of the genus name, and first two letters of the species name, capitalized with no spaces). }
+#'   \item{sp_code_6}{A character string of the 6-letter species code for this observation (The first three letters of the genus name, and first three letters of the species name, capitalized with no spaces).}
+#'   \item{Area}{A numeric variable indicating the basal area in m^2 of this observation. In this dataset, observations originally mapped as points were assigned an area of 2.46e-05 m^2. For individuals mapped as polygons, the value in this column indicates the basal area of that plant.}
+#'   \item{geometry}{The sf geometry of class "MULTIPOLYGON" for this observation. The location of this polygon indicates the plant's location in a 1m x 1m square. If the plant was mapped as a polygon, the area of this polygon indicates the basal area of that plant.}
 #'   ...
 #' }
-#' @source \url{http://www.diamondse.info/}
+#' @source \url{http://dx.doi.org/10.1890/13-0121.1, http://dx.doi.org/10.1890/11-2200.1, https://doi.org/10.1890/0012-9658(2007)88[2673:LMQFKP]2.0.CO;2, https://doi.org/10.6084/m9.figshare.c.3304113.v1}
 "grasslandData"

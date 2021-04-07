@@ -1,16 +1,20 @@
 Package: PlantTracker
-Title: What the Package Does (One Line, Title Case)
+Title: Extract Demographic Data from Quadrat Maps
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Alice",
+           family = "Stears",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "alice.e.stears@gmail.com")
+Description: This package contains functions to extract plant growth, survival, 
+  and competition data from annually mapped quadrats.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

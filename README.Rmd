@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# PlantTracker
+# PlantTradcker
 
 <!-- badges: start -->
 <!-- badges: end -->

@@ -7,24 +7,52 @@
 \format{
 A data frame with 96 rows and 8 variables:
 \describe{
-\item{ungz_5a}{An integer vector indicating the years in which quadrat ungz_5a was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{unun_11}{An integer vector indicating the years in which quadrat unun_11 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{q33}{An integer vector indicating the years in which quadrat q33 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{q45}{An integer vector indicating the years in which quadrat q45 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{C5}{An integer vector indicating the years in which quadrat C5 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{D1}{An integer vector indicating the years in which quadrat D1 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{SG2}{An integer vector indicating the years in which quadrat SG2 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
-\item{SG4}{An integer vector indicating the years in which quadrat SG4 was mapped. A value of NA indicates that this quadrat was not mapped in that year. A numeric value (ranging from 1915 to 2010), indicates that this quadrat was mapped in that year.}
+\item{ungz_5a}{An integer vector indicating the years in which quadrat
+ungz_5a was mapped. A value of NA indicates that this quadrat was not
+mapped in that year. A numeric value (ranging from 1915 to 2010), indicates
+that this quadrat was mapped in that year.}
+\item{unun_11}{An integer vector indicating the years in which quadrat
+unun_11 was mapped. A value of NA indicates that this quadrat was not
+mapped in that year. A numeric value (ranging from 1915 to 2010), indicates
+that this quadrat was mapped in that year.}
+\item{q33}{An integer vector indicating the years in which quadrat q33 was
+mapped. A value of NA indicates that this quadrat was not mapped in that
+year. A numeric value (ranging from 1915 to 2010), indicates that this
+quadrat was mapped in that year.}
+\item{q45}{An integer vector indicating the years in which quadrat q45 was
+mapped. A value of NA indicates that this quadrat was not mapped in that
+year. A numeric value (ranging from 1915 to 2010), indicates that this
+quadrat was mapped in that year.}
+\item{C5}{An integer vector indicating the years in which quadrat C5 was
+mapped. A value of NA indicates that this quadrat was not mapped in that
+year. A numeric value (ranging from 1915 to 2010), indicates that this
+quadrat was mapped in that year.}
+\item{D1}{An integer vector indicating the years in which quadrat D1 was
+mapped. A value of NA indicates that this quadrat was not mapped in that
+year. A numeric value (ranging from 1915 to 2010), indicates that this
+quadrat was mapped in that year.}
+\item{SG2}{An integer vector indicating the years in which quadrat SG2
+was mapped. A value of NA indicates that this quadrat was not mapped in
+that year. A numeric value (ranging from 1915 to 2010), indicates that
+this quadrat was mapped in that year.}
+\item{SG4}{An integer vector indicating the years in which quadrat SG4 was
+mapped. A value of NA indicates that this quadrat was not mapped in that
+year. A numeric value (ranging from 1915 to 2010), indicates that this
+quadrat was mapped in that year.}
 ...
 }
 }
 \source{
-\url{http://dx.doi.org/10.1890/13-0121.1, http://dx.doi.org/10.1890/11-2200.1, https://doi.org/10.1890/0012-9658(2007)88[2673:LMQFKP]2.0.CO;2, https://doi.org/10.6084/m9.figshare.c.3304113.v1}
+\url{http://dx.doi.org/10.1890/13-0121.1} \cr
+\url{http://dx.doi.org/10.1890/11-2200.1} \cr
+\url{https://doi.org/10.1890/0012-9658(2007)88[2673:LMQFKP]2.0.CO;2} \cr
+\url{https://doi.org/10.6084/m9.figshare.c.3304113.v1}
 }
 \usage{
 grasslandInventory
 }
 \description{
-This dataset indicates years in which sampling was conducted for each of the eight quadrats included in the \code{\link{grasslandData}} example dataset.
+This dataset indicates years in which sampling was conducted for each of the
+eight quadrats included in the \code{\link{grasslandData}} example dataset.
 }
 \keyword{datasets}

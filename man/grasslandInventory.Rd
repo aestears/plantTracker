@@ -5,40 +5,24 @@
 \alias{grasslandInventory}
 \title{A dataset indicating sampling years for the grasslandData example dataset}
 \format{
-A data frame with 96 rows and 8 variables:
+A list with 8 items, each of which is a quadrat included in the grasslandData dataset.
 \describe{
 \item{ungz_5a}{An integer vector indicating the years in which quadrat
-ungz_5a was mapped. A value of NA indicates that this quadrat was not
-mapped in that year. A numeric value (ranging from 1915 to 2010), indicates
-that this quadrat was mapped in that year.}
+ungz_5a was mapped.}
 \item{unun_11}{An integer vector indicating the years in which quadrat
-unun_11 was mapped. A value of NA indicates that this quadrat was not
-mapped in that year. A numeric value (ranging from 1915 to 2010), indicates
-that this quadrat was mapped in that year.}
+unun_11 was mapped.}
 \item{q33}{An integer vector indicating the years in which quadrat q33 was
-mapped. A value of NA indicates that this quadrat was not mapped in that
-year. A numeric value (ranging from 1915 to 2010), indicates that this
-quadrat was mapped in that year.}
+mapped.}
 \item{q45}{An integer vector indicating the years in which quadrat q45 was
-mapped. A value of NA indicates that this quadrat was not mapped in that
-year. A numeric value (ranging from 1915 to 2010), indicates that this
-quadrat was mapped in that year.}
+mapped.}
 \item{C5}{An integer vector indicating the years in which quadrat C5 was
-mapped. A value of NA indicates that this quadrat was not mapped in that
-year. A numeric value (ranging from 1915 to 2010), indicates that this
-quadrat was mapped in that year.}
+mapped. }
 \item{D1}{An integer vector indicating the years in which quadrat D1 was
-mapped. A value of NA indicates that this quadrat was not mapped in that
-year. A numeric value (ranging from 1915 to 2010), indicates that this
-quadrat was mapped in that year.}
+mapped.}
 \item{SG2}{An integer vector indicating the years in which quadrat SG2
-was mapped. A value of NA indicates that this quadrat was not mapped in
-that year. A numeric value (ranging from 1915 to 2010), indicates that
-this quadrat was mapped in that year.}
+was mapped.}
 \item{SG4}{An integer vector indicating the years in which quadrat SG4 was
-mapped. A value of NA indicates that this quadrat was not mapped in that
-year. A numeric value (ranging from 1915 to 2010), indicates that this
-quadrat was mapped in that year.}
+mapped.}
 ...
 }
 }

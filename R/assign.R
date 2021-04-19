@@ -34,21 +34,35 @@ function(){
   buff <- .05 # buffer of movement allowed from year to year, in meters
   overap <- .50 # the percentage of overlap (in decimal form) between focal indiv. and next year indiv. that will be required to consider them both the same individual (not 100? sure on this one yet...)
    # work -------------------------------------------------------------------
-     # first, get the data for the first year of sampling
+   # adding a buffer of the distance specified above in the argument 'buff',
+   # which will allow limited movement of this individual between years
+   dataBuff <- st_buffer(dat, dist = buff)
+     # get the data for the first year of sampling
      # probably use a for loop ...
      # i = year in inventory
      for (i in seq_along(inv)) {
        dataCurrent <- dat[dat$Year==inv[i],] # getting the data for year i, from
        # which we will select one individual to focus on
 
-       dataCurrentBuff <- st_buffer(dataCurrent, dist = buff) # adding a buffer
-       # of the distance specified above in the argument 'buff', which will
-       # allow limited movement of this individual between years
+       # check if this the first year of sampling, or if this is the year
+       # immediately following a gap in sampling.
+       if (i == 1) { #is this the first year of sampling?
+         #If this is the first year (i = 1), then all individuals get an NA
+         # in the 'age' and 'recruit' columns.
+         dataCurrent$age <- -9999
+         dataCurrent$recruit <- -9999
+         }
+
+
+       ###AES### deal with track IDs.
+       # get the buffered data for this year
+       dataCurrentBuff <- dataBuff[dataBuff$Year==inv[i],]
 
        # j = individual in the dataset in that year
-       for (j in seq_along(temp1$Species)) {
-         plant <- dataCurrent[j,] #getting data for one individual j, which we will
-         # then compare to individuals in the next year to see if it survives
+       for (j in seq_along(dataCurrent$Species)) {
+         plant <- dataCurrent[j,] #getting data for one individual j, which we
+         # will then compare to individuals in the next
+         # year to see if it survives
 
          plantBuff <- dataCurrentBuff[j,] # select the buffered polygon for
          # the appropriate individual
@@ -90,8 +104,8 @@ function(){
 
        }
 
-     }
-
+       }
+    }
    # output ---------------------------------------------------------------
 
  }

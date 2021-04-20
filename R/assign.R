@@ -33,6 +33,7 @@ assign <- function(){
     dat$age <- NA
     dat$size_tplus1 <- NA
     dat$recruit <- NA
+    dat$survives_tplus1
   inv <- sort(sampleInv) # integer vector of quadrat sampling years in
   # sequential order
   dorm <- 1 # dormancy allowed by the function
@@ -62,8 +63,8 @@ assign <- function(){
       dat[dat$Year==inv[i],] #data for current [i] year
       #If this is the first year (i = 1), then all individuals get an NA
       # in the 'age' and 'recruit' columns.
-      dat[dat$Year==inv[i],'age'] <- -9999
-      dat[dat$Year==inv[i],'recruit'] <- -9999
+      dat[dat$Year==inv[i],'age'] <- NA
+      dat[dat$Year==inv[i],'recruit'] <- NA
       dat[dat$Year==inv[i],'trackID'] <- IDs[1:nrow(dataCurrent)] ## populate
       # trackIDs here redefine the master trackID vector so that the trackIDs
       # don't repeat
@@ -87,78 +88,99 @@ assign <- function(){
 
         ## data for next sampled year: dat[dat$Year==inv[i + k],]
 
-        #getting the data for year
-        # along the sequence of sampled years i (year in which focal plant
-        # is in) + k (the number along a sequence of values up to (1+ the
-        # value of dorm))]. This selects only values for the sampled years, not
-        # necessarily in a numerical order of year + 1!! We will then compare
-        # the buffered focal plant to this dataset to see if there
-        # is any overlap (i.e. there should be no empty dataNext data.frames)
+        ## is the quadrat sampled in year inv[i] + k ???
+        if ((inv[i] + k) %in% inv) { ## quadrat IS measured in year inv[i] + k
+          ## get overlapping area between unbuffered plant and next year
+          # (excluding next year polygons that already have a trackID)
+          overlapsNoBuff <- st_intersection(plant, dat[dat$Year==inv[i + k]
+                                              & is.na(dat$trackID)==TRUE,])
+          ## get the complete raw data for the overlapping polygons
+          overlapsNoBuffRaw <- dat[dat$Year==inv[i + k] &
+                                     is.na(dat$trackID)==TRUE ,][(st_intersects(
+                                       plant, dat[dat$Year==inv[i + k] &
+                                                    is.na(dat$trackID)==TRUE,],
+                                       sparse = FALSE)[1,]),]
 
-        ## is there adequate overlap between the unbuffered polygon and
-        # the next year?
-        if (sum(st_intersection(plant, dat[dat$Year==inv[i + k],])$Area.1)/plant$Area > overlap) {
-          # is the total area of the overlapping next year polygons
-          # >= to the 'overlap' argument?
-        } else {
-          if (sum(st_intersection(plantBuff, dataNext)$Area.1)/
-              plantBuff$Area > overlap) { ## if not, is there adequate overlap
-            # between the buffered polygon and the next year?
-          } else { ## if there isn't overlap between either the buffered
-            # or the un-buffered polygon and any polygons in the next year,
-            # can we go to the next year[k]?
-            ## Has the quadrat been sampled in year k+1 (along a sequential
-            # vector of years, not necessarily along the inv. vector of sampled years)?
+          ## is there a match w/ polygons in the next year w/out focal plant
+          # buffer? That is above the threshold of the 'overlaps' argument? That
+          # also doesn't already have a trackID?
+          if (sum(overlapsNoBuff$Area.1)/plant$Area > overlap) {
+            ## if YES,  give to focal individual: surv = 1, size_tplus1 = #, trackID for
+            # next year polygons, age for next year polygons, recruit for next
+            # year polygons
+            dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <-
+              sum(overlapsNoBuffRaw$Area)
+            dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 1
 
-            if((inv[i] + (k+1)) %in% inv) { ## is the next year in numerical
-              # sequence: plant[j]$yr + (k+1) present in the 'inventory' vector?
+            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
+                'trackID'] <- dat[dat$Year==inv[i] & dat$trackID %in% j,
+                    'trackID'] ## give the trackID from current individual to
+                      # the overlapping polys from the next year
+            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
+                'age'] <- dat[dat$Year==inv[i] &dat$trackID %in% j, 'age'] + k
+                      ## give the age of the focal individual + k to the
+                      # overlapping polys from the next year
+            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
+                'recruit'] <- 0 ## give a 0 in the recruit column for the
+                      # overlapping polys, since they aren't recruits
+          } else {
+            ## if there is NOT an overlap between unbuffered individual and
+            # polys in the next year...
+            ## get overlapping area between buffered plant and next year
+            # (excluding next year polygons that already have a trackID)
+            overlapsBuff <- st_intersection(plantBuff, dat[dat$Year==inv[i + k]
+                                               & is.na(dat$trackID)==TRUE,])
+            ## get the complete raw data for the overlapping polygons
+            overlapsBuffRaw <- dat[dat$Year==inv[i + k] &
+                                       is.na(dat$trackID)==TRUE ,][(
+                          st_intersects(plantBuff, dat[dat$Year==inv[i + k] &
+                          is.na(dat$trackID)==TRUE,], sparse = FALSE)[1,]),]
 
-              ## If yes, this quad was sampled. Iss the gap between year of the
-              # focal plant (inv[i]) and year k+1 inside the 'dormancy' arg?
-              if () { #if this is outside the dormacy argument, then give the
-                ## NO: then give the focal plant an NA in the 'surv' and
-                # 'size_t+1' columns
-              } else {
-                ## YES:  then go to the next k
+            ## is there a match w/ polygons in the next year w/ focal
+            # plant buffer? That is above the threshold of the 'overlaps'
+            # argument? That also doesn't already have a trackID?
+            if (sum(overlapsBuff$Area.1)/plantBuff$Area > overlap) {
+              ## if YES, give to focal individual: surv = 1, size_tplus1 = #,
+              # trackID for next year polygons, age for next year polygons,
+              # recruit for next year polygons
+              dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <-
+                sum(overlapsBuffRaw$Area)
+              dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 1
+
+              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
+                  'trackID'] <- dat[dat$Year==inv[i] & dat$trackID %in% j,
+                      'trackID'] ## give the trackID from current individual to
+              # the overlapping polys from the next year
+              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
+                  'age'] <- dat[dat$Year==inv[i] &dat$trackID %in% j, 'age'] + k
+              ## give the age of the focal individual + k to the
+              # overlapping polys from the next year
+              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
+                  'recruit'] <- 0 ## give a 0 in the recruit column for the
+              # overlapping polys, since they aren't recruits
+            } else { ## if there is NOT an overlap between the buffered
+              # invididual and polys in the next year
+              if (k == dorm +1) { ## if YES (we've reached the maximum allowable
+                # k for the dorm arg.), then plant is dead in next year.
+                ## Give to focal individual: surv = 0, size_tplus1 = NA
+                dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <- NA
+                dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 0
               }
-            } else {
-              ## if not, then this quad was NOT sampled in this year
-              ## if k = dorm+1 (if the )
             }
-
-
-            ## If it was NOT sampled,
-###AES###
           }
-
-
+        } else { ## quadrat is NOT measured in year inv[i] + k
+          ## does k = dorm + 1 (have we reached the maximum value of k according
+          # to the the dormancy that's allowed by the user-defined arg?)
+          if (k == dorm+1) { ## if TRUE, then this is the last year inv[i] + k
+            # that is allowed by the dorm argument, but there is not data, so
+            # the focal individual gets an 'NA' in both the surv and
+            # size_tplus1 columns
+            dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <- NA
+            dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- NA
+          }
         }
-
-        overlapNoBuff <-  # see if there
-          overlapNoBuffArea <- st_intersection(plant, dataNext)
-        # is overlap of the un-buffered polygon with anything
-        ## st_intersection gives the area of the focal individual that
-        # is overlapped... doesn't indicate which ones in year k+1 are
-        # doing the overlapping ... problem
-
-        #use st_overlaps? or st_intersects?
-        #st_intersects gives you the index of the overlapping polygons!
-        mapview(plant) + mapview(dataNext[c(30,36,37),])
-        # what is the percentage of overlap?
-        overlapNoBuff
-        if(nrow(overlapNoBuff)>0) { #if there IS overlap between unbuffered polygon and something in year k, then assign those w/ the overlap the same track ID
-
-          ###AES###
-        } else {
-
-        }
-        ## if not, see if there is overlap of the buffered polygon with anything
-        mapview(plant, col.regions = "green") + mapview(plantBuff, col.regions = "purple") + mapview(dataNext)
-        ## if there is a solution in k=1, then STOP; but if there is not a solution in k =1, then continue the loop. How do we do this??
-        ## is there a way to stop a for-loop if a certain condition is met??
       }
-
-    }
+    } ###AES###
     # Now do the same tracking loop, but for individuals that don't yet
     # have a trackID !
     if (nrow(dataCurrent[is.na(dataCurrent$trackID)==TRUE,])>0) { #make sure

@@ -1,4 +1,4 @@
-#' tracks indivudal plants through time
+#' tracks individual plants through time
 #'
 #' @return
 #' @export
@@ -33,7 +33,7 @@ assign <- function(){
     dat$age <- NA
     dat$size_tplus1 <- NA
     dat$recruit <- NA
-    dat$survives_tplus1
+    dat$survives_tplus1 <- NA
   inv <- sort(sampleInv) # integer vector of quadrat sampling years in
   # sequential order
   dorm <- 1 # dormancy allowed by the function

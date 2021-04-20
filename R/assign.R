@@ -11,6 +11,8 @@ library(sf)
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
 # species
+load("~/PlantTracker/data/grasslandData.rda")
+load("~/PlantTracker/data/grasslandInventory.rda")
 # prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
 sampleDat <- grasslandData[grasslandData$Site == "CO"
@@ -25,7 +27,7 @@ sampleInv <- grasslandInventory[["unun_11"]]
 
 # 'assign' function ---------------------------------------------------------
 
-assign <- function(){
+assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   # arguments ---------------------------------------------------------------
   dat <- st_sf(sampleDat) # data in 'grasslandData' format, must be an sf object
     ## add columns for trackID, age, size_t+1, and recruit
@@ -34,47 +36,52 @@ assign <- function(){
     dat$size_tplus1 <- NA
     dat$recruit <- NA
     dat$survives_tplus1 <- NA
-  inv <- sort(sampleInv) # integer vector of quadrat sampling years in
+    dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
+    # each row in the dataset
+  inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
   # sequential order
-  dorm <- 1 # dormancy allowed by the function
-  buff <- .05 # buffer of movement allowed from year to year, in meters
-  overlap <- .50 # the percentage of overlap (in decimal form) between focal
+  dorm <- 1 ## dormancy allowed by the function
+  buff <- .05 ## buffer of movement allowed from year to year, in meters
+  overlap <- .50 ## the percentage of overlap (in decimal form) between focal
   # indiv. and next year indiv. that will be required to consider them both
-  # the same individual (not 100? sure on this one yet...)
-  # work -------------------------------------------------------------------
-  # generate a vector of integer numbers to use as track IDs (this
-  # variable will be continually re-defined? through the for-loop
-  # so that trackIDs won't be repeated?)
-  IDs <- c(1:1000000)
+  # the same individual (not 100% sure on this one yet...)
+  clonal <- 1 ## binary option that indicates whether this species is allowed to
+  # break into multiple polygons for one individual
+  ## work -------------------------------------------------------------------
 
+  datFirst <- dat[dat$Year==inv[1],] ## get the data just for the first year of
+  # sampling
 
-  # buffer the data for all of the polygons (NOTE: this doesn't have trackID
-  # info! Or any data about recruit or age!)
-  dataBuff <- st_buffer(dat, buff)
+  ## assign a unique trackID to every polygon in this first-year dataset
+  numbs <- c(1:nrow(datFirst)) ## get a vector of unique numbers
+  datFirst$trackID <-  paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
+                     "_",numbs) ## add data for species and year of recruitment
 
-  # probably use a for loop ...
-  # i = year in inventory
-  for (i in seq_along(inv)) {
-    # check if this the first year of sampling, or if this is the year
-    # immediately following a gap in sampling.
-    if (i == 1) { #is this the first year of sampling?
-      #if this is the first year of sampling, then get the raw data for
-      # year i, from which we will select one individual to focus on
-      dat[dat$Year==inv[i],] #data for current [i] year
-      #If this is the first year (i = 1), then all individuals get an NA
-      # in the 'age' and 'recruit' columns.
-      dat[dat$Year==inv[i],'age'] <- NA
-      dat[dat$Year==inv[i],'recruit'] <- NA
-      dat[dat$Year==inv[i],'trackID'] <- IDs[1:nrow(dataCurrent)] ## populate
-      # trackIDs here redefine the master trackID vector so that the trackIDs
-      # don't repeat
-      IDs <- IDs[-(1:nrow(dataCurrent))]
-    }
+  ## assign the first-year data to the 'tempCurrentYear' data.frame
+  tempCurrentYear <- datFirst ## this data.frame will get redefined for
+  # each iteration of the for-loop below
+
+  ##  i = year in inventory
+  for (i in 2:length(inv)) {
+
+    ## 'tempCurrentYear' is the sf data.frame of the 'current' year
+    tempCurrentBuff <- st_buffer(tempCurrentYear, buff)## need to add a buffer to this data.frame
+
+    ## need to get the sf data.frame of the 'next' year
+    tempNextYear <- dat[dat$Year==inv[i],]
+
+    ## see if there is any overlap between the tempCurrentYear data (buffered), and
+    # the tempNextYear data
+    st_overlaps(tempCurrentBuff, tempNextYear)
+
+    ###AES### what the heck now?
+    mapview(tempCurrentBuff) + mapview(tempNextYear, col.region = "purple")
+
 
     ## j = individual unique trackID in the dataset in that year (only or
     # individuals that already have a trackID assigned)
     for (j in dat[dat$Year==inv[i],'trackID']) { ## loop through each of the
-      # uniquetrackIDs. If there are more than 1 polygon w/ the same trackID,
+      # unique trackIDs. If there are more than 1 polygon w/ the same trackID,
       # then it should include both of them. Ideally this should ignore
       # those individuals w/out a trackID? (###AES###)
       plant <- dat[dat$Year==inv[i] & dat$trackID %in% j,] ## getting data for
@@ -225,7 +232,7 @@ assign <- function(){
         # different function? ) ###AES###
       }
     }
-  }
+  } # end loop 'i'
 }
 # output ---------------------------------------------------------------
 

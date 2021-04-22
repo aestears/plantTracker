@@ -60,6 +60,8 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   datFirst$trackID <-  paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
                      "_",numbs) ## add data for species and year of recruitment
 
+  ## put this trackID information in the master data.frame for this species
+  dat[dat$index %in% datFirst$index, "trackID"] <- datFirst$trackID
   ## assign the first-year data to the 'tempCurrentYear' data.frame
   tempCurrentYear <- datFirst ## this data.frame will get redefined for
   # each iteration of the for-loop below
@@ -152,12 +154,32 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # mapview(dat[dat$Year==inv[i],]) + mapview(dat[dat$Year == inv[i] &
     # is.na(dat$trackID)==FALSE,], col.regions = "purple")
 
-    ## NO PARENT
+    ## NO PARENT (overlaps list index will not have any information in it)
+    ## get the row index of child polygons that are 'new' (i.e. no parent)
+    noParentRowNums <- which(sapply(overlaps, length)==0)
+    ## asign these child polygons a new trackID in the master data.frame
+    dat[dat$index %in% tempNextYear[noParentRowNums,"index"]$index, #get the unique index for each parent-less child polygon
+       "trackID"] <-  paste0(unique(dat$sp_code_6), ## get the 6 letter code for this species
+           "_", inv[i], ## get the year in which child polygon was recruited
+                                "_", c(1:length(noParentRowNums))) # get a vector
+           # of numbers as long as the number of parentless child polygons)
+
+    #test
+    # testDat <- dat[is.na(dat$trackID)==FALSE &
+    #                  dat$trackID %in% unique(dat$trackID)[1:20] &
+    #                  dat$trackID %in% dat$trackID[duplicated(dat$trackID)]
+    #                ,]
+    #
+    # ggplot(dat = testDat) +
+    #   geom_sf(aes(lty = as.factor(testDat$Year), fill = trackID, alpha = Year)) +
+    #   #scale_fill_discrete(guide = FALSE) +
+    # scale_alpha(range = c(.3,1), guide = FALSE)
 
     ## NO CHILD
+    ## becomes a ghost?
 
+      ###AES### deal with ghosts; include an option for tie-breaking (if statements that are initiated by a user-defined option) for area vs. distance
 
-    ###AES### what the heck now?
     ## j = individual unique trackID in the dataset in that year (only or
     # individuals that already have a trackID assigned)
     for (j in dat[dat$Year==inv[i],'trackID']) { ## loop through each of the

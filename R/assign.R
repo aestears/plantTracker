@@ -29,6 +29,7 @@ sampleInv <- grasslandInventory[["unun_11"]]
 
 assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   # arguments ---------------------------------------------------------------
+  ## double check the format of the inputs, and add additional columns required
   dat <- st_sf(sampleDat) # data in 'grasslandData' format, must be an sf object
     ## add columns for trackID, age, size_t+1, and recruit
     dat$trackID <- NA
@@ -40,6 +41,8 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # each row in the dataset
   inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
   # sequential order
+
+  ## user-defined arguments
   dorm <- 1 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
   overlap <- .50 ## the percentage of overlap (in decimal form) between focal
@@ -47,6 +50,7 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   # the same individual (not 100% sure on this one yet...)
   clonal <- 1 ## binary option that indicates whether this species is allowed to
   # break into multiple polygons for one individual
+
   ## work -------------------------------------------------------------------
 
   datFirst <- dat[dat$Year==inv[1],] ## get the data just for the first year of
@@ -65,19 +69,54 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   for (i in 2:length(inv)) {
 
     ## 'tempCurrentYear' is the sf data.frame of the 'current' year
-    tempCurrentBuff <- st_buffer(tempCurrentYear, buff)## need to add a buffer to this data.frame
+    tempCurrentBuff <- st_buffer(tempCurrentYear, buff) ## need to add a buffer
+    # to this data.frame
 
     ## need to get the sf data.frame of the 'next' year
     tempNextYear <- dat[dat$Year==inv[i],]
 
-    ## see if there is any overlap between the tempCurrentYear data (buffered), and
-    # the tempNextYear data
-    st_overlaps(tempCurrentBuff, tempNextYear)
+    ## see if there is any overlap between the tempNextYear data and the
+    # tempCurrentYear data (buffered)
+    overlaps <- st_intersects(tempNextYear, tempCurrentBuff)
+    # returns a list, where each object in the list is the row index of the
+    # polygon in tempNextYear, and the contents of the list are row indices of
+    # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
 
+    ## are there any polygons from tempNextYear that overlap with more than one
+    # polygon from tempCurrentYear?
+    ## get the 'index' numbers of the tempCurrentYear polygons that overlap with
+    # the same t+1 polygons
+    currentOverlapRowNums <- as.numeric(names(which(table(unlist(
+      overlaps[which(sapply(overlaps, length)>1)]))>1)))
+    currentYearOverlaps <- tempCurrentBuff[currentOverlapRowNums,]
+
+    ## get the 'index' numbers of the tempNextYear polygons that overlap with
+    # more than one polygon from year t
+    nextOverlapRowNums <- which(sapply(overlaps, length) >1)
+    nextYearOverlaps <- tempNextYear[nextOverlapRowNums,]
+
+    ## compare the overlap between current year and next year for each combo of
+    # polygons
+    for(j in nextOverlapRowNums) {
+      ## get the data for the first polygon in year t+1 that overlaps with >1
+      # polygon from year t
+      overlapNext <- tempNextYear[j,]
+      ## get the data for the polygons from year t that overlap this one
+      overlapCurrents <- tempCurrentBuff[overlaps[[j]],]
+
+      ## compare the extent of overlap between year t+1 poly and each of the
+      # year t polys
+      tempOverlap <- st_intersection(overlapNext, overlapCurrents)
+      ## determine which of the year t polys overlaps the year t poly the most
+      overlapWinner <- tempOverlap[tempOverlap$Area.1 ==
+                                     max(tempOverlap$Area.1),]
+      ## put the trackID of the 'overlapWinner' poly in the complete dataset
+      #row for the year t+1 polygon
+
+    } #end of loop j
+    ## then deal with the polygons from year t+1 that don't overlap at all with
+    # the buffered polygons from year t
     ###AES### what the heck now?
-    mapview(tempCurrentBuff) + mapview(tempNextYear, col.region = "purple")
-
-
     ## j = individual unique trackID in the dataset in that year (only or
     # individuals that already have a trackID assigned)
     for (j in dat[dat$Year==inv[i],'trackID']) { ## loop through each of the

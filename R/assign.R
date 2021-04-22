@@ -7,12 +7,11 @@
 
 # required packages -------------------------------------------------------
 library(sf)
+library(mapview) #don't actually need for function, just for checking
 
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
 # species
-load("~/PlantTracker/data/grasslandData.rda")
-load("~/PlantTracker/data/grasslandInventory.rda")
 # prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
 sampleDat <- grasslandData[grasslandData$Site == "CO"
@@ -82,16 +81,49 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # polygon in tempNextYear, and the contents of the list are row indices of
     # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
 
-    ## are there any polygons from tempNextYear that overlap with more than one
-    # polygon from tempCurrentYear?
-    ## get the 'index' numbers of the tempCurrentYear polygons that overlap with
-    # the same t+1 polygons
-    currentOverlapRowNums <- as.numeric(names(which(table(unlist(
-      overlaps[which(sapply(overlaps, length)>1)]))>1)))
+    ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that overlap only
+    # one polygon from year t
+    ## get the row index, index , and trackID numbers of the tempNextYear
+    # (child) polygons that only have one parent, and teh tempCurrentYear
+    # (parent) polygons that only have one child
+    oneParentRowNums <- which(sapply(overlaps, length)==1)
+    unambigParent <- data.frame("childRowIndex" = oneParentRowNums,
+                    "childIndex" = tempNextYear[oneParentRowNums,"index"]$index,
+                "parentTrackID" = sapply(overlaps[oneParentRowNums], function(x)
+                                    tempCurrentYear[unlist(x),"trackID"]$trackID
+                                ),
+                    "parentRowIndex" = sapply(overlaps[oneParentRowNums], unlist
+                                  ),
+                  "parentIndex" = sapply(overlaps[oneParentRowNums], function(x)
+                                  tempCurrentYear[unlist(x),"index"]$index) )
+
+    ## put the trackIDs from the parents into the appropriate spot in the
+    # big data.frame for each child
+    dat[dat$index %in% unambigParent$childIndex, "trackID"] <-
+      unambigParent$parentTrackID
+
+    ## AMBIGUOUS PARENT / TIEBREAKERS: are there any polygons from tempNextYear that overlap with
+    # more than one polygon from tempCurrentYear?
+    ## get the row index numbers of the tempCurrentYear (parent) polygons that
+    # overlap with the same t+1 polygons (child) -- the parents that share a
+    # child polygon, which isn't allowed (two different parents can't have the same child)
+    currentOverlapRowNums <-
+            sort(unique(unlist(
+      overlaps[which(
+        sapply(overlaps, length)  ## add up how many year t polys overlap each
+        # year t+1 poly
+        >1)## identify the year t+1 polys that are overlapped by >1 year t poly
+        ] ## get the elements of the list that correspond to each of the year
+      # t+1 polys w/ >1 year t poly overlap
+      ) ## get a numeric vector of the row index for each of those multiple
+      # overlap year t polys
+      ))
+
     currentYearOverlaps <- tempCurrentBuff[currentOverlapRowNums,]
 
-    ## get the 'index' numbers of the tempNextYear polygons that overlap with
-    # more than one polygon from year t
+    ## get the row index numbers of the tempNextYear (child) polygons that are
+    # overlapped by  more than one polygon from year t (parent) -- children
+    # than have >1 parent (not allowed)
     nextOverlapRowNums <- which(sapply(overlaps, length) >1)
     nextYearOverlaps <- tempNextYear[nextOverlapRowNums,]
 
@@ -111,11 +143,20 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       overlapWinner <- tempOverlap[tempOverlap$Area.1 ==
                                      max(tempOverlap$Area.1),]
       ## put the trackID of the 'overlapWinner' poly in the complete dataset
-      #row for the year t+1 polygon
-
+      #row for the year t+1 polygon. Match by using the 'index' (unique number
+      # assigned to each row in the raw dataset)
+      dat[dat$index==overlapNext$index,"trackID"] <- overlapWinner$trackID.1
     } #end of loop j
-    ## then deal with the polygons from year t+1 that don't overlap at all with
-    # the buffered polygons from year t
+   #  #check to see if the loop worked!
+    # mapview(dat[dat$Year == inv[i-1],], col.regions = "red") +
+    # mapview(dat[dat$Year==inv[i],]) + mapview(dat[dat$Year == inv[i] &
+    # is.na(dat$trackID)==FALSE,], col.regions = "purple")
+
+    ## NO PARENT
+
+    ## NO CHILD
+
+
     ###AES### what the heck now?
     ## j = individual unique trackID in the dataset in that year (only or
     # individuals that already have a trackID assigned)

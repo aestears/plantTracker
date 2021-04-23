@@ -13,8 +13,8 @@ library(Matrix)
 library(sf)
 
 
-groupByGenet = function(sf, buffGen){
-  buffDat = sf::st_buffer(sf, dist = buffGen) ## buffers the data for the focal
+groupByGenet = function(sf, buffGenet){
+  buffDat = sf::st_buffer(sf, dist = buffGenet) ## buffers the data for the focal
   # year by the buff argument
   overlaps = sf::st_intersects(buffDat,buffDat) ## identifies which polygons
   # overlap with each other

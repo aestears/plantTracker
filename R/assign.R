@@ -44,19 +44,35 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   ## user-defined arguments
   dorm <- 1 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
+  buffGenet <- 0 ## buffer between polygons (/2) that is the maximum allowed for
+  # them to be considered genets
   overlap <- .50 ## the percentage of overlap (in decimal form) between focal
   # indiv. and next year indiv. that will be required to consider them both
   # the same individual (not 100% sure on this one yet...)
   clonal <- 1 ## binary option that indicates whether this species is allowed to
   # break into multiple polygons for one individual
+  conalBuff <- .01 ## the buffer of overlap that indicates polygons are genets
+  # of the same individual (if genets are allowed), in meters
 
   ## work -------------------------------------------------------------------
 
   datFirst <- dat[dat$Year==inv[1],] ## get the data just for the first year of
   # sampling
+  if (clonal==1) { ## if this species is 'clonal' (clonal argument == 1), use
+    # Dave's groupByGenet function to give a singleTrackID to a group of
+    # polygons if they are close enough to one another (user-defined)
+    datFirst$genetID <- groupByGenet(datFirst, buffGenet) # put these temporary genet
+    # ID's in a temporary 'genetID' column, which will tell us to give these
+    # genets the same track ID
 
-  ## assign a unique trackID to every polygon in this first-year dataset
-  numbs <- c(1:nrow(datFirst)) ## get a vector of unique numbers
+  }
+  if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
+    # individual polygon gets a unique value in the 'genetID' column
+    datFirst$genetID <- 1:nrow(datFirst)
+  }
+
+  ## assign a unique trackID to every unique genetID in this first-year dataset
+  numbs <- c(1:length(unique)) ## get a vector of unique numbers
   datFirst$trackID <-  paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
                      "_",numbs) ## add data for species and year of recruitment
 

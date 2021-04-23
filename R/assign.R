@@ -38,6 +38,7 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     dat$survives_tplus1 <- NA
     dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
     # each row in the dataset
+    dat$ghost = NA
   inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
   # sequential order
 
@@ -72,25 +73,21 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   }
 
   ## assign a unique trackID to every unique genetID in this first-year dataset
-  numbs <- c(1:length(unique)) ## get a vector of unique numbers
-  datFirst$trackID <-  paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
-                     "_",numbs) ## add data for species and year of recruitment
+  IDs <- data.frame( "genetID" = sort(unique(datFirst$genetID)), ## get a vector of unique numbers
+                       "trackID" = paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
+                                          "_",c(1:length(unique(datFirst$genetID)))))
+  datFirst<- merge(datFirst[,names(datFirst) != "trackID"], IDs, by = "genetID")
 
   ## put this trackID information in the master data.frame for this species
   dat[dat$index %in% datFirst$index, "trackID"] <- datFirst$trackID
   ## assign the first-year data to the 'tempCurrentYear' data.frame
   tempCurrentYear <- datFirst ## this data.frame will get redefined for
   # each iteration of the for-loop below
+  ## give all individuals in year #1 a '0' in the ghost column
+  tempCurrentYear$ghost <- 0
 
   ##  i = year in inventory
   for (i in 2:length(inv)) {
-
-    ## 'tempCurrentYear' is the sf data.frame of the 'current' year
-    tempCurrentBuff <- st_buffer(tempCurrentYear, buff) ## need to add a buffer
-    # to this data.frame
-
-    ## need to get the sf data.frame of the 'next' year
-    tempNextYear <- dat[dat$Year==inv[i],]
 
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
@@ -98,14 +95,28 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # this loop. If it is, then freshly redefine 'tempCurrentYear' and proceed
     # to the next 'i'
     if (inv[i] - inv[i-1] <= (dorm+1)) {
+      ## 'tempCurrentYear' is the sf data.frame of the 'current' year
+      tempCurrentBuff <- st_buffer(tempCurrentYear, buff) ## need to add a buffer
+      # to this data.frame
 
-      ## FIND OVERLAPPIGN POLYGONS
+      ## need to get the sf data.frame of the 'next' year
+      tempNextYear <- dat[dat$Year==inv[i],]
+
+      ## AGGREGATE BY GENET for year i (if clonal = 1)
+      if(clonal==1) {
+        tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
+      }
+
+      ## FIND OVERLAPPING POLYGONS
       ## see if there is any overlap between the tempNextYear data and the
       # tempCurrentYear data (buffered)
       overlaps <- st_intersects(tempNextYear, tempCurrentBuff)
       # returns a list, where each object in the list is the row index of the
       # polygon in tempNextYear, and the contents of the list are row indices of
       # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
+
+      ###AES### need to deal with the fact that now we can have multiple parent
+      #polygons!! (still can only have one parent trackID-wise)
 
       ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that #
       # overlap only one polygon from year t
@@ -121,7 +132,9 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
                                   "parentRowIndex" = sapply(overlaps[oneParentRowNums], unlist
                                   ),
                                   "parentIndex" = sapply(overlaps[oneParentRowNums], function(x)
-                                    tempCurrentYear[unlist(x),"index"]$index) )
+                                    tempCurrentYear[unlist(x),"index"]$index))
+
+      mapview(tempCurrentBuff, col.regions = "pink") + mapview(tempNextYear, col.regions = "yellow") + mapview(tempNextYear[tempNextYear$index %in% unambigParent$childIndex,], col.regions = "orange")
 
       ## put the trackIDs from the parents into the appropriate spot in the
       # big data.frame for each child
@@ -226,7 +239,7 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
 
     ##PREPARE FOR NEXT i
     ## get data for year i and put it in 'tempCurrentYear' for the next 'i'
-    tempCurrentYear <- dat[dat$Year==inv[i],]
+    tempCurrentYear <- tempNextYear
     ## add a 'ghost' column and put in an 'NA' that indicates these polygons
     # were actually observed in the 'current' year
     tempCurrentYear$ghost <- 0

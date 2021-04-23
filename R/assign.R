@@ -83,8 +83,8 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # polygon in tempNextYear, and the contents of the list are row indices of
     # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
 
-    ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that overlap only
-    # one polygon from year t
+    ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that #
+    # overlap only one polygon from year t
     ## get the row index, index , and trackID numbers of the tempNextYear
     # (child) polygons that only have one parent, and teh tempCurrentYear
     # (parent) polygons that only have one child
@@ -108,7 +108,8 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     # more than one polygon from tempCurrentYear?
     ## get the row index numbers of the tempCurrentYear (parent) polygons that
     # overlap with the same t+1 polygons (child) -- the parents that share a
-    # child polygon, which isn't allowed (two different parents can't have the same child)
+    # child polygon, which isn't allowed (two different parents can't have
+    # the same child)
     currentOverlapRowNums <-
             sort(unique(unlist(
       overlaps[which(
@@ -149,20 +150,17 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       # assigned to each row in the raw dataset)
       dat[dat$index==overlapNext$index,"trackID"] <- overlapWinner$trackID.1
     } #end of loop j
-   #  #check to see if the loop worked!
-    # mapview(dat[dat$Year == inv[i-1],], col.regions = "red") +
-    # mapview(dat[dat$Year==inv[i],]) + mapview(dat[dat$Year == inv[i] &
-    # is.na(dat$trackID)==FALSE,], col.regions = "purple")
 
     ## NO PARENT (overlaps list index will not have any information in it)
     ## get the row index of child polygons that are 'new' (i.e. no parent)
     noParentRowNums <- which(sapply(overlaps, length)==0)
     ## asign these child polygons a new trackID in the master data.frame
     dat[dat$index %in% tempNextYear[noParentRowNums,"index"]$index, #get the unique index for each parent-less child polygon
-       "trackID"] <-  paste0(unique(dat$sp_code_6), ## get the 6 letter code for this species
-           "_", inv[i], ## get the year in which child polygon was recruited
-                                "_", c(1:length(noParentRowNums))) # get a vector
-           # of numbers as long as the number of parentless child polygons)
+       "trackID"] <-  paste0(unique(dat$sp_code_6), ## get the 6 letter code
+                             # for this species
+           "_", inv[i], ## get the year in which child poly recruited
+                              "_", c(1:length(noParentRowNums))) # get a vector
+           # of numbers as long as the number of parentless child polys)
 
     #test
     # testDat <- dat[is.na(dat$trackID)==FALSE &
@@ -170,13 +168,20 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     #                  dat$trackID %in% dat$trackID[duplicated(dat$trackID)]
     #                ,]
     #
-    # ggplot(dat = testDat) +
-    #   geom_sf(aes(lty = as.factor(testDat$Year), fill = trackID, alpha = Year)) +
-    #   #scale_fill_discrete(guide = FALSE) +
-    # scale_alpha(range = c(.3,1), guide = FALSE)
+    ggplot(dat = testDat) +
+      geom_sf(aes(lty = as.factor(testDat$Year), fill = trackID, alpha = Year)) +
+      #scale_fill_discrete(guide = FALSE) +
+      scale_alpha(range = c(.4,.8), guide = FALSE) +
+      xlim(c(0,1)) +
+      ylim(c(0,1))
 
-    ## NO CHILD
-    ## becomes a ghost?
+
+    ## NO CHILD--becomes a ghost
+    ## get the data for the current year (parent) polygons that don't have
+    # any 'children' (get the row index numbers of every parent poly that is
+    # included in the 'overlaps' dataset, then find the row index numbers from
+    # tempCurrentYear that are not included in that list)
+    tempGhosts <- tempCurrentYear[!1:nrow(tempCurrentYear) %in% unique(unlist(overlaps)),]
 
       ###AES### deal with ghosts; include an option for tie-breaking (if statements that are initiated by a user-defined option) for area vs. distance
 

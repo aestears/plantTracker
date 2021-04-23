@@ -76,271 +76,147 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
     ## need to get the sf data.frame of the 'next' year
     tempNextYear <- dat[dat$Year==inv[i],]
 
-    ## see if there is any overlap between the tempNextYear data and the
-    # tempCurrentYear data (buffered)
-    overlaps <- st_intersects(tempNextYear, tempCurrentBuff)
-    # returns a list, where each object in the list is the row index of the
-    # polygon in tempNextYear, and the contents of the list are row indices of
-    # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
+    ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
+    # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
+    # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
+    # this loop. If it is, then freshly redefine 'tempCurrentYear' and proceed
+    # to the next 'i'
+    if (inv[i] - inv[i-1] <= (dorm+1)) {
 
-    ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that #
-    # overlap only one polygon from year t
-    ## get the row index, index , and trackID numbers of the tempNextYear
-    # (child) polygons that only have one parent, and teh tempCurrentYear
-    # (parent) polygons that only have one child
-    oneParentRowNums <- which(sapply(overlaps, length)==1)
-    unambigParent <- data.frame("childRowIndex" = oneParentRowNums,
-                    "childIndex" = tempNextYear[oneParentRowNums,"index"]$index,
-                "parentTrackID" = sapply(overlaps[oneParentRowNums], function(x)
+      ## FIND OVERLAPPIGN POLYGONS
+      ## see if there is any overlap between the tempNextYear data and the
+      # tempCurrentYear data (buffered)
+      overlaps <- st_intersects(tempNextYear, tempCurrentBuff)
+      # returns a list, where each object in the list is the row index of the
+      # polygon in tempNextYear, and the contents of the list are row indices of
+      # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
+
+      ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that #
+      # overlap only one polygon from year t
+      ## get the row index, index , and trackID numbers of the tempNextYear
+      # (child) polygons that only have one parent, and teh tempCurrentYear
+      # (parent) polygons that only have one child
+      oneParentRowNums <- which(sapply(overlaps, length)==1)
+      unambigParent <- data.frame("childRowIndex" = oneParentRowNums,
+                                  "childIndex" = tempNextYear[oneParentRowNums,"index"]$index,
+                                  "parentTrackID" = sapply(overlaps[oneParentRowNums], function(x)
                                     tempCurrentYear[unlist(x),"trackID"]$trackID
-                                ),
-                    "parentRowIndex" = sapply(overlaps[oneParentRowNums], unlist
                                   ),
-                  "parentIndex" = sapply(overlaps[oneParentRowNums], function(x)
-                                  tempCurrentYear[unlist(x),"index"]$index) )
+                                  "parentRowIndex" = sapply(overlaps[oneParentRowNums], unlist
+                                  ),
+                                  "parentIndex" = sapply(overlaps[oneParentRowNums], function(x)
+                                    tempCurrentYear[unlist(x),"index"]$index) )
 
-    ## put the trackIDs from the parents into the appropriate spot in the
-    # big data.frame for each child
-    dat[dat$index %in% unambigParent$childIndex, "trackID"] <-
-      unambigParent$parentTrackID
+      ## put the trackIDs from the parents into the appropriate spot in the
+      # big data.frame for each child
+      dat[dat$index %in% unambigParent$childIndex, "trackID"] <-
+        unambigParent$parentTrackID
 
-    ## AMBIGUOUS PARENT / TIEBREAKERS: are there any polygons from tempNextYear that overlap with
-    # more than one polygon from tempCurrentYear?
-    ## get the row index numbers of the tempCurrentYear (parent) polygons that
-    # overlap with the same t+1 polygons (child) -- the parents that share a
-    # child polygon, which isn't allowed (two different parents can't have
-    # the same child)
-    currentOverlapRowNums <-
-            sort(unique(unlist(
-      overlaps[which(
-        sapply(overlaps, length)  ## add up how many year t polys overlap each
-        # year t+1 poly
-        >1)## identify the year t+1 polys that are overlapped by >1 year t poly
-        ] ## get the elements of the list that correspond to each of the year
-      # t+1 polys w/ >1 year t poly overlap
-      ) ## get a numeric vector of the row index for each of those multiple
-      # overlap year t polys
-      ))
+      ## AMBIGUOUS PARENT / TIEBREAKERS: are there any polygons from tempNextYear
+      # that overlap with
+      # more than one polygon from tempCurrentYear?
+      ## get the row index numbers of the tempCurrentYear (parent) polygons that
+      # overlap with the same t+1 polygons (child) -- the parents that share a
+      # child polygon, which isn't allowed (two different parents can't have
+      # the same child)
+      currentOverlapRowNums <-
+        sort(unique(unlist(
+          overlaps[which(
+            sapply(overlaps, length)  ## add up how many year t polys overlap each
+            # year t+1 poly
+            >1)## identify the year t+1 polys that are overlapped by >1 year t poly
+            ] ## get the elements of the list that correspond to each of the year
+          # t+1 polys w/ >1 year t poly overlap
+        ) ## get a numeric vector of the row index for each of those multiple
+        # overlap year t polys
+        ))
 
-    currentYearOverlaps <- tempCurrentBuff[currentOverlapRowNums,]
+      currentYearOverlaps <- tempCurrentBuff[currentOverlapRowNums,]
 
-    ## get the row index numbers of the tempNextYear (child) polygons that are
-    # overlapped by  more than one polygon from year t (parent) -- children
-    # than have >1 parent (not allowed)
-    nextOverlapRowNums <- which(sapply(overlaps, length) >1)
-    nextYearOverlaps <- tempNextYear[nextOverlapRowNums,]
+      ## get the row index numbers of the tempNextYear (child) polygons that are
+      # overlapped by  more than one polygon from year t (parent) -- children
+      # than have >1 parent (not allowed)
+      nextOverlapRowNums <- which(sapply(overlaps, length) >1)
+      nextYearOverlaps <- tempNextYear[nextOverlapRowNums,]
 
-    ## compare the overlap between current year and next year for each combo of
-    # polygons
-    for(j in nextOverlapRowNums) {
-      ## get the data for the first polygon in year t+1 that overlaps with >1
-      # polygon from year t
-      overlapNext <- tempNextYear[j,]
-      ## get the data for the polygons from year t that overlap this one
-      overlapCurrents <- tempCurrentBuff[overlaps[[j]],]
+      ## compare the overlap between current year and next year for each combo of
+      # polygons
+      for(j in nextOverlapRowNums) {
+        ## get the data for the first polygon in year t+1 that overlaps with >1
+        # polygon from year t
+        overlapNext <- tempNextYear[j,]
+        ## get the data for the polygons from year t that overlap this one
+        overlapCurrents <- tempCurrentBuff[overlaps[[j]],]
 
-      ## compare the extent of overlap between year t+1 poly and each of the
-      # year t polys
-      tempOverlap <- st_intersection(overlapNext, overlapCurrents)
-      ## determine which of the year t polys overlaps the year t poly the most
-      overlapWinner <- tempOverlap[tempOverlap$Area.1 ==
-                                     max(tempOverlap$Area.1),]
-      ## put the trackID of the 'overlapWinner' poly in the complete dataset
-      #row for the year t+1 polygon. Match by using the 'index' (unique number
-      # assigned to each row in the raw dataset)
-      dat[dat$index==overlapNext$index,"trackID"] <- overlapWinner$trackID.1
-    } #end of loop j
+        ## compare the extent of overlap between year t+1 poly and each of the
+        # year t polys
+        tempOverlap <- st_intersection(overlapNext, overlapCurrents)
+        ## determine which of the year t polys overlaps the year t poly the most
+        overlapWinner <- tempOverlap[tempOverlap$Area.1 ==
+                                       max(tempOverlap$Area.1),]
+        ## put the trackID of the 'overlapWinner' poly in the complete dataset
+        #row for the year t+1 polygon. Match by using the 'index' (unique number
+        # assigned to each row in the raw dataset)
+        dat[dat$index==overlapNext$index,"trackID"] <- overlapWinner$trackID.1
+      } #end of loop j
 
-    ## NO PARENT (overlaps list index will not have any information in it)
-    ## get the row index of child polygons that are 'new' (i.e. no parent)
-    noParentRowNums <- which(sapply(overlaps, length)==0)
-    ## asign these child polygons a new trackID in the master data.frame
-    dat[dat$index %in% tempNextYear[noParentRowNums,"index"]$index, #get the unique index for each parent-less child polygon
-       "trackID"] <-  paste0(unique(dat$sp_code_6), ## get the 6 letter code
-                             # for this species
-           "_", inv[i], ## get the year in which child poly recruited
-                              "_", c(1:length(noParentRowNums))) # get a vector
-           # of numbers as long as the number of parentless child polys)
+      ## NO PARENT (overlaps list index will not have any information in it)
+      ## get the row index of child polygons that are 'new' (i.e. no parent)
+      noParentRowNums <- which(sapply(overlaps, length)==0)
+      ## asign these child polygons a new trackID in the master data.frame
+      dat[dat$index %in% tempNextYear[noParentRowNums,"index"]$index, #get the
+          # unique index for each parent-less child polygon
+          "trackID"] <-  paste0(unique(dat$sp_code_6), ## get the 6 letter code
+                                # for this species
+                                "_", inv[i], ## get the year in which child poly recruited
+                                "_", c(1:length(noParentRowNums))) # get a vector
+      # of numbers as long as the number of parentless child polys)
 
-    #test
-    # testDat <- dat[is.na(dat$trackID)==FALSE &
-    #                  dat$trackID %in% unique(dat$trackID)[1:20] &
-    #                  dat$trackID %in% dat$trackID[duplicated(dat$trackID)]
-    #                ,]
-    #
-    ggplot(dat = testDat) +
-      geom_sf(aes(lty = as.factor(testDat$Year), fill = trackID, alpha = Year)) +
-      #scale_fill_discrete(guide = FALSE) +
-      scale_alpha(range = c(.4,.8), guide = FALSE) +
-      xlim(c(0,1)) +
-      ylim(c(0,1))
+      # #test
+      # testDat <- dat[is.na(dat$trackID)==FALSE &
+      #                  dat$trackID %in% unique(dat$trackID)[1:20] &
+      #                  dat$trackID %in% dat$trackID[duplicated(dat$trackID)]
+      #                ,]
+      #
+      # ggplot(dat = testDat) +
+      #   geom_sf(aes(lty = as.factor(testDat$Year), fill = trackID, alpha = Year)) +
+      #   #scale_fill_discrete(guide = FALSE) +
+      #   scale_alpha(range = c(.2,.8), guide = FALSE) +
+      #   xlim(c(0,1)) +
+      #   ylim(c(0,1))
 
 
-    ## NO CHILD--becomes a ghost
-    ## get the data for the current year (parent) polygons that don't have
-    # any 'children' (get the row index numbers of every parent poly that is
-    # included in the 'overlaps' dataset, then find the row index numbers from
-    # tempCurrentYear that are not included in that list)
-    tempGhosts <- tempCurrentYear[!1:nrow(tempCurrentYear) %in% unique(unlist(overlaps)),]
+      ## NO CHILD--becomes a ghost
+      ## get the data for the current year (parent) polygons that don't have
+      # any 'children' (get the row index numbers of every parent poly that is
+      # included in the 'overlaps' dataset, then find the row index numbers from
+      # tempCurrentYear that are not included in that list)
+      tempGhosts <- tempCurrentYear[!1:nrow(tempCurrentYear) %in%
+                                      unique(unlist(overlaps)),]
+      ## add a '1' in a 'ghost' column, indicating that these polys are 'ghosts
+      tempGhosts$ghost <- 1
+      ## CHECK DORMANCY -- need to check that the gap in years between 'parent'
+      # and 'child' does not exceed the dormancy argument. If the difference
+      # between the year of the 'ghost' and the year to which we will be comparing
+      # in the next iteration of the loop ('child' polygons in year i+1), then we
+      # do not include it as a 'ghost'
+      ## remove those 'ghosts' for which there is a gap between 'parent' year and 'child' year in next loop that exceeds the dormancy argument
+      tempGhosts <- tempGhosts[!(inv[i+1] - tempGhosts$Year > (dorm + 1)),]
 
-      ###AES### deal with ghosts; include an option for tie-breaking (if statements that are initiated by a user-defined option) for area vs. distance
+      ###AES### include an option for tie-breaking (if statements that are initiated by a user-defined option) for area vs. distance
 
-    ## j = individual unique trackID in the dataset in that year (only or
-    # individuals that already have a trackID assigned)
-    for (j in dat[dat$Year==inv[i],'trackID']) { ## loop through each of the
-      # unique trackIDs. If there are more than 1 polygon w/ the same trackID,
-      # then it should include both of them. Ideally this should ignore
-      # those individuals w/out a trackID? (###AES###)
-      plant <- dat[dat$Year==inv[i] & dat$trackID %in% j,] ## getting data for
-      # individual(s) j, which we will then send through the tracking function
-      plantBuff <- dataBuff[dataBuff$Area %in% plant$Area,] ## select
-      # the buffered polygon(s) for the appropriate individual
-      for (k in 1:(dorm+1)) { # this loop compares the focal plant to
-        # the quadrat data in the the next year. This loop will repeat 1 +
-        # as many times as the 'dorm' argument
-        # (compare to year t+1, ..., t+dorm).
+    } ## end of 'if' statement that determines if gap between inv[i-1] and
+    # inv[i] is less than or equal to  dorm+1
 
-        ## data for next sampled year: dat[dat$Year==inv[i + k],]
+    ##PREPARE FOR NEXT i
+    ## get data for year i and put it in 'tempCurrentYear' for the next 'i'
+    tempCurrentYear <- dat[dat$Year==inv[i],]
+    ## add a 'ghost' column and put in an 'NA' that indicates these polygons
+    # were actually observed in the 'current' year
+    tempCurrentYear$ghost <- 0
+    ## add the 'ghost' data from year i-1 (parents w/ no children)
+    tempCurrentYear <- rbind(tempCurrentYear, tempGhosts)
+  } #end of loop i
 
-        ## is the quadrat sampled in year inv[i] + k ???
-        if ((inv[i] + k) %in% inv) { ## quadrat IS measured in year inv[i] + k
-          ## get overlapping area between unbuffered plant and next year
-          # (excluding next year polygons that already have a trackID)
-          overlapsNoBuff <- st_intersection(plant, dat[dat$Year==inv[i + k]
-                                              & is.na(dat$trackID)==TRUE,])
-          ## get the complete raw data for the overlapping polygons
-          overlapsNoBuffRaw <- dat[dat$Year==inv[i + k] &
-                                     is.na(dat$trackID)==TRUE ,][(st_intersects(
-                                       plant, dat[dat$Year==inv[i + k] &
-                                                    is.na(dat$trackID)==TRUE,],
-                                       sparse = FALSE)[1,]),]
-
-          ## is there a match w/ polygons in the next year w/out focal plant
-          # buffer? That is above the threshold of the 'overlaps' argument? That
-          # also doesn't already have a trackID?
-          if (sum(overlapsNoBuff$Area.1)/plant$Area > overlap) {
-            ## if YES,  give to focal individual: surv = 1, size_tplus1 = #, trackID for
-            # next year polygons, age for next year polygons, recruit for next
-            # year polygons
-            dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <-
-              sum(overlapsNoBuffRaw$Area)
-            dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 1
-
-            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
-                'trackID'] <- dat[dat$Year==inv[i] & dat$trackID %in% j,
-                    'trackID'] ## give the trackID from current individual to
-                      # the overlapping polys from the next year
-            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
-                'age'] <- dat[dat$Year==inv[i] &dat$trackID %in% j, 'age'] + k
-                      ## give the age of the focal individual + k to the
-                      # overlapping polys from the next year
-            dat[dat$Year==inv[i + k] & dat$Area %in% overlapsNoBuffRaw$Area,
-                'recruit'] <- 0 ## give a 0 in the recruit column for the
-                      # overlapping polys, since they aren't recruits
-          } else {
-            ## if there is NOT an overlap between unbuffered individual and
-            # polys in the next year...
-            ## get overlapping area between buffered plant and next year
-            # (excluding next year polygons that already have a trackID)
-            overlapsBuff <- st_intersection(plantBuff, dat[dat$Year==inv[i + k]
-                                               & is.na(dat$trackID)==TRUE,])
-            ## get the complete raw data for the overlapping polygons
-            overlapsBuffRaw <- dat[dat$Year==inv[i + k] &
-                                       is.na(dat$trackID)==TRUE ,][(
-                          st_intersects(plantBuff, dat[dat$Year==inv[i + k] &
-                          is.na(dat$trackID)==TRUE,], sparse = FALSE)[1,]),]
-
-            ## is there a match w/ polygons in the next year w/ focal
-            # plant buffer? That is above the threshold of the 'overlaps'
-            # argument? That also doesn't already have a trackID?
-            if (sum(overlapsBuff$Area.1)/plantBuff$Area > overlap) {
-              ## if YES, give to focal individual: surv = 1, size_tplus1 = #,
-              # trackID for next year polygons, age for next year polygons,
-              # recruit for next year polygons
-              dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <-
-                sum(overlapsBuffRaw$Area)
-              dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 1
-
-              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
-                  'trackID'] <- dat[dat$Year==inv[i] & dat$trackID %in% j,
-                      'trackID'] ## give the trackID from current individual to
-              # the overlapping polys from the next year
-              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
-                  'age'] <- dat[dat$Year==inv[i] &dat$trackID %in% j, 'age'] + k
-              ## give the age of the focal individual + k to the
-              # overlapping polys from the next year
-              dat[dat$Year==inv[i + k] & dat$Area %in% overlapsBuffRaw$Area,
-                  'recruit'] <- 0 ## give a 0 in the recruit column for the
-              # overlapping polys, since they aren't recruits
-            } else { ## if there is NOT an overlap between the buffered
-              # invididual and polys in the next year
-              if (k == dorm +1) { ## if YES (we've reached the maximum allowable
-                # k for the dorm arg.), then plant is dead in next year.
-                ## Give to focal individual: surv = 0, size_tplus1 = NA
-                dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <- NA
-                dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- 0
-              }
-            }
-          }
-        } else { ## quadrat is NOT measured in year inv[i] + k
-          ## does k = dorm + 1 (have we reached the maximum value of k according
-          # to the the dormancy that's allowed by the user-defined arg?)
-          if (k == dorm+1) { ## if TRUE, then this is the last year inv[i] + k
-            # that is allowed by the dorm argument, but there is not data, so
-            # the focal individual gets an 'NA' in both the surv and
-            # size_tplus1 columns
-            dat[dat$Year==inv[i] & dat$trackID %in% j, 'size_tplus1'] <- NA
-            dat[dat$Year==inv[i] & dat$trackID %in% j, 'surv'] <- NA
-          }
-        }
-      }
-    } ###AES###
-    # Now do the same tracking loop, but for individuals that don't yet
-    # have a trackID !
-    if (nrow(dataCurrent[is.na(dataCurrent$trackID)==TRUE,])>0) { #make sure
-      # that there actually are individuals w/out trackIDs before moving
-      # on to the next loop
-      for (l in 1:nrow(dataCurrent[is.na(dataCurrent$trackID)==TRUE,])) {
-        ## loop through each of the unique individuals that don't have trackIDs.
-        plant <- dataCurrent[l,] # getting data for
-        # one individual j, which we will then send through
-        # the tracking function
-        plantBuff <- dataCurrentBuff[l,] # select
-        # the buffered polygon for the appropriate individual
-
-        ## If this is the first year of sampling after a break, then give this
-        # plant[l] an NA is the 'age' and 'recruit' columns
-        if (inv[i] - inv[i-1] > 1) { # if the difference between year[i] and
-          # year[i-1] is greater than 1, then there was a measurement gap in
-          # the previous year
-          ## give this individual an NA for age and recruit (likely already
-          # is, but just in case...)
-          plant$age <- NA
-          plantBuff$age <- NA
-
-          plant$recruit <- NA
-          plantBuff$recruit <- NA
-        } else { ## If this is NOT the first year af sampling after a break,
-          # then give this plant[l] a '0' for 'age', and a '1' or 'recruit'
-          plant$age <- 0
-          plantBuff$age <- 0
-
-          plant$recruit <- 1
-          plantBuff$recruit <- 1
-        }
-        ## Assign this new obs. a unique trackID
-        plant$trackID <-  IDs[1] # populate trackID
-        plantBuff$trackID <- plant$trackID
-
-        # redefine the master trackID vector so that the trackIDs don't repeat
-        IDs <- IDs[-1]
-
-        ## will insert the same tracking loops as above! (maybe an entire
-        # different function? ) ###AES###
-      }
-    }
-  } # end loop 'i'
-}
 # output ---------------------------------------------------------------
-
-
+}

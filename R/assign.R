@@ -12,6 +12,8 @@ library(mapview) #don't actually need for function, just for checking
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
 # species
+load("./data/grasslandData.rda")
+load("./data/grasslandInventory.rda")
 # prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
 sampleDat <- grasslandData[grasslandData$Site == "CO"
@@ -52,8 +54,10 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   # the same individual (not 100% sure on this one yet...)
   clonal <- 1 ## binary option that indicates whether this species is allowed to
   # break into multiple polygons for one individual
-  conalBuff <- .01 ## the buffer of overlap that indicates polygons are genets
-  # of the same individual (if genets are allowed), in meters
+
+  #conalBuff <- .01 ## the buffer of overlap that indicates polygons are genets
+  ## of the same individual (if genets are allowed), in meters ##probably don't
+  ##need...
 
   ## work -------------------------------------------------------------------
 
@@ -73,16 +77,24 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
   }
 
   ## assign a unique trackID to every unique genetID in this first-year dataset
-  IDs <- data.frame( "genetID" = sort(unique(datFirst$genetID)), ## get a vector of unique numbers
-                       "trackID" = paste0(unique(dat$sp_code_6),"_",unique(datFirst$Year),
-                                          "_",c(1:length(unique(datFirst$genetID)))))
+  IDs <- data.frame( "genetID" = sort(unique(datFirst$genetID)), ## get a vector
+                     # of all of the unique genetIDs
+            "trackID" = paste0(unique(dat$sp_code_6), ## get the unique 6-letter
+                               # species code
+                               "_",unique(datFirst$Year), ## get the unique year
+                  "_",c(1:length(unique(datFirst$genetID))))) ## get a vector of
+  # unique numbers that is the same length as the genetIDs in this quad/year
+
   datFirst<- merge(datFirst[,names(datFirst) != "trackID"], IDs, by = "genetID")
 
   ## put this trackID information in the master data.frame for this species
+  # using the unique index information
   dat[dat$index %in% datFirst$index, "trackID"] <- datFirst$trackID
+
   ## assign the first-year data to the 'tempCurrentYear' data.frame
   tempCurrentYear <- datFirst ## this data.frame will get redefined for
   # each iteration of the for-loop below
+
   ## give all individuals in year #1 a '0' in the ghost column
   tempCurrentYear$ghost <- 0
 
@@ -99,12 +111,16 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       tempCurrentBuff <- st_buffer(tempCurrentYear, buff) ## need to add a buffer
       # to this data.frame
 
-      ## need to get the sf data.frame of the 'next' year
+      ## need to get the sf data.frame of the 'next' year (year 'i')
       tempNextYear <- dat[dat$Year==inv[i],]
 
       ## AGGREGATE BY GENET for year i (if clonal = 1)
       if(clonal==1) {
         tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
+      }
+      ## assign unique genetIDs for every polygon (if clonal = 0)
+      if(clonal==0) {
+        tempNextYear$genetID <- 1:nrow(tempNextYear)
       }
 
       ## FIND OVERLAPPING POLYGONS
@@ -118,7 +134,8 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       ###AES### need to deal with the fact that now we can have multiple parent
       #polygons!! (still can only have one parent trackID-wise)
 
-      ## UNAMBIGUOUS PARENT: assign trackIDs to polygons from year t+1 that #
+      ## UNAMBIGUOUS PARENT: 1 child polygon has only one parent
+      # polygon assign trackIDs to polygons from year t+1 that #
       # overlap only one polygon from year t
       ## get the row index, index , and trackID numbers of the tempNextYear
       # (child) polygons that only have one parent, and teh tempCurrentYear

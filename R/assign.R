@@ -137,7 +137,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       rownames(overlaps) <- paste0(tempCurrentYear$trackID, "__",
                                    tempCurrentYear$index)
       ## get the genetIDs + unique index of each 'child' polygon
-      colnames(overlaps) <-paste0("genet",tempNextYear$genetID,"__",
+      colnames(overlaps) <-paste0("genet__",tempNextYear$genetID,"__",
                                   tempNextYear$index)
 
 
@@ -149,7 +149,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
                                        overlapArea$index)
       ## get the genetID names merged with the index value (same values used for
       # names of columns in 'overlaps' matrix)
-      overlapArea$childName <- paste0("genet", overlapArea$genetID.1, "__",
+      overlapArea$childName <- paste0("genet__", overlapArea$genetID.1, "__",
                                       overlapArea$index.1)
 
       ## calculate the overlap between each parent poly and each child poly
@@ -158,24 +158,34 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       ## aggregate the matrix by unique trackID (over rows), and then by unique
       # genetID (over columns)
 
+      trackIDMatrix <- matrix(data = sapply(strsplit(rownames(overlaps),
+                                                     "__"), unlist)[1,],
+             nrow = nrow(overlaps), ncol = 1)
+      colnames(trackIDMatrix) <- "trackID"
+      overlaps <- cbind(overlaps, trackIDMatrix)
+
+
+      genetIDMatrix <- matrix(data = c(sapply(strsplit(colnames(overlaps)[1:(ncol(overlaps)-1)], "__"), unlist)[2,],NA),
+      nrow = 1, ncol = ncol(overlaps))
+      rownames(genetIDMatrix) <- "genetID"
+      overlaps <- rbind(overlaps, genetIDMatrix)
+
       for(l in tempCurrentYear$trackID) {
         duplicateTrackIDrows <- overlaps[which(sapply(strsplit(rownames(overlaps),
                  "__"), unlist)[1,]==l),] ## get those rows that have the same
         # trackID (are genets)
-        overlappingCols <- ifelse(is.vector(duplicateTrackIDrows)==TRUE, ## test
-                               names(which(duplicateTrackIDrows==TRUE)),   ## yes
-
-          names(which(apply(duplicateTrackIDrows,1, ## margin of the apply (rows)
+        ifelse(is.vector(duplicateTrackIDrows)==TRUE, ## test
+                               NA,   ## yes
+          overlappingColNames <- names(which(apply(duplicateTrackIDrows,1, ## margin of the apply (rows)
                                              function(x)
             sum(x) >= 1)
             ==1)) ## no
           ) ## if there is at least 1 overlap, return a 'TRUE'
 
-        overlaps
+        ## put a 'TRUE' value into the appropriate row and columns
+
+        aggregate(overlaps[1:(nrow(overlaps)-1),1:(ncol(overlaps)-1)], by = list(overlaps[,ncol(overlaps)]), FUN = )
       }
-
-      unlist(strsplit(rownames(overlaps), "__"))
-
 
 
       ggplot()+

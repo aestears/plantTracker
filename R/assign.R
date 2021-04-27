@@ -126,30 +126,88 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       ## FIND OVERLAPPING POLYGONS
       ## see if there is any overlap between the tempNextYear data and the
       # tempCurrentYear data (buffered)
-      overlaps <- st_intersects(tempNextYear, tempCurrentBuff)
-      # returns a list, where each object in the list is the row index of the
-      # polygon in tempNextYear, and the contents of the list are row indices of
-      # the overlapping polygons from tempCurrentBuff. Ultimately, we must chose
+      overlaps <- st_intersects(tempCurrentBuff, tempNextYear, sparse = FALSE)
+      # returns a matrix, where the rows are the parent row index numbers, and
+      # the columns are the row index numbers of the child polygons. A 'TRUE'
+      # value indicates that those polygons overlap
 
-      ###AES### need to deal with the fact that now we can have multiple parent
+      ## get the trackID of each 'parent' polygon, and put them as 'names' onto
+      # the 'overlaps' list, but first combine it with the 'unique index', so we
+      # don't have multiple list elements with the same name
+      rownames(overlaps) <- paste0(tempCurrentYear$trackID, "__",
+                                   tempCurrentYear$index)
+      ## get the genetIDs + unique index of each 'child' polygon
+      colnames(overlaps) <-paste0("genet",tempNextYear$genetID,"__",
+                                  tempNextYear$index)
+
+      ## aggregate the matrix by unique trackID (over rows), and then by unique
+      # genetID (over columns)
+      apply(overlaps, MARGIN = )
+
+      for(l in tempCurrentYear$trackID) {
+        duplicateTrackIDrows <- overlaps[which(sapply(strsplit(rownames(overlaps),
+                 "__"), unlist)[1,]==l),] ## get those rows that have the same
+        # trackID (are genets)
+        overlappingCols <- ifelse(is.vector(duplicateTrackIDrows)==TRUE, ## test
+                               names(which(duplicateTrackIDrows==TRUE)),   ## yes
+
+          names(which(apply(duplicateTrackIDrows,1, ## margin of the apply (rows)
+                                             function(x)
+            sum(x) >= 1)
+            ==1)) ## no
+          ) ## if there is at least 1 overlap, return a 'TRUE'
+
+        overlaps
+      }
+
+      unlist(strsplit(rownames(overlaps), "__"))
+
+
+
+      ggplot()+
+        geom_sf(data = tempCurrentBuff[c(1,3,4,5,6),], aes(fill = trackID), lty = 1, alpha = .5) +
+        scale_fill_discrete(guide = FALSE) +
+        theme_classic() +
+        geom_sf(data = tempNextYear[c(1,2,5,14,16,18,4,7,8),], aes(fill = as.factor(genetID)), lty = 2, alpha = .8) +
+        xlim(c(0,1)) +
+        ylim(c(0,1))
+    ###AES### need to deal with the fact that now we can have multiple parent
       #polygons!! (still can only have one parent trackID-wise)
 
-      ## UNAMBIGUOUS PARENT: 1 child polygon has only one parent
+      ## UNAMBIGUOUS PARENT: 1 parent polygon only has 1 child polygon
+      unambigParentRowNums <- which(sapply(overlaps, length)==1) ## get the row
+      # index numbers of 'parent' polygons that have only one 'child' polygon
+
+      ## get the row index, index , and trackID numbers of the tempNextYear
+      # (child) polygons that only have one parent, and the tempCurrentYear
+      # (parent) polygons that only have one child
+      unambig <- data.frame("parentRowIndex" = oneParentRowNums,
+                                  "parentIndex" = tempCurrentYear[unambigParentRowNums,"index"]$index,
+                                  "parentTrackID" = tempCurrentYear[unambigParentRowNums, "trackID"]$trackID,
+                            "parentGenetID" = tempCurrentYear[unambigParentRowNums, "genetID"]$genetID,
+                                  "childRowIndex" = sapply(overlaps[unambigParentRowNums], unlist
+                                  ),
+                                  "childIndex" = sapply(overlaps[unambigParentRowNums], function(x)
+                                    tempNextYear[unlist(x),"index"]$index),
+                            "childGenetID" = sapply(overlaps[unambigParentRowNums], function(x)
+                              tempNextYear[unlist(x),"genetID"]$genetID))
+
+      unambigParentDat <- tempCurrentYear[oneParentRowNums,]  ## get the data for these unambiguous parents
+      unambigChildDat <- tempNextYear[unambigParent$childRowIndex,]
+      ## get the data for the unambiguous children
+
+      mapview(tempCurrentYear) + mapview(tempNextYear, col.regions = "red") +
+      mapview(unambigParentDat, col.regions = "blue") + mapview(unambigChildDat, col.regions = "orange")
+
+
+
+
+
+
       # polygon assign trackIDs to polygons from year t+1 that #
       # overlap only one polygon from year t
-      ## get the row index, index , and trackID numbers of the tempNextYear
-      # (child) polygons that only have one parent, and teh tempCurrentYear
-      # (parent) polygons that only have one child
+
       oneParentRowNums <- which(sapply(overlaps, length)==1)
-      unambigParent <- data.frame("childRowIndex" = oneParentRowNums,
-                                  "childIndex" = tempNextYear[oneParentRowNums,"index"]$index,
-                                  "parentTrackID" = sapply(overlaps[oneParentRowNums], function(x)
-                                    tempCurrentYear[unlist(x),"trackID"]$trackID
-                                  ),
-                                  "parentRowIndex" = sapply(overlaps[oneParentRowNums], unlist
-                                  ),
-                                  "parentIndex" = sapply(overlaps[oneParentRowNums], function(x)
-                                    tempCurrentYear[unlist(x),"index"]$index))
 
       mapview(tempCurrentBuff, col.regions = "pink") + mapview(tempNextYear, col.regions = "yellow") + mapview(tempNextYear[tempNextYear$index %in% unambigParent$childIndex,], col.regions = "orange")
 

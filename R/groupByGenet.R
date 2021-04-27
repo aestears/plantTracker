@@ -1,16 +1,20 @@
-## This function will assign grouping variables for each feature of an sf object. Grouping is based on buffers of a
-## user-defined distance overlapping. Usage:
-##
-##            sf = your sf object
-##
-##        sf$groupID = groupByGenet(sf, dist, id)
-##
-##  Where dist = the distance you want the buffer to be (put 2.5 to group polygons that are 5cm from each other)
-##  and id = the identity variable for your polygons. Assumed to be
-
+#' This function will assign grouping variables for each feature of an sf
+#' object. Grouping is based on buffers of a user-defined distance overlapping.
+#'
+#' @param sf your sf object
+#' @param buffGenet the distance you want the buffer to be (put 2.5 to group polygons that are 5cm from each other)
+#'
+#' @return
+#' @export
+#'
+#' @examples##
+#'
+#'  Usage:
+#'
 library(igraph)
 library(Matrix)
 library(sf)
+
 
 
 groupByGenet = function(sf, buffGenet){

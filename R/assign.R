@@ -28,7 +28,7 @@ sampleInv <- grasslandInventory[["unun_11"]]
 
 # 'assign' function ---------------------------------------------------------
 
-assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
+assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
   # arguments ---------------------------------------------------------------
   ## double check the format of the inputs, and add additional columns required
   dat <- st_sf(sampleDat) # data in 'grasslandData' format, must be an sf object
@@ -140,9 +140,23 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
       colnames(overlaps) <-paste0("genet",tempNextYear$genetID,"__",
                                   tempNextYear$index)
 
+
+      ## trying to get the amount of overlap between each polygon
+      overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
+      ## get the trackID names merged with the index value (same values used
+      # for names of rows in 'overlaps' matrix)
+      overlapArea$parentName <- paste0(overlapArea$trackID, "__",
+                                       overlapArea$index)
+      ## get the genetID names merged with the index value (same values used for
+      # names of columns in 'overlaps' matrix)
+      overlapArea$childName <- paste0("genet", overlapArea$genetID.1, "__",
+                                      overlapArea$index.1)
+
+      ## calculate the overlap between each parent poly and each child poly
+      overlapArea$overlappingArea <- st_area(overlapArea$geometry)
+
       ## aggregate the matrix by unique trackID (over rows), and then by unique
       # genetID (over columns)
-      apply(overlaps, MARGIN = )
 
       for(l in tempCurrentYear$trackID) {
         duplicateTrackIDrows <- overlaps[which(sapply(strsplit(rownames(overlaps),
@@ -170,9 +184,11 @@ assign <- function(sampleDat, inv, dorm, buff, overlap, clonal,...){
         theme_classic() +
         geom_sf(data = tempNextYear[c(1,2,5,14,16,18,4,7,8),], aes(fill = as.factor(genetID)), lty = 2, alpha = .8) +
         xlim(c(0,1)) +
-        ylim(c(0,1))
-    ###AES### need to deal with the fact that now we can have multiple parent
-      #polygons!! (still can only have one parent trackID-wise)
+        ylim(c(0,1)) +
+        geom_sf(data = tempNextYear, aes(), fill = "orange", alpha = .3)
+
+
+
 
       ## UNAMBIGUOUS PARENT: 1 parent polygon only has 1 child polygon
       unambigParentRowNums <- which(sapply(overlaps, length)==1) ## get the row

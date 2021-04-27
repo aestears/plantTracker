@@ -2,7 +2,8 @@
 #' object. Grouping is based on buffers of a user-defined distance overlapping.
 #'
 #' @param sf your sf object
-#' @param buffGenet the distance you want the buffer to be (put 2.5 to group polygons that are 5cm from each other)
+#' @param buffGenet the distance you want the buffer to be (put 2.5 to group
+#' polygons that are 5cm from each other)
 #'
 #' @return
 #' @export
@@ -18,18 +19,19 @@ library(sf)
 
 
 groupByGenet = function(sf, buffGenet){
-  buffDat = sf::st_buffer(sf, dist = buffGenet) ## buffers the data for the focal
-  # year by the buff argument
+  buffDat = sf::st_buffer(sf, dist = buffGenet) ## buffers the data for the
+  # focal year by the buff argument
   overlaps = sf::st_intersects(buffDat,buffDat) ## identifies which polygons
   # overlap with each other
-  ## I think we need to trim the overlap list to individuals that overlap a certain amount?
 
   i = rep(1:length(overlaps), lengths(overlaps))
   j = factor(unlist(overlaps))
-  tab = Matrix::sparseMatrix(i = i, j = as.integer(j), x = TRUE, dimnames = list(NULL, levels(j)))
+  tab = Matrix::sparseMatrix(i = i, j = as.integer(j), x = TRUE,
+                             dimnames = list(NULL, levels(j)))
 
   connects = Matrix::tcrossprod(tab, boolArith = TRUE)
-  group = igraph::clusters(graph_from_adjacency_matrix(as(connects, "lsCMatrix")))$membership
+  group = igraph::clusters(graph_from_adjacency_matrix(
+    as(connects, "lsCMatrix")))$membership
 
   tapply(overlaps, group, function(x) sort(unique(unlist(x))))
   trackIDs = tapply(1:length(overlaps), group, toString)

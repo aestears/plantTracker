@@ -8,6 +8,7 @@
 # required packages -------------------------------------------------------
 library(sf)
 library(mapview) #don't actually need for function, just for checking
+library(dplyr)
 
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
@@ -124,22 +125,6 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       }
 
       ## FIND OVERLAPPING POLYGONS
-      ## see if there is any overlap between the tempNextYear data and the
-      # tempCurrentYear data (buffered)
-      overlaps <- st_intersects(tempCurrentBuff, tempNextYear, sparse = FALSE)
-      # returns a matrix, where the rows are the parent row index numbers, and
-      # the columns are the row index numbers of the child polygons. A 'TRUE'
-      # value indicates that those polygons overlap
-
-      ## get the trackID of each 'parent' polygon, and put them as 'names' onto
-      # the 'overlaps' list, but first combine it with the 'unique index', so we
-      # don't have multiple list elements with the same name
-      rownames(overlaps) <- paste0(tempCurrentYear$trackID, "__",
-                                   tempCurrentYear$index)
-      ## get the genetIDs + unique index of each 'child' polygon
-      colnames(overlaps) <-paste0("genet__",tempNextYear$genetID,"__",
-                                  tempNextYear$index)
-
 
       ## trying to get the amount of overlap between each polygon
       overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
@@ -155,50 +140,53 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       ## calculate the overlap between each parent poly and each child poly
       overlapArea$overlappingArea <- st_area(overlapArea$geometry)
 
-      ## aggregate the matrix by unique trackID (over rows), and then by unique
-      # genetID (over columns)
+      ## translate to a matrix w/ column names as genets (children) and row
+      # names as trackIDs (parents)
+      overlapArea <- st_set_geometry(overlapArea[,c("parentName", "childName",
+                                     "overlappingArea")], NULL)
 
-      trackIDMatrix <- matrix(data = sapply(strsplit(rownames(overlaps),
-                                                     "__"), unlist)[1,],
-             nrow = nrow(overlaps), ncol = 1)
-      colnames(trackIDMatrix) <- "trackID"
-      overlaps <- cbind(overlaps, trackIDMatrix)
-
-
-      genetIDMatrix <- matrix(data = c(sapply(strsplit(colnames(overlaps)[1:(ncol(overlaps)-1)], "__"), unlist)[2,],NA),
-      nrow = 1, ncol = ncol(overlaps))
-      rownames(genetIDMatrix) <- "genetID"
-      overlaps <- rbind(overlaps, genetIDMatrix)
-
-      for(l in tempCurrentYear$trackID) {
-        duplicateTrackIDrows <- overlaps[which(sapply(strsplit(rownames(overlaps),
-                 "__"), unlist)[1,]==l),] ## get those rows that have the same
-        # trackID (are genets)
-        ifelse(is.vector(duplicateTrackIDrows)==TRUE, ## test
-                               NA,   ## yes
-          overlappingColNames <- names(which(apply(duplicateTrackIDrows,1, ## margin of the apply (rows)
-                                             function(x)
-            sum(x) >= 1)
-            ==1)) ## no
-          ) ## if there is at least 1 overlap, return a 'TRUE'
-
-        ## put a 'TRUE' value into the appropriate row and columns
-
-        aggregate(overlaps[1:(nrow(overlaps)-1),1:(ncol(overlaps)-1)], by = list(overlaps[,ncol(overlaps)]), FUN = )
-      }
+      overlapArea <- as.data.frame(pivot_wider(overlapArea,
+                                 id_cols = c(parentName, childName),
+                                 names_from = childName,
+                                 values_from = overlappingArea))
 
 
-      ggplot()+
-        geom_sf(data = tempCurrentBuff[c(1,3,4,5,6),], aes(fill = trackID), lty = 1, alpha = .5) +
-        scale_fill_discrete(guide = FALSE) +
-        theme_classic() +
-        geom_sf(data = tempNextYear[c(1,2,5,14,16,18,4,7,8),], aes(fill = as.factor(genetID)), lty = 2, alpha = .8) +
-        xlim(c(0,1)) +
-        ylim(c(0,1)) +
-        geom_sf(data = tempNextYear, aes(), fill = "orange", alpha = .3)
+      # # returns a matrix, where the rows are the parent row index numbers, and
+      # # the columns are the row index numbers of the child polygons. A 'TRUE'
+      # # value indicates that those polygons overlap
+      #
+      # ## get the trackID of each 'parent' polygon, and put them as 'names' onto
+      # # the 'overlaps' list, but first combine it with the 'unique index', so we
+      # # don't have multiple list elements with the same name
+      # rownames(overlaps) <- paste0(tempCurrentYear$trackID, "__",
+      #                              tempCurrentYear$index)
+      # ## get the genetIDs + unique index of each 'child' polygon
+      # colnames(overlaps) <-paste0("genet__",tempNextYear$genetID,"__",
+      #                             tempNextYear$index)
 
+      overlaps <- overlapArea
+      ## aggregate the overlapArea data.frame by unique trackID (over rows)
+      overlaps$parentTrackID <- sapply(strsplit(overlaps$parentName,"__"),unlist)[1,]
 
+      overlaps <- aggregate(overlaps[,names(overlaps) != "parentTrackID" & names(overlaps) != "parentName"],
+                  list(overlaps$parentTrackID), FUN = sum)
+      rownames(overlaps) <- overlaps[,1]
+      overlaps <- overlaps[,2:ncol(overlaps)]
 
+      ## transpose the 'overlaps' matrix so that we can aggregate by genet
+      # (genetID are rows, trackID are columns)
+      ## simplify the row names so they only have the genetID numer
+      overlaps <- t(overlaps)
+      rownames(overlaps) <- sapply(strsplit(rownames(overlaps),"__"),unlist)[2,]
+      overlaps <- aggregate(overlaps, list(rownames(overlaps)), FUN  = sum)
+      rownames(overlaps) <- paste0("genet_",overlaps[,1])
+      overlaps <- overlaps[,2:ncol(overlaps)]
+
+      ## transpose the matrix back so that each row is a parent and each
+      # column is a child
+      overlaps <- t(overlaps)
+
+      ###AES###
 
       ## UNAMBIGUOUS PARENT: 1 parent polygon only has 1 child polygon
       unambigParentRowNums <- which(sapply(overlaps, length)==1) ## get the row

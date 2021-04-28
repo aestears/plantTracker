@@ -42,13 +42,14 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
     dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
     # each row in the dataset
     dat$ghost = NA
+    dat$trackID = NA
   inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
   # sequential order
 
   ## user-defined arguments
   dorm <- 1 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
-  buffGenet <- 0 ## buffer between polygons (/2) that is the maximum allowed for
+  buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
   # them to be considered genets
   overlap <- .50 ## the percentage of overlap (in decimal form) between focal
   # indiv. and next year indiv. that will be required to consider them both
@@ -128,6 +129,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
 
       ## trying to get the amount of overlap between each polygon
       overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
+
       ## get the trackID names merged with the index value (same values used
       # for names of rows in 'overlaps' matrix)
       overlapArea$parentName <- paste0(overlapArea$trackID, "__",
@@ -140,51 +142,107 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       ## calculate the overlap between each parent poly and each child poly
       overlapArea$overlappingArea <- st_area(overlapArea$geometry)
 
-      ## translate to a matrix w/ column names as genets (children) and row
-      # names as trackIDs (parents)
-      overlapArea <- st_set_geometry(overlapArea[,c("parentName", "childName",
-                                     "overlappingArea")], NULL)
+      overlapArea <- st_set_geometry(overlapArea, NULL)
 
-      overlapArea <- as.data.frame(pivot_wider(overlapArea,
-                                 id_cols = c(parentName, childName),
-                                 names_from = childName,
-                                 values_from = overlappingArea))
+      ## aggregate the overlaps by rows (by 'parents')
+      overlaps <- overlapArea %>%
+        group_by(trackID, genetID.1) %>%
+        summarize(overlappingArea = sum(overlappingArea))
 
+      names(overlaps) <- c("parentTrackID", "childGenetID",
+                              "overlappingArea")
 
-      # # returns a matrix, where the rows are the parent row index numbers, and
-      # # the columns are the row index numbers of the child polygons. A 'TRUE'
-      # # value indicates that those polygons overlap
-      #
-      # ## get the trackID of each 'parent' polygon, and put them as 'names' onto
-      # # the 'overlaps' list, but first combine it with the 'unique index', so we
-      # # don't have multiple list elements with the same name
-      # rownames(overlaps) <- paste0(tempCurrentYear$trackID, "__",
-      #                              tempCurrentYear$index)
-      # ## get the genetIDs + unique index of each 'child' polygon
-      # colnames(overlaps) <-paste0("genet__",tempNextYear$genetID,"__",
-      #                             tempNextYear$index)
+      overlaps$childGenetID <- paste0("genet__", overlaps$childGenetID,
+                "__",seq(from = 500, by = 1, length.out = nrow(overlapTemp)))
 
-      overlaps <- overlapArea
-      ## aggregate the overlapArea data.frame by unique trackID (over rows)
-      overlaps$parentTrackID <- sapply(strsplit(overlaps$parentName,"__"),unlist)[1,]
-
-      overlaps <- aggregate(overlaps[,names(overlaps) != "parentTrackID" & names(overlaps) != "parentName"],
-                  list(overlaps$parentTrackID), FUN = sum)
-      rownames(overlaps) <- overlaps[,1]
+      ## transform the overlaps dataframe into a 'wide' dataframe, so that
+      # every row is a unique parent trackID, and the columns are children
+      # (not completely aggregated yet)
+      overlaps <- as.data.frame(pivot_wider(overlaps,
+                                      id_cols = c(parentTrackID, childGenetID),
+                                            names_from = childGenetID,
+                                            values_from = overlappingArea))
+      rownames(overlaps) <- overlaps$parentTrackID
       overlaps <- overlaps[,2:ncol(overlaps)]
 
       ## transpose the 'overlaps' matrix so that we can aggregate by genet
       # (genetID are rows, trackID are columns)
-      ## simplify the row names so they only have the genetID numer
       overlaps <- t(overlaps)
-      rownames(overlaps) <- sapply(strsplit(rownames(overlaps),"__"),unlist)[2,]
-      overlaps <- aggregate(overlaps, list(rownames(overlaps)), FUN  = sum)
-      rownames(overlaps) <- paste0("genet_",overlaps[,1])
+      ## simplify the row names so they only have the genetID number
+      overlaps <- as.data.frame(overlaps)
+      overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),"__"),
+                                            unlist)[2,])
+      overlaps[is.na(overlaps)==TRUE] <- 0
+
+      overlaps <- overlaps %>%
+        group_by(genetID) %>%
+        summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum))
+
+      overlaps<- as.data.frame(overlaps)
+      rownames(overlaps) <- paste0("genet_",overlaps$genetID)
       overlaps <- overlaps[,2:ncol(overlaps)]
 
       ## transpose the matrix back so that each row is a parent and each
       # column is a child
       overlaps <- t(overlaps)
+
+      ## each parent can only have one child, and each child can only have one
+      # parent (since we've already clustered the polygons by genet). Each
+      # parent-child pair will be determined by the greatest amount of overlap.
+      # This is done by going through the 'overlaps' matrix and finding the
+      # largest overlap value. Then, the trackID from that parent will be
+      # assigned to the child.
+
+      whileOverlaps <- overlaps
+      done <- FALSE
+      counter <- 0
+      while (!done) {
+        ## get the row and column indices of the maximum value
+        maxInds <- which(whileOverlaps == max(whileOverlaps, na.rm = TRUE),
+                        arr.ind = TRUE)
+        ## get the trackID of the parent
+        maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
+        ## get the numeric genetID of the child
+        maxChild <- strsplit(colnames(whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
+
+        ## put the trackID from the parent into the tempNextYear dataframe rows
+        # that correspond to the genetID of the child
+        tempNextYear[tempNextYear$genetID==maxChild,"trackID"] <- maxParent
+
+        ## overwrite the 'max' value with an NA, so we can find the next
+        # largest value
+        whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
+        ## overwrite all of the other values in the parent row and the child
+        # column with NAs also (since each parent can only have one child, and
+        # each child can only have one parent)
+        whileOverlaps[maxInds[1,1],] <- NA
+        whileOverlaps[,maxInds[1,2]] <- NA
+
+
+        counter <- counter + 1 ## update the 'counter'
+        if (counter > 500) {
+          stop("tracking while loop is running out of control!")
+        } ## end of 'if' thats checking that the counter isn't too large
+
+        if (sum(whileOverlaps, na.rm = TRUE)==0) {
+          ## if the sum of the 'whileOverlaps' matrix is all 0 (is all NAs),
+          # then stop the while loop
+        done <- TRUE
+          } ## end of 'if' thats redefining 'done' if matrix is all NAs
+      } ## end of 'while' thats finding the max values in the matrix
+
+      ggplot() +
+        geom_sf(data = tempCurrentBuff, col = "grey", alpha = 0.2) +
+        geom_sf(data = tempCurrentYear, aes(fill = trackID), alpha = 0.5) +
+        geom_sf(data = tempNextYear, aes( fill = trackID), alpha = .8, lty = 2) +
+        scale_fill_discrete(guide = FALSE) +
+        theme_classic()
+      ## put all of the new trackID information for the children into the
+      # overall 'dat' data.frame
+
+      ###
+      oldTempCurrent <- tempCurrentYear
+      oldTempNext <- tempNextYear
 
       ###AES###
 

@@ -49,7 +49,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
   ## user-defined arguments
   dorm <- 1 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
-  buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
+  buffGenet <- 0.01 ## buffer between polygons (/2) that is the maximum allowed for
   # them to be considered genets
   overlap <- .50 ## the percentage of overlap (in decimal form) between focal
   # indiv. and next year indiv. that will be required to consider them both
@@ -119,6 +119,11 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
       ## AGGREGATE BY GENET for year i (if clonal = 1)
       if(clonal==1) {
         tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
+        ###NEW###
+        tempNextYear <- aggregate(tempNextYear, by = list(tempNextYear$genetID), FUN = mean, do_union = TRUE)[,c("genetID", "Year", "Area", "index", "geometry", "trackID")]
+
+        tempCurrentBuff <- aggregate(tempCurrentBuff, by = list(tempCurrentBuff$trackID), FUN = mean, do_union = TRUE)[,c("Group.1", "genetID", "Year", "Area", "index", "geometry")]
+        names(tempCurrentBuff)[1] <- "trackID"
       }
       ## assign unique genetIDs for every polygon (if clonal = 0)
       if(clonal==0) {
@@ -239,10 +244,6 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
         theme_classic()
       ## put all of the new trackID information for the children into the
       # overall 'dat' data.frame
-
-      ###
-      oldTempCurrent <- tempCurrentYear
-      oldTempNext <- tempNextYear
 
       ###AES###
 

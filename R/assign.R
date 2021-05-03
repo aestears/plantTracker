@@ -9,6 +9,7 @@
 library(sf)
 library(mapview) #don't actually need for function, just for checking
 library(dplyr)
+library(tidyr)
 
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
@@ -43,9 +44,11 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
     # each row in the dataset
     dat$ghost = NA
     dat$trackID = NA
+    dat$rametArea = NA
   inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
   # sequential order
-
+  ## make sure that the 'assignOut' data.frame that contains the output is empty
+  rm(assignOut)
   ## user-defined arguments
   dorm <- 1 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
@@ -62,16 +65,20 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
   ##need...
 
   ## work -------------------------------------------------------------------
-
   datFirst <- dat[dat$Year==inv[1],] ## get the data just for the first year of
   # sampling
   if (clonal==1) { ## if this species is 'clonal' (clonal argument == 1), use
     # Dave's groupByGenet function to give a singleTrackID to a group of
     # polygons if they are close enough to one another (user-defined)
-    datFirst$genetID <- groupByGenet(datFirst, buffGenet) # put these temporary genet
-    # ID's in a temporary 'genetID' column, which will tell us to give these
-    # genets the same track ID
-
+    datFirst$genetID <- groupByGenet(datFirst, buffGenet) # put these temporary
+    # genet ID's in a temporary 'genetID' column, which will tell us to give
+    # these genets the same track ID
+    ## aggregate size by genetID (total size for each ramet)
+    datFirst <- st_join(datFirst, (datFirst %>%
+      group_by(genetID) %>%
+      summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
+      select(-c(genetID.x, rametArea)) %>%
+      rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
   }
   if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
     # individual polygon gets a unique value in the 'genetID' column
@@ -106,198 +113,310 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
     # to the next 'i'
     if (inv[i] - inv[i-1] <= (dorm+1)) {
       ## 'tempCurrentYear' is the sf data.frame of the 'current' year
-      tempCurrentBuff <- st_buffer(tempCurrentYear, buff) ## need to add a buffer
-      # to this data.frame
-
       ## need to get the sf data.frame of the 'next' year (year 'i')
       tempNextYear <- dat[dat$Year==inv[i],]
 
-      ## AGGREGATE BY GENET for year i (if clonal = 1)
-      if(clonal==1) {
-        tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
-      }
-      ## assign unique genetIDs for every polygon (if clonal = 0)
-      if(clonal==0) {
-        tempNextYear$genetID <- 1:nrow(tempNextYear)
-      }
+      ## MAKE SURE THERE IS DATA IN YEAR i-1 (tempCurrentYear isn't empty) If
+      # not, then go to the next i (only after replacing 'tempCurrentYear' with
+      # the tempNextYear data.frame)
+      if (nrow(tempCurrentYear)>0) {
+        ## add a buffer to the current year data
+        tempCurrentBuff <- st_buffer(tempCurrentYear, buff)
 
-      ## FIND OVERLAPPING POLYGONS
-      ## trying to get the amount of overlap between each polygon
-      overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
+        ## MAKE SURE THERE IS DATA IN YEAR i (tempNextYear isn't empty) If not,
+        # then go to next i
+        if (nrow(tempNextYear)>0) {
+          ## AGGREGATE BY GENET for year i (if clonal = 1)
+          if(clonal==1) {
+            tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
+            ## aggregate size by genetID (total size for each ramet)
+            tempNextYear <- st_join(tempNextYear, (tempNextYear %>%
+                                                     group_by(genetID) %>%
+                                                     summarize(rametAreaTemp = sum(Area))),
+                                    by = "genetID") %>%
+              select(-c(genetID.x, rametArea)) %>%
+              rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
+          }
+          ## assign unique genetIDs for every polygon (if clonal = 0)
+          if(clonal==0) {
+            tempNextYear$genetID <- 1:nrow(tempNextYear)
+          }
 
-      ## get the trackID names merged with the index value (same values used
-      # for names of rows in 'overlaps' matrix)
-      overlapArea$parentName <- paste0(overlapArea$trackID, "__",
-                                       overlapArea$index)
-      ## get the genetID names merged with the index value (same values used for
-      # names of columns in 'overlaps' matrix)
-      overlapArea$childName <- paste0("genet__", overlapArea$genetID.1, "__",
-                                      overlapArea$index.1)
+          ## FIND OVERLAPPING POLYGONS
+          ## trying to get the amount of overlap between each polygon
+          overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
 
-      ## calculate the overlap between each parent poly and each child poly
-      overlapArea$overlappingArea <- st_area(overlapArea$geometry)
+          ## get the trackID names merged with the index value (same values used
+          # for names of rows in 'overlaps' matrix)
+          overlapArea$parentName <- paste0(overlapArea$trackID, "__",
+                                           overlapArea$index)
+          ## get the genetID names merged with the index value (same values used
+          # for names of columns in 'overlaps' matrix)
+          overlapArea$childName <- paste0("genet__", overlapArea$genetID.1, "__",
+                                          overlapArea$index.1)
 
-      overlapArea <- st_set_geometry(overlapArea, NULL)
+          ## calculate the overlap between each parent poly and each child poly
+          overlapArea$overlappingArea <- st_area(overlapArea$geometry)
 
-      ## aggregate the overlaps by rows (by 'parents')
-      overlaps <- overlapArea %>%
-        group_by(trackID, genetID.1) %>%
-        summarize(overlappingArea = sum(overlappingArea))
+          overlapArea <- st_set_geometry(overlapArea, NULL)
 
-      names(overlaps) <- c("parentTrackID", "childGenetID",
-                              "overlappingArea")
+          ## aggregate the overlaps by rows (by 'parents')
+          overlaps <- overlapArea %>%
+            group_by(trackID, genetID.1) %>%
+            summarize(overlappingArea = sum(overlappingArea))
 
-      overlaps$childGenetID <- paste0("genet__", overlaps$childGenetID,
-                "__",seq(from = 500, by = 1, length.out = nrow(overlapTemp)))
+          names(overlaps) <- c("parentTrackID", "childGenetID",
+                               "overlappingArea")
 
-      ## transform the overlaps dataframe into a 'wide' dataframe, so that
-      # every row is a unique parent trackID, and the columns are children
-      # (not completely aggregated yet)
-      overlaps <- as.data.frame(pivot_wider(overlaps,
-                                      id_cols = c(parentTrackID, childGenetID),
-                                            names_from = childGenetID,
-                                            values_from = overlappingArea))
-      rownames(overlaps) <- overlaps$parentTrackID
-      overlaps <- overlaps[,2:ncol(overlaps)]
+          overlaps$childGenetID <- paste0("genet__", overlaps$childGenetID,
+                                          "__",seq(from = 500, by = 1,
+                                                   length.out = nrow(overlaps)))
 
-      ## transpose the 'overlaps' matrix so that we can aggregate by genet
-      # (genetID are rows, trackID are columns)
-      overlaps <- t(overlaps)
-      ## simplify the row names so they only have the genetID number
-      overlaps <- as.data.frame(overlaps)
-      overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),"__"),
-                                            unlist)[2,])
-      overlaps[is.na(overlaps)==TRUE] <- 0
+          ## transform the overlaps dataframe into a 'wide' dataframe, so that
+          # every row is a unique parent trackID, and the columns are children
+          # (not completely aggregated yet)
+          overlaps <- as.data.frame(pivot_wider(overlaps,
+                                                id_cols = c(parentTrackID, childGenetID),
+                                                names_from = childGenetID,
+                                                values_from = overlappingArea))
+          rownames(overlaps) <- as.character(overlaps$parentTrackID)
+          overlaps <- overlaps[,2:ncol(overlaps)]
 
-      overlaps <- overlaps %>%
-        group_by(genetID) %>%
-        summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum))
+          ## transpose the 'overlaps' matrix so that we can aggregate by genet
+          # (genetID are rows, trackID are columns)
+          overlaps <- t(overlaps)
+          ## simplify the row names so they only have the genetID number
+          overlaps <- as.data.frame(overlaps)
+          overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),"__"),
+                                                unlist)[2,])
+          overlaps[is.na(overlaps)==TRUE] <- 0
 
-      overlaps<- as.data.frame(overlaps)
-      rownames(overlaps) <- paste0("genet_",overlaps$genetID)
-      overlaps <- overlaps[,2:ncol(overlaps)]
+          overlaps <- overlaps %>%
+            group_by(genetID) %>%
+            summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum))
 
-      ## transpose the matrix back so that each row is a parent and each
-      # column is a child
-      overlaps <- t(overlaps)
+          overlaps<- as.data.frame(overlaps)
+          rownames(overlaps) <- paste0("genet_",overlaps$genetID)
+          overlaps <- overlaps[,2:ncol(overlaps)]
 
-      ## each parent can only have one child, and each child can only have one
-      # parent (since we've already clustered the polygons by genet). Each
-      # parent-child pair will be determined by the greatest amount of overlap.
-      # This is done by going through the 'overlaps' matrix and finding the
-      # largest overlap value. Then, the trackID from that parent will be
-      # assigned to the child.
+          ## transpose the matrix back so that each row is a parent and each
+          # column is a child
+          overlaps <- t(overlaps)
 
-      whileOverlaps <- overlaps
-      done <- FALSE
-      counter <- 0
-      while (!done) {
-        ## get the row and column indices of the maximum value
-        maxInds <- which(whileOverlaps == max(whileOverlaps, na.rm = TRUE),
-                        arr.ind = TRUE)
-        ## get the trackID of the parent
-        maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
-        ## get the numeric genetID of the child
-        maxChild <- strsplit(colnames(whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
+          ## each parent can only have one child, and each child can only have one
+          # parent (since we've already clustered the polygons by genet). Each
+          # parent-child pair will be determined by the greatest amount of overlap.
+          # This is done by going through the 'overlaps' matrix and finding the
+          # largest overlap value. Then, the trackID from that parent will be
+          # assigned to the child.
 
-        ## put the trackID from the parent into the tempNextYear dataframe rows
-        # that correspond to the genetID of the child
-        tempNextYear[tempNextYear$genetID==maxChild,"trackID"] <- maxParent
+          whileOverlaps <- overlaps
+          done <- FALSE
+          counter <- 0
+          while (!done) {
+            ## get the row and column indices of the maximum value
+            maxInds <- which(whileOverlaps == max(whileOverlaps, na.rm = TRUE),
+                             arr.ind = TRUE)
+            ## get the trackID of the parent
+            maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
+            ## get the numeric genetID of the child
+            maxChild <- strsplit(colnames(whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
 
-        ## overwrite the 'max' value with an NA, so we can find the next
-        # largest value
-        whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
-        ## overwrite all of the other values in the parent row and the child
-        # column with NAs also (since each parent can only have one child, and
-        # each child can only have one parent)
-        whileOverlaps[maxInds[1,1],] <- NA
-        whileOverlaps[,maxInds[1,2]] <- NA
+            ## put the trackID from the parent into the tempNextYear dataframe rows
+            # that correspond to the genetID of the child
+            tempNextYear[tempNextYear$genetID==maxChild,"trackID"] <- maxParent
+
+            ## overwrite the 'max' value with an NA, so we can find the next
+            # largest value
+            whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
+            ## overwrite all of the other values in the parent row and the child
+            # column with NAs also (since each parent can only have one child, and
+            # each child can only have one parent)
+            whileOverlaps[maxInds[1,1],] <- NA
+            whileOverlaps[,maxInds[1,2]] <- NA
 
 
-        counter <- counter + 1 ## update the 'counter'
-        if (counter > 500) {
-          stop("tracking while loop is running out of control!")
-        } ## end of 'if' thats checking that the counter isn't too large
+            counter <- counter + 1 ## update the 'counter'
+            if (counter > 500) {
+              stop("tracking while loop is running out of control!")
+            } ## end of 'if' thats checking that the counter isn't too large
 
-        if (sum(whileOverlaps, na.rm = TRUE)==0) {
-          ## if the sum of the 'whileOverlaps' matrix is all 0 (is all NAs),
-          # then stop the while loop
-        done <- TRUE
-          } ## end of 'if' thats redefining 'done' if matrix is all NAs
-      } ## end of 'while' thats finding the max values in the matrix
+            if (sum(whileOverlaps, na.rm = TRUE)==0) {
+              ## if the sum of the 'whileOverlaps' matrix is all 0 (is all NAs),
+              # then stop the while loop
+              done <- TRUE
+            } ## end of 'if' thats redefining 'done' if matrix is all NAs
+          } ## end of 'while' thats finding the max values in the matrix
 
-      ## ORPHANS: deal with 'child' polygons that don't have parents
-      ## give them new trackIDs
-      orphans <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,] %>%
-        select(!trackID)
+          ## ORPHANS: deal with 'child' polygons that don't have parents
+          ## give them new trackIDs
+          orphans <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,]
 
-      ## make a unique trackID for each unique genetID in the 'orphan' dataset
-      orphanIDs <- data.frame(
-        "genetID" = unique(tempNextYear[is.na(tempNextYear$trackID)==TRUE,
-            "genetID"]$genetID), ## get the unique genetIDs of the 'orphans'
-        "trackID" = paste0(unique(
-          tempNextYear$sp_code_6), ## get the unique 6-letter species code
-               "_",unique(tempNextYear$Year), ## get the unique year
-               "_",c(1:length(unique(tempNextYear[is.na(
-                 tempNextYear$trackID)==TRUE,"genetID"]$genetID)))))
+          ## make sure that there are orphans
+          if (nrow(orphans)>0) {
+            ## make a unique trackID for each unique genetID in the 'orphan' dataset
+            orphanIDs <- data.frame(
+              "genetID" = unique(tempNextYear[is.na(tempNextYear$trackID)==TRUE,
+                                              "genetID"]$genetID), ## get the unique genetIDs of the 'orphans'
+              "trackID" = paste0(unique(
+                tempNextYear$sp_code_6), ## get the unique 6-letter species code
+                "_",unique(tempNextYear$Year), ## get the unique year
+                "_",c(1:length(unique(tempNextYear[is.na(
+                  tempNextYear$trackID)==TRUE,"genetID"]$genetID)))))
 
-      ## add demographic data for the orphans! (but first check that this isn't
-      # the first year of sampling after a gap) ###AES###
+            ## add the orphan trackIDs to the 'orphan's data.frame
+            orphans <- left_join(orphans, orphanIDs, by = "genetID") %>%
+              select(-trackID.x) %>%
+              rename("trackID" = "trackID.y")
+            ## check that the orphans don't come after a gap in sampling (if they do,
+            # then leave NA's for all demographic values, if they don't, then proceed
+            # with the following code)
+            if (i !=2 ) { ## check that this is NOT the first year of sampling (i=1)
+              if (inv[i] - inv[i-1] <= 1) { ## if this is NOT the first day of
+                # sampling,make sure this year does NOT come after a gap in sampling
+                ## assign a '1' in the recruits column
+                orphans$recruits <- 1
+                orphans$age <- 0
+              }
+            } else { ## otherwise, this is the first year of sampling, or there is a
+              # gap greater than 1 between sampling years
+              orphans$recruits <- NA
+              orphans$age <- NA
+            } ## end of if/else that determines if this is the first year of
+            # sampling after a gap
+          } ## end of if that determines if there are any orphans
 
-      ## add the orphan trackIDs to the 'orphan's data.frame
-      orphans <- left_join(orphans, orphanIDs, by = "genetID") %>%
-        select(names(tempNextYear))
-      ## overwrite the orphan rows in the 'tempNextYear' data.frame w/ the data
-      # from the 'orphans' data.frame that contains trackIDs
-      tempNextYear <- rbind(tempNextYear[!(tempNextYear$genetID %in%
-                                             orphanIDs$genetID),],orphans)
+          ## CHILDREN
+          ## ASSIGN DEMOGRAPHIC DATA TO CHILDREN
+          if (nrow(children)>0) {
+            ## give children a 0 in the recruit column, since they have a parent
+            children$recruit <- 0
+            ## give the children the appropriate age column (only if the parents
+            # don't have an 'NA' for age) (parent's age + 1)
+            tempParents <- st_set_geometry(
+              parents[is.na(parents$age) == FALSE,], NULL) %>%
+              select(trackID, age)  %>%
+              mutate(age = age +(inv[i] - inv[i-1])) %>%
+              rename("trackIDtemp" = "trackID")
 
-      ## GHOSTS: parent polygons that don't have 'children' in year i. If
-      # they were observed in a year that is more than dorm+1 years prior to
-      # year i, then they don't get saved to the next year. If they were
-      # observed in a year that is >= to dorm+1 years prior to year i, then
-      # they get added to the 'tempNextYear' data.frame, which both go into the
-      # 'tempCurrentYear' data.frame before the next iteration of the loop
+            children <- children %>%
+              select(-c(age)) %>% ## remove the 'age' column
+              left_join(tempParents, by = c("trackID"="trackIDtemp")) ## add the 'age'
+            # column from the appropraite parents (+1), joined by trackID
 
-      ## get the ghost individuals
-      ghosts <- tempCurrentYear[!(tempCurrentYear$trackID %in%
-                                    tempNextYear$trackID),]
-      ## check that these indivduals can be 'ghosts' in the next year (if the
-      # gap between the year of their observation and year i+1 is greater than
-      # the dormancy argument (+1), then) they are not ghosts, and get a 0 for
-      # survival
-      ghosts <- ghosts[((inv[i+1] - ghosts$Year) <= (dorm + 1)),]
-      ##give these ghosts a '1' in the 'ghost' column
-      ghosts[,"ghost"] <- 1
+            ## put the non-orphan children into their own data.frame
+            children <- tempNextYear[!(tempNextYear$genetID %in%
+                                         orphanIDs$genetID),]
+          }
 
-      ## redefine the tempCurrentYear data.frame, but w/out the 'ghosts'
-      tempCurrentYear <- tempCurrentYear[!(tempCurrentYear$index %in%
-                                           ghosts$index),]
+          ## GHOSTS: parent polygons that don't have 'children' in year i. If
+          # they were observed in a year that is more than dorm+1 years prior to
+          # year i, then they don't get saved to the next year. If they were
+          # observed in a year that is >= to dorm+1 years prior to year i, then
+          # they get added to the 'tempNextYear' data.frame, which both go into the
+          # 'tempCurrentYear' data.frame before the next iteration of the loop
 
-      ggplot() +
-        #geom_sf(data = st_buffer(tempCurrentYear,.01), fill = "blue", alpha = 0.5) +
-        geom_sf(data = tempCurrentYear, fill = "blue", alpha = 0.8) +
-        geom_sf(data = ghosts, fill = "red", alpha = 0.8) +
-        theme_classic()
+          ## get the ghost individuals
+          ghostsTemp <- tempCurrentYear[!(tempCurrentYear$trackID %in%
+                                            tempNextYear$trackID),]
+          ## check that these indivduals can be 'ghosts' in the next year (if the
+          # gap between the year of their observation and year i+1 is greater than
+          # the dormancy argument (+1), then) they are not ghosts, and get a 0 for
+          # survival
+          ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <= (dorm + 1)),]
+          ## put the 'ghosts' that exceed the dormancy argument into their
+          # own data.frame
+          deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) > (dorm + 1)),]
 
-      ###AES### need to figure out what to do next
+          ## ASSIGN DEMOGRAPHIC DATA TO GHOSTS
+          ##give these survived ghosts a '1' in the 'ghost' column
+          if (nrow(ghosts)>0) {
+            ghosts$ghost <- 1
+          }
+          ## give the deadGhosts a 0 for survival (if there are any deadGhosts)
+          if(nrow(deadGhosts)>0){
+            deadGhosts[,"survives_tplus1"] <- 0
+          }
 
-      ## ASSIGN DEMOGRAPHIC DATA to the individuals that survived from
-      # year i-1 to year i
-      tempCurrentYear
+          ## PARENTS
+          ## redefine the tempCurrentYear data.frame, but w/out the 'ghosts' and
+          # 'deadGhosts'
+          parents <- tempCurrentYear[!(tempCurrentYear$index %in%
+                                         c(ghosts$index, deadGhosts$index)),]
+          ## ASSIGN DEMOGRAPHIC DATA FOR PARENTS
+          ## make sure that there is actually a parents data.frame
+          if (nrow(parents)>0) {
+            ## PARENTS ('parents' data.frame + 'deadGhosts' data.frame)
+            ## give the 'parents' a 0 for survival
+            parents[,"survives_tplus1"] <- 1
+            ## give the 'parents' a 0 in the 'ghosts' column
+            parents[,"ghost"] <- 0
+            ## assign size in the next year for parents data.frame
+            childSizeTemp <- st_set_geometry(children[,c("trackID", "rametArea")],NULL) %>%
+              rename("size_tplus1" = "rametArea", "trackIDtemp" = "trackID") %>%
+              group_by(trackIDtemp) %>% ## aggregate size by individual trackID
+              summarize("size_tplus1" = mean(size_tplus1))
 
-    } ## end of 'if' statement that determines if gap between inv[i-1] and
+            parents <- parents %>%
+              select(-size_tplus1) %>%
+              left_join(childSizeTemp, by = c("trackID" = "trackIDtemp"))
+          }
+
+          ## PREPARE FOR NEXT i
+          ## arrange columns of children, orphans, and ghosts into the same order
+          orphans <- orphans[, names(children)]
+          ghosts <- ghosts[,names(children)]
+          deadGhosts <- deadGhosts[,names(children)]
+          parents <- parents[,names(children)]
+          ## bind children, orphans, and ghosts into one data.frame, that will become
+          # the data for the current year in the next iteration of the loop
+          tempNextYear <- rbind(children, orphans, ghosts)
+
+          ## STORE PARENTS DEMOGRAPHIC DATA
+          if (i == 2) { ## if the assignOut data.frame is empty
+            assignOut <- rbind(parents, deadGhosts)
+          }
+          if (i > 2) { ## if this is not the first year, then add demographic data
+            assignOut <- rbind(assignOut, parents, deadGhosts)
+          }
+          tempCurrentYear <- tempNextYear
+        } ## end of 'if' statement that determines if the tempNextYear data
+        # exists
+        else { ## if the tempNextYear data does not exist, then keep the
+          # tempCurrentYear data.frame.
+          ## Check if the dormancy is exceeded
+          ifelse (test = inv[i+1] - inv[i] <= (dorm+1), ## check if dorm. is ok
+            yes = (tempCurrentYear$ghost <- 1), ## if dormancy is okay, put a 1
+            # in the ghost column of tempCurrentYear
+            no = (tempCurrentYear <- NA) ## if dormancy is exceeded, then make
+            # the 'tempCurrentYear' data.frame empty
+          )
+        } ## end of 'else' that has steps if tempNextYear is empty
+      } ## end of 'if' that determines if the tempCurrentYear data exists
+      else { ## what to do if 'tempCurrentYear' doesn't exist
+        tempCurrentYear <- tempNextYear
+        }
+      } ## end of 'if' statement that determines if gap between inv[i-1] and
     # inv[i] is less than or equal to  dorm+1
-
-    ##PREPARE FOR NEXT i
-    ## get data for year i and put it in 'tempCurrentYear' for the next 'i'
-    tempCurrentYear <- tempNextYear
-    ## add a 'ghost' column and put in an 'NA' that indicates these polygons
-    # were actually observed in the 'current' year
-    tempCurrentYear$ghost <- 0
-    ## add the 'ghost' data from year i-1 (parents w/ no children)
-    tempCurrentYear <- rbind(tempCurrentYear, tempGhosts)
-  } #end of loop i
-
+    } ## end of loop i
 # output ---------------------------------------------------------------
 }
+
+
+
+
+# testing -----------------------------------------------------------------
+ggplot() +
+  #geom_sf(data = deadGhosts, fill = "red") +
+  geom_sf(data = parents, aes(fill = as.factor(trackID)), alpha = 0.8) +
+  geom_sf(data = children, aes(fill = as.factor(trackID)), alpha = 0.6) +
+  geom_sf(data = orphans, fill = "grey") +
+  scale_fill_discrete(guide = FALSE) +
+  theme_classic()
+
+ggplot(assignOut) +
+  geom_sf(aes(fill = trackID), alpha = 0.6) +
+  scale_fill_discrete(guide = FALSE) +
+  theme_classic()
+
+

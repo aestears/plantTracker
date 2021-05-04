@@ -30,7 +30,7 @@ sampleInv <- grasslandInventory[["unun_11"]]
 
 # 'assign' function ---------------------------------------------------------
 
-assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
+assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
   # arguments ---------------------------------------------------------------
   ## double check the format of the inputs, and add additional columns required
   dat <- st_sf(sampleDat) # data in 'grasslandData' format, must be an sf object
@@ -50,14 +50,14 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
   ## make sure that the 'assignOut' data.frame that contains the output is empty
   rm(assignOut)
   ## user-defined arguments
-  dorm <- 1 ## dormancy allowed by the function
+  dorm <- 0 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
   buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
   # them to be considered genets
-  overlap <- .50 ## the percentage of overlap (in decimal form) between focal
+  # overlap <- .50 ## the percentage of overlap (in decimal form) between focal
   # indiv. and next year indiv. that will be required to consider them both
   # the same individual (not 100% sure on this one yet...)
-  clonal <- 1 ## binary option that indicates whether this species is allowed to
+  clonal <- 0 ## binary option that indicates whether this species is allowed to
   # break into multiple polygons for one individual
 
   #conalBuff <- .01 ## the buffer of overlap that indicates polygons are genets
@@ -83,6 +83,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
   if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
     # individual polygon gets a unique value in the 'genetID' column
     datFirst$genetID <- 1:nrow(datFirst)
+    datFirst$rametArea <- datFirst$Area
   }
 
   ## assign a unique trackID to every unique genetID in this first-year dataset
@@ -105,7 +106,6 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
 
   ##  i = year in inventory
   for (i in 2:length(inv)) {
-
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -140,6 +140,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
           ## assign unique genetIDs for every polygon (if clonal = 0)
           if(clonal==0) {
             tempNextYear$genetID <- 1:nrow(tempNextYear)
+            tempNextYear$rametArea <- tempNextYear$Area
           }
 
           ## FIND OVERLAPPING POLYGONS
@@ -251,7 +252,6 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
           ## ORPHANS: deal with 'child' polygons that don't have parents
           ## give them new trackIDs
           orphans <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,]
-
           ## make sure that there are orphans
           if (nrow(orphans)>0) {
             ## make a unique trackID for each unique genetID in the 'orphan' dataset
@@ -271,83 +271,50 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
             ## check that the orphans don't come after a gap in sampling (if they do,
             # then leave NA's for all demographic values, if they don't, then proceed
             # with the following code)
-            if (i !=2 ) { ## check that this is NOT the first year of sampling (i=1)
-              if (inv[i] - inv[i-1] <= 1) { ## if this is NOT the first day of
-                # sampling,make sure this year does NOT come after a gap in sampling
+             ## check that this is NOT the first year of sampling (i=1)
+              if (inv[i] - inv[i-1] <= 1) { ## if this year does NOT come after
+                # a gap in sampling
                 ## assign a '1' in the recruits column
-                orphans$recruits <- 1
+                orphans$recruit <- 1
                 orphans$age <- 0
               }
-            } else { ## otherwise, this is the first year of sampling, or there is a
-              # gap greater than 1 between sampling years
-              orphans$recruits <- NA
-              orphans$age <- NA
-            } ## end of if/else that determines if this is the first year of
-            # sampling after a gap
           } ## end of if that determines if there are any orphans
 
           ## CHILDREN
+          ## (first have to assign the parents first)
+          ## define the PARENTS data.frame
+          parents <- tempCurrentYear[tempCurrentYear$trackID %in% tempNextYear$trackID,]
+          ## define the children data.frame
+          children <- tempNextYear[tempNextYear$trackID %in% tempCurrentYear$trackID,]
           ## ASSIGN DEMOGRAPHIC DATA TO CHILDREN
           if (nrow(children)>0) {
             ## give children a 0 in the recruit column, since they have a parent
-            children$recruit <- 0
+            # (as long as the parent doesn't have an NA--was recruited in a year
+            # when we couldn't know when it was recruited)
+            if(inv[i] - inv[i-1] <= 1) {
+              children$recruit <- 0
+            } else {
+              children$recruit <- NA
+            }
             ## give the children the appropriate age column (only if the parents
             # don't have an 'NA' for age) (parent's age + 1)
-            tempParents <- st_set_geometry(
-              parents[is.na(parents$age) == FALSE,], NULL) %>%
+            tempParents <- st_set_geometry(parents, NULL) %>%
               select(trackID, age)  %>%
               mutate(age = age +(inv[i] - inv[i-1])) %>%
               rename("trackIDtemp" = "trackID")
 
             children <- children %>%
               select(-c(age)) %>% ## remove the 'age' column
-              left_join(tempParents, by = c("trackID"="trackIDtemp")) ## add the 'age'
-            # column from the appropraite parents (+1), joined by trackID
-
-            ## put the non-orphan children into their own data.frame
-            children <- tempNextYear[!(tempNextYear$genetID %in%
-                                         orphanIDs$genetID),]
-          }
-
-          ## GHOSTS: parent polygons that don't have 'children' in year i. If
-          # they were observed in a year that is more than dorm+1 years prior to
-          # year i, then they don't get saved to the next year. If they were
-          # observed in a year that is >= to dorm+1 years prior to year i, then
-          # they get added to the 'tempNextYear' data.frame, which both go into the
-          # 'tempCurrentYear' data.frame before the next iteration of the loop
-
-          ## get the ghost individuals
-          ghostsTemp <- tempCurrentYear[!(tempCurrentYear$trackID %in%
-                                            tempNextYear$trackID),]
-          ## check that these indivduals can be 'ghosts' in the next year (if the
-          # gap between the year of their observation and year i+1 is greater than
-          # the dormancy argument (+1), then) they are not ghosts, and get a 0 for
-          # survival
-          ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <= (dorm + 1)),]
-          ## put the 'ghosts' that exceed the dormancy argument into their
-          # own data.frame
-          deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) > (dorm + 1)),]
-
-          ## ASSIGN DEMOGRAPHIC DATA TO GHOSTS
-          ##give these survived ghosts a '1' in the 'ghost' column
-          if (nrow(ghosts)>0) {
-            ghosts$ghost <- 1
-          }
-          ## give the deadGhosts a 0 for survival (if there are any deadGhosts)
-          if(nrow(deadGhosts)>0){
-            deadGhosts[,"survives_tplus1"] <- 0
+              left_join(tempParents, by = c("trackID"="trackIDtemp")) ## add the
+            # 'age'column from the appropriate parents (+1), joined by trackID
           }
 
           ## PARENTS
-          ## redefine the tempCurrentYear data.frame, but w/out the 'ghosts' and
-          # 'deadGhosts'
-          parents <- tempCurrentYear[!(tempCurrentYear$index %in%
-                                         c(ghosts$index, deadGhosts$index)),]
           ## ASSIGN DEMOGRAPHIC DATA FOR PARENTS
           ## make sure that there is actually a parents data.frame
           if (nrow(parents)>0) {
             ## PARENTS ('parents' data.frame + 'deadGhosts' data.frame)
-            ## give the 'parents' a 0 for survival
+            ## give the 'parents' a '1' for survival
             parents[,"survives_tplus1"] <- 1
             ## give the 'parents' a 0 in the 'ghosts' column
             parents[,"ghost"] <- 0
@@ -362,11 +329,46 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
               left_join(childSizeTemp, by = c("trackID" = "trackIDtemp"))
           }
 
+          ## ONLY ALLOW GHOSTS IF DORMANCY > 1
+          if (dorm>0) {
+            ## GHOSTS: parent polygons that don't have 'children' in year i. If
+            # they were observed in a year that is more than dorm+1 years prior to
+            # year i, then they don't get saved to the next year. If they were
+            # observed in a year that is >= to dorm+1 years prior to year i, then
+            # they get added to the 'tempNextYear' data.frame, which both go into the
+            # 'tempCurrentYear' data.frame before the next iteration of the loop
+            ## get the ghost individuals
+            ghostsTemp <- tempCurrentYear[!(tempCurrentYear$trackID %in%
+                                              tempNextYear$trackID),]
+            ## check that these indivduals can be 'ghosts' in the next year (if the
+            # gap between the year of their observation and year i+1 is greater than
+            # the dormancy argument (+1), then) they are not ghosts, and get a 0 for
+            # survival
+            ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <= (dorm + 1)),]
+            ## put the 'ghosts' that exceed the dormancy argument into their
+            # own data.frame
+            deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) > (dorm + 1)),]
+            ## ASSIGN DEMOGRAPHIC DATA TO GHOSTS
+            ##give these survived ghosts a '1' in the 'ghost' column
+            if (nrow(ghosts)>0) {
+              ghosts$ghost <- 1
+            }
+            ## give the deadGhosts a 0 for survival (if there are any deadGhosts)
+            if(nrow(deadGhosts)>0){
+              deadGhosts[,"survives_tplus1"] <- 0
+            }
+            ## get the data.frames in a consistent format
+            ghosts <- ghosts[,names(children)]
+            deadGhosts <- deadGhosts[,names(children)]
+          } else { ## any trackID that doesn't have a child in year 'i' is 'dead'
+            deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in% tempNextYear$trackID),]
+            deadGhosts$survives_tplus1 <- 0
+            deadGhosts <- deadGhosts[,names(children)]
+            ghosts <- NULL
+          }
           ## PREPARE FOR NEXT i
           ## arrange columns of children, orphans, and ghosts into the same order
           orphans <- orphans[, names(children)]
-          ghosts <- ghosts[,names(children)]
-          deadGhosts <- deadGhosts[,names(children)]
           parents <- parents[,names(children)]
           ## bind children, orphans, and ghosts into one data.frame, that will become
           # the data for the current year in the next iteration of the loop
@@ -398,25 +400,74 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, overlap, clonal,...){
         }
       } ## end of 'if' statement that determines if gap between inv[i-1] and
     # inv[i] is less than or equal to  dorm+1
+    else { ## if the gapb between years exceeds the dormancy argument
+      tempCurrentYear <- dat[dat$Year==inv[i],]
+      ## group by genet
+      if (clonal==1) { ## if this species is 'clonal' (clonal argument == 1), use
+        # Dave's groupByGenet function to give a singleTrackID to a group of
+        # polygons if they are close enough to one another (user-defined)
+        tempCurrentYear$genetID <- groupByGenet(tempCurrentYear, buffGenet) # put these temporary
+        # genet ID's in a temporary 'genetID' column, which will tell us to give
+        # these genets the same track ID
+        ## aggregate size by genetID (total size for each ramet)
+        tempCurrentYear <- st_join(tempCurrentYear, (tempCurrentYear %>%
+                                         group_by(genetID) %>%
+                                         summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
+          select(-c(genetID.x, rametArea)) %>%
+          rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
+      }
+      if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
+        # individual polygon gets a unique value in the 'genetID' column
+        tempCurrentYear$genetID <- 1:nrow(tempCurrentYear)
+        tempCurrentYear$rametArea <- tempCurrentYear$Area
+      }
+      ## assign a unique trackID to every unique genetID in this first-year dataset
+      IDs <- data.frame( "genetID" = sort(unique(tempCurrentYear$genetID)), ## get a vector
+                         # of all of the unique genetIDs
+                         "trackID" = paste0(unique(dat$sp_code_6), ## get the unique 6-letter
+                                            # species code
+                                            "_",unique(tempCurrentYear$Year), ## get the unique year
+                                            "_",c(1:length(unique(tempCurrentYear$genetID))))) ## get a vector of
+      # unique numbers that is the same length as the genetIDs in this quad/year
+
+      tempCurrentYear<- merge(tempCurrentYear[,names(tempCurrentYear) != "trackID"], IDs, by = "genetID")
+      } ## end of exceeded dormancy 'else'
     } ## end of loop i
+  assignOut <- assignOut[is.na(assignOut$Species)==FALSE,] %>%
+    select(-ghost)
 # output ---------------------------------------------------------------
+return(assignOut)
 }
 
 
 
 
 # testing -----------------------------------------------------------------
-ggplot() +
-  #geom_sf(data = deadGhosts, fill = "red") +
-  geom_sf(data = parents, aes(fill = as.factor(trackID)), alpha = 0.8) +
-  geom_sf(data = children, aes(fill = as.factor(trackID)), alpha = 0.6) +
-  geom_sf(data = orphans, fill = "grey") +
-  scale_fill_discrete(guide = FALSE) +
-  theme_classic()
+# ggplot() +
+#   #geom_sf(data = deadGhosts, fill = "red") +
+#   geom_sf(data = parents, aes(fill = as.factor(trackID)), alpha = 0.8) +
+#   geom_sf(data = children, aes(fill = as.factor(trackID)), alpha = 0.6) +
+#   geom_sf(data = orphans, fill = "grey") +
+#   scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
+#
+# multiples <- assignOut[assignOut$trackID %in% names(which(table(assignOut$trackID)>1)),]
+#
+# ggplot(st_buffer(multiples,0.02)) +
+#   geom_sf(aes(fill = trackID), alpha = 0.6) +
+#   scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
+#
+# ggplot() +
+#   geom_sf(data = st_buffer(assignOut[assignOut$trackID==unique(assignOut$trackID)[2],],.02), aes(fill = as.factor(Year)), alpha = 0.6) +
+#   geom_sf(data = st_buffer(dat[dat$Year==2007,], .02)) +
+#   lims(x = c(0,1), y = c(0,1)) +
+#   theme_classic()
 
-ggplot(assignOut) +
-  geom_sf(aes(fill = trackID), alpha = 0.6) +
-  scale_fill_discrete(guide = FALSE) +
-  theme_classic()
+testOutput <- assign(sampleDat, sampleInv, 1, .05, .001, 0)
 
+ggplot(testOutput) +
+  geom_sf(aes(fill = as.factor(Year))) +
+  #scale_fill_discrete(guide = FALSE) +
+  theme_classic()
 

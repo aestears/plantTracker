@@ -4,10 +4,10 @@
 #' @export
 #'
 #' @examples
+#' @import tidyr, sf, dplyr
 
 # required packages -------------------------------------------------------
 library(sf)
-library(mapview) #don't actually need for function, just for checking
 library(dplyr)
 library(tidyr)
 
@@ -22,18 +22,20 @@ sampleDat <- grasslandData[grasslandData$Site == "CO"
                            & grasslandData$Quad == "unun_11"
                            & grasslandData$Species == "Bouteloua gracilis",]
 # this should be a data.frame
+dat <- sampleDat
 
 # get the appropriate grasslandInventory data for the "unun_11" quadrat,
 # to tell the 'assign' function when the quadrat was sampled
 sampleInv <- grasslandInventory[["unun_11"]]
 # this should be an integer vector
+inv <- sampleInv
 
 # 'assign' function ---------------------------------------------------------
 
-assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
+assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
   # arguments ---------------------------------------------------------------
   ## double check the format of the inputs, and add additional columns required
-  dat <- st_sf(sampleDat) # data in 'grasslandData' format, must be an sf object
+  dat <- sf::st_sf(dat) # data in 'grasslandData' format, must be an sf object
     ## add columns for trackID, age, size_t+1, and recruit
     dat$trackID <- NA
     dat$age <- NA
@@ -43,62 +45,57 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
     dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
     # each row in the dataset
     dat$ghost = NA
-    dat$trackID = NA
     dat$rametArea = NA
-  inv <- sort(sampleInv) ## integer vector of quadrat sampling years in
+  ## inv is a vector of the years in which the target quadrat is sampled
+  inv <- sort(inv) ## integer vector of quadrat sampling years in
   # sequential order
   ## make sure that the 'assignOut' data.frame that contains the output is empty
-  rm(assignOut)
+  if(exists("assignOut")){
+    rm(assignOut)
+  }
+  ## test user-defined args
   ## user-defined arguments
   dorm <- 0 ## dormancy allowed by the function
   buff <- .05 ## buffer of movement allowed from year to year, in meters
   buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
   # them to be considered genets
-  # overlap <- .50 ## the percentage of overlap (in decimal form) between focal
-  # indiv. and next year indiv. that will be required to consider them both
-  # the same individual (not 100% sure on this one yet...)
-  clonal <- 0 ## binary option that indicates whether this species is allowed to
+  clonal <- 1 ## binary option that indicates whether this species is allowed to
   # break into multiple polygons for one individual
 
-  #conalBuff <- .01 ## the buffer of overlap that indicates polygons are genets
-  ## of the same individual (if genets are allowed), in meters ##probably don't
-  ##need...
-
   ## work -------------------------------------------------------------------
-  datFirst <- dat[dat$Year==inv[1],] ## get the data just for the first year of
+  tempCurrentYear <- dat[dat$Year==inv[1],] ## get the data just for the first year of
   # sampling
   if (clonal==1) { ## if this species is 'clonal' (clonal argument == 1), use
     # Dave's groupByGenet function to give a singleTrackID to a group of
     # polygons if they are close enough to one another (user-defined)
-    datFirst$genetID <- groupByGenet(datFirst, buffGenet) # put these temporary
+    tempCurrentYear$genetID <- groupByGenet(tempCurrentYear, buffGenet) # put these temporary
     # genet ID's in a temporary 'genetID' column, which will tell us to give
     # these genets the same track ID
     ## aggregate size by genetID (total size for each ramet)
-    datFirst <- st_join(datFirst, (datFirst %>%
-      group_by(genetID) %>%
-      summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
-      select(-c(genetID.x, rametArea)) %>%
-      rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
+    tempCurrentYear <- sf::st_join(tempCurrentYear, (tempCurrentYear %>%
+      dplyr::group_by(genetID) %>%
+      dplyr::summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
+      dplyr::select(-c(genetID.x, rametArea)) %>%
+      dplyr::rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
   }
   if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
     # individual polygon gets a unique value in the 'genetID' column
-    datFirst$genetID <- 1:nrow(datFirst)
-    datFirst$rametArea <- datFirst$Area
+    tempCurrentYear$genetID <- 1:nrow(tempCurrentYear)
+    tempCurrentYear$rametArea <- tempCurrentYear$Area
   }
 
   ## assign a unique trackID to every unique genetID in this first-year dataset
-  IDs <- data.frame( "genetID" = sort(unique(datFirst$genetID)), ## get a vector
+  IDs <- data.frame( "genetID" = sort(unique(tempCurrentYear$genetID)), ## get a vector
                      # of all of the unique genetIDs
             "trackID" = paste0(unique(dat$sp_code_6), ## get the unique 6-letter
                                # species code
-                               "_",unique(datFirst$Year), ## get the unique year
-                  "_",c(1:length(unique(datFirst$genetID))))) ## get a vector of
+                               "_",unique(tempCurrentYear$Year), ## get the unique year
+                  "_",c(1:length(unique(tempCurrentYear$genetID))))) ## get a vector of
   # unique numbers that is the same length as the genetIDs in this quad/year
 
-  datFirst<- merge(datFirst[,names(datFirst) != "trackID"], IDs, by = "genetID")
+  tempCurrentYear<- merge(tempCurrentYear[,names(tempCurrentYear) != "trackID"], IDs, by = "genetID")
 
-  ## assign the first-year data to the 'tempCurrentYear' data.frame
-  tempCurrentYear <- datFirst ## this data.frame will get redefined for
+  ## 'tempCurrentYear' data.frame will get redefined for
   # each iteration of the for-loop below
 
   ## give all individuals in year #1 a '0' in the ghost column
@@ -121,7 +118,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
       # the tempNextYear data.frame)
       if (nrow(tempCurrentYear)>0) {
         ## add a buffer to the current year data
-        tempCurrentBuff <- st_buffer(tempCurrentYear, buff)
+        tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
 
         ## MAKE SURE THERE IS DATA IN YEAR i (tempNextYear isn't empty) If not,
         # then go to next i
@@ -130,12 +127,12 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
           if(clonal==1) {
             tempNextYear$genetID <- groupByGenet(tempNextYear, buffGenet)
             ## aggregate size by genetID (total size for each ramet)
-            tempNextYear <- st_join(tempNextYear, (tempNextYear %>%
-                                                     group_by(genetID) %>%
-                                                     summarize(rametAreaTemp = sum(Area))),
+            tempNextYear <- sf::st_join(tempNextYear, (tempNextYear %>%
+                                                     dplyr::group_by(genetID) %>%
+                                                    dplyr::summarize(rametAreaTemp = sum(Area))),
                                     by = "genetID") %>%
-              select(-c(genetID.x, rametArea)) %>%
-              rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
+              dplyr::select(-c(genetID.x, rametArea)) %>%
+              dplyr::rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
           }
           ## assign unique genetIDs for every polygon (if clonal = 0)
           if(clonal==0) {
@@ -145,7 +142,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
 
           ## FIND OVERLAPPING POLYGONS
           ## trying to get the amount of overlap between each polygon
-          overlapArea <- st_intersection(tempCurrentBuff, tempNextYear)
+          overlapArea <- sf::st_intersection(tempCurrentBuff, tempNextYear)
 
           ## get the trackID names merged with the index value (same values used
           # for names of rows in 'overlaps' matrix)
@@ -157,14 +154,14 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
                                           overlapArea$index.1)
 
           ## calculate the overlap between each parent poly and each child poly
-          overlapArea$overlappingArea <- st_area(overlapArea$geometry)
+          overlapArea$overlappingArea <- sf::st_area(overlapArea$geometry)
 
-          overlapArea <- st_set_geometry(overlapArea, NULL)
+          overlapArea <- sf::st_set_geometry(overlapArea, NULL)
 
           ## aggregate the overlaps by rows (by 'parents')
           overlaps <- overlapArea %>%
-            group_by(trackID, genetID.1) %>%
-            summarize(overlappingArea = sum(overlappingArea))
+            dplyr::group_by(trackID, genetID.1) %>%
+            dplyr::summarize(overlappingArea = sum(overlappingArea))
 
           names(overlaps) <- c("parentTrackID", "childGenetID",
                                "overlappingArea")
@@ -176,7 +173,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
           ## transform the overlaps dataframe into a 'wide' dataframe, so that
           # every row is a unique parent trackID, and the columns are children
           # (not completely aggregated yet)
-          overlaps <- as.data.frame(pivot_wider(overlaps,
+          overlaps <- as.data.frame(tidyr::pivot_wider(overlaps,
                                                 id_cols = c(parentTrackID, childGenetID),
                                                 names_from = childGenetID,
                                                 values_from = overlappingArea))
@@ -193,8 +190,8 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
           overlaps[is.na(overlaps)==TRUE] <- 0
 
           overlaps <- overlaps %>%
-            group_by(genetID) %>%
-            summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum))
+            dplyr::group_by(genetID) %>%
+            dplyr::summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum))
 
           overlaps<- as.data.frame(overlaps)
           rownames(overlaps) <- paste0("genet_",overlaps$genetID)
@@ -265,9 +262,9 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
                   tempNextYear$trackID)==TRUE,"genetID"]$genetID)))))
 
             ## add the orphan trackIDs to the 'orphan's data.frame
-            orphans <- left_join(orphans, orphanIDs, by = "genetID") %>%
-              select(-trackID.x) %>%
-              rename("trackID" = "trackID.y")
+            orphans <- dplyr::left_join(orphans, orphanIDs, by = "genetID") %>%
+              dplyr::select(-trackID.x) %>%
+              dplyr::rename("trackID" = "trackID.y")
             ## check that the orphans don't come after a gap in sampling (if they do,
             # then leave NA's for all demographic values, if they don't, then proceed
             # with the following code)
@@ -298,14 +295,14 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
             }
             ## give the children the appropriate age column (only if the parents
             # don't have an 'NA' for age) (parent's age + 1)
-            tempParents <- st_set_geometry(parents, NULL) %>%
-              select(trackID, age)  %>%
-              mutate(age = age +(inv[i] - inv[i-1])) %>%
-              rename("trackIDtemp" = "trackID")
+            tempParents <- sf::st_set_geometry(parents, NULL) %>%
+              dplyr::select(trackID, age)  %>%
+              dplyr::mutate(age = age +(inv[i] - inv[i-1])) %>%
+              dplyr::rename("trackIDtemp" = "trackID")
 
             children <- children %>%
-              select(-c(age)) %>% ## remove the 'age' column
-              left_join(tempParents, by = c("trackID"="trackIDtemp")) ## add the
+              dplyr::select(-c(age)) %>% ## remove the 'age' column
+              dplyr::left_join(tempParents, by = c("trackID"="trackIDtemp")) ## add the
             # 'age'column from the appropriate parents (+1), joined by trackID
           }
 
@@ -319,14 +316,14 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
             ## give the 'parents' a 0 in the 'ghosts' column
             parents[,"ghost"] <- 0
             ## assign size in the next year for parents data.frame
-            childSizeTemp <- st_set_geometry(children[,c("trackID", "rametArea")],NULL) %>%
-              rename("size_tplus1" = "rametArea", "trackIDtemp" = "trackID") %>%
-              group_by(trackIDtemp) %>% ## aggregate size by individual trackID
-              summarize("size_tplus1" = mean(size_tplus1))
+            childSizeTemp <- sf::st_set_geometry(children[,c("trackID", "rametArea")],NULL) %>%
+              dplyr::rename("size_tplus1" = "rametArea", "trackIDtemp" = "trackID") %>%
+              dplyr::group_by(trackIDtemp) %>% ## aggregate size by individual trackID
+              dplyr::summarize("size_tplus1" = mean(size_tplus1))
 
             parents <- parents %>%
-              select(-size_tplus1) %>%
-              left_join(childSizeTemp, by = c("trackID" = "trackIDtemp"))
+              dplyr::select(-size_tplus1) %>%
+              dplyr::left_join(childSizeTemp, by = c("trackID" = "trackIDtemp"))
           }
 
           ## ONLY ALLOW GHOSTS IF DORMANCY > 1
@@ -410,11 +407,11 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
         # genet ID's in a temporary 'genetID' column, which will tell us to give
         # these genets the same track ID
         ## aggregate size by genetID (total size for each ramet)
-        tempCurrentYear <- st_join(tempCurrentYear, (tempCurrentYear %>%
-                                         group_by(genetID) %>%
-                                         summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
-          select(-c(genetID.x, rametArea)) %>%
-          rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
+        tempCurrentYear <- sf::st_join(tempCurrentYear, (tempCurrentYear %>%
+                                         dplyr::group_by(genetID) %>%
+                                         dplyr::summarize(rametAreaTemp = sum(Area))), by = "genetID") %>%
+          dplyr::select(-c(genetID.x, rametArea)) %>%
+          dplyr::rename("genetID" = "genetID.y", "rametArea" = "rametAreaTemp")
       }
       if (clonal == 0) { ## if genets are not allowed (clonal == 0), then each
         # individual polygon gets a unique value in the 'genetID' column
@@ -433,8 +430,9 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
       tempCurrentYear<- merge(tempCurrentYear[,names(tempCurrentYear) != "trackID"], IDs, by = "genetID")
       } ## end of exceeded dormancy 'else'
     } ## end of loop i
+  ## clean up output data.frame
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,] %>%
-    select(-ghost, -genetID, -index )
+    dplyr::select(-ghost, -genetID, -index )
 # output ---------------------------------------------------------------
 return(assignOut)
 }
@@ -464,10 +462,10 @@ return(assignOut)
 #   lims(x = c(0,1), y = c(0,1)) +
 #   theme_classic()
 
-testOutput <- assign(sampleDat, sampleInv, 1, .05, .001, 0)
-
-ggplot(testOutput) +
-  geom_sf(aes(fill = as.factor(Year))) +
-  #scale_fill_discrete(guide = FALSE) +
-  theme_classic()
+# testOutput <- assign(sampleDat, sampleInv, 1, .05, .001, 0)
+#
+# ggplot(testOutput) +
+#   geom_sf(aes(fill = as.factor(Year))) +
+#   #scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
 

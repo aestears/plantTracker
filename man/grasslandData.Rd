@@ -9,16 +9,16 @@ An sf data frame with 10405 rows and 15 variables:
 \describe{
 \item{Species}{A character string indicating the specific epithet for this
 observation. }
-\item{Clone}{An integer string. (1) indicates that this individual is a
+\item{Clone}{An integer vector. (1) indicates that this individual is a
 clone (genet). (0) indicates that this individual is not a clone. NA
 indicates that this data was not recorded. }
-\item{Seedling}{An integer indicating whether this observation was a
+\item{Seedling}{An integer vector indicating whether this observation was a
 seedling (1), or not (0). This data was not collected for many
 observations, which have an NA in this column. }
 \item{Stems}{An integer greater than 0 indicating how many stems were
 present for the observed plant. This data was not collected for many
 observations, which have an NA in this column.}
-\item{Basal}{An integer string. (1) indicates that the basal area of
+\item{Basal}{An integer vector. (1) indicates that the basal area of
 this individual was mapped. (0) indicates that the basal area of this
 individual was not mapped (in which case it cannot be used in the
 \code{\link{assign}} function.) NA indicates that this data was not

@@ -434,7 +434,7 @@ assign <- function(sampleDat, inv, dorm, buff, buffGenet, clonal,...){
       } ## end of exceeded dormancy 'else'
     } ## end of loop i
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,] %>%
-    select(-ghost)
+    select(-ghost, -genetID, -index )
 # output ---------------------------------------------------------------
 return(assignOut)
 }

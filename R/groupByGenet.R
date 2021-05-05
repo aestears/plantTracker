@@ -11,10 +11,8 @@
 #' @examples##
 #'
 #'  Usage:
-#' @import igraph, Matrix, sf
-library(igraph)
-library(Matrix)
-library(sf)
+#' @import igraph Matrix sf
+
 
 
 

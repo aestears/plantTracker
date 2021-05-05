@@ -2,6 +2,9 @@
 
 export()
 export(adding)
-import("sf,")
-import("tidyr,")
+export(groupByGenet)
+import(Matrix)
 import(dplyr)
+import(igraph)
+import(sf)
+import(tidyr)

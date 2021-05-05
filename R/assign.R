@@ -1,15 +1,18 @@
 #' tracks individual plants through time
+#' @param dat
+#' @param inv
+#' @param dorm
+#' @param buff
+#' @param buffGenet
+#' @param clonal
+#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-#' @import tidyr, sf, dplyr
+#' @import tidyr sf dplyr
 
-# required packages -------------------------------------------------------
-library(sf)
-library(dplyr)
-library(tidyr)
 
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
@@ -29,8 +32,6 @@ dat <- sampleDat
 sampleInv <- grasslandInventory[["unun_11"]]
 # this should be an integer vector
 inv <- sampleInv
-
-# 'assign' function ---------------------------------------------------------
 
 assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
   # arguments ---------------------------------------------------------------
@@ -53,14 +54,14 @@ assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
   if(exists("assignOut")){
     rm(assignOut)
   }
-  ## test user-defined args
-  ## user-defined arguments
-  dorm <- 0 ## dormancy allowed by the function
-  buff <- .05 ## buffer of movement allowed from year to year, in meters
-  buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
-  # them to be considered genets
-  clonal <- 1 ## binary option that indicates whether this species is allowed to
-  # break into multiple polygons for one individual
+  # ## test user-defined args
+  # ## user-defined arguments
+  # dorm <- 0 ## dormancy allowed by the function
+  # buff <- .05 ## buffer of movement allowed from year to year, in meters
+  # buffGenet <- 0.001 ## buffer between polygons (/2) that is the maximum allowed for
+  # # them to be considered genets
+  # clonal <- 1 ## binary option that indicates whether this species is allowed to
+  # # break into multiple polygons for one individual
 
   ## work -------------------------------------------------------------------
   tempCurrentYear <- dat[dat$Year==inv[1],] ## get the data just for the first year of

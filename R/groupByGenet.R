@@ -52,5 +52,3 @@ groupByGenet <-  function(sf, buffGenet){
  return(groupID)
 }
 
-
-

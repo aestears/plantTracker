@@ -5,13 +5,16 @@
 #' @param buffGenet the distance you want the buffer to be (put 2.5 to group
 #' polygons that are 5cm from each other)
 #'
+#'
+#' @examples
+#'
+#' @importFrom igraph clusters
+#' @import Matrix
+#' @import sf
+#'
+#'
 #' @return
 #' @export
-#'
-#' @examples##
-#'
-#'  Usage:
-#' @import igraph Matrix sf
 
 
 

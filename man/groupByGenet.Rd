@@ -21,7 +21,5 @@ This function will assign grouping variables for each feature of an sf
 object. Grouping is based on buffers of a user-defined distance overlapping.
 }
 \examples{
-##
 
- Usage:
 }

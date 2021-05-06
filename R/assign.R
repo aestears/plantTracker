@@ -1,4 +1,4 @@
-#' tracks individual plants through time
+#' This function tracks individual plants through time
 #' @param dat
 #' @param inv
 #' @param dorm
@@ -9,48 +9,51 @@
 #'
 #' @return
 #' @export
-#'
 #' @examples
-#' @import tidyr sf dplyr
+#'
+#' @import sf
+#' @import dplyr
+#' @importFrom tidyr pivot_wider
+#'
 
 
 # example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
 # species
-load("./data/grasslandData.rda")
-load("./data/grasslandInventory.rda")
-# prepares the dataset to feed into the 'assign' function (the 'Assign'
-# function will do this ahead of time when the user calls it)
-sampleDat <- grasslandData[grasslandData$Site == "KS"
-                           & grasslandData$Quad == "q33"
-                           & grasslandData$Species == "Aristida longiseta",]
-# this should be a data.frame
-dat <- sampleDat
-
-# get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# to tell the 'assign' function when the quadrat was sampled
-sampleInv <- grasslandInventory[["q33"]]
-# this should be an integer vector
-inv <- sampleInv
-
-assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
-  # arguments ---------------------------------------------------------------
-  ## double check the format of the inputs, and add additional columns required
-  dat <- sf::st_sf(dat) # data in 'grasslandData' format, must be an sf object
-    ## add columns for trackID, age, size_t+1, and recruit
-    dat$trackID <- NA
-    dat$age <- NA
-    dat$size_tplus1 <- NA
-    dat$recruit <- NA
-    dat$survives_tplus1 <- NA
-    dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
-    # each row in the dataset
-    dat$ghost = NA
-    dat$rametArea = NA
-  ## inv is a vector of the years in which the target quadrat is sampled
-  inv <- sort(inv) ## integer vector of quadrat sampling years in
-  # sequential order
-  ## make sure that the 'assignOut' data.frame that contains the output is empty
+# load("./data/grasslandData.rda")
+# load("./data/grasslandInventory.rda")
+# # prepares the dataset to feed into the 'assign' function (the 'Assign'
+# # function will do this ahead of time when the user calls it)
+# sampleDat <- grasslandData[grasslandData$Site == "KS"
+#                            & grasslandData$Quad == "q33"
+#                            & grasslandData$Species == "Aristida longiseta",]
+# # this should be a data.frame
+# dat <- sampleDat
+#
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+# sampleInv <- grasslandInventory[["q33"]]
+# # this should be an integer vector
+# inv <- sampleInv
+#
+ assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
+#   # arguments ---------------------------------------------------------------
+#   ## double check the format of the inputs, and add additional columns required
+#   dat <- sf::st_sf(dat) # data in 'grasslandData' format, must be an sf object
+#     ## add columns for trackID, age, size_t+1, and recruit
+#     dat$trackID <- NA
+#     dat$age <- NA
+#     dat$size_tplus1 <- NA
+#     dat$recruit <- NA
+#     dat$survives_tplus1 <- NA
+#     dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
+#     # each row in the dataset
+#     dat$ghost = NA
+#     dat$rametArea = NA
+#   ## inv is a vector of the years in which the target quadrat is sampled
+#   inv <- sort(inv) ## integer vector of quadrat sampling years in
+#   # sequential order
+#   ## make sure that the 'assignOut' data.frame that contains the output is empty
   if(exists("assignOut")){
     rm(assignOut)
   }
@@ -533,10 +536,10 @@ return(assignOut)
 #   lims(x = c(0,1), y = c(0,1)) +
 #   theme_classic()
 
-testOutput <- assign(sampleDat, sampleInv, 1, .05, .001, 1)
-
-ggplot(st_buffer(testOutput,.01)) +
-  geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
-  scale_fill_discrete(guide = FALSE) +
-  theme_classic()
+# testOutput <- assign(sampleDat, sampleInv, 1, .05, .001, 1)
+#
+# ggplot(st_buffer(testOutput,.01)) +
+#   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
+#   scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
 

@@ -31,7 +31,7 @@ groupByGenet <-  function(sf, buffGenet){
                              dimnames = list(NULL, levels(j)))
 
   connects <- Matrix::tcrossprod(tab, boolArith = TRUE)
-  group <- igraph::clusters(graph_from_adjacency_matrix(
+  group <- igraph::clusters(igraph::graph_from_adjacency_matrix(
     as(connects, "lsCMatrix")))$membership
 
   tapply(overlaps, group, function(x) sort(unique(unlist(x))))

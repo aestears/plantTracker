@@ -54,12 +54,12 @@ inv <- sampleInv
   inv <- sort(inv) ## integer vector of quadrat sampling years in
 #   # sequential order
 #   ## make sure that the 'assignOut' data.frame that contains the output is empty
-  if(exists("assignOut")){
-    rm(assignOut)
-  }
+  if(exists("assignOut"))
 
   ## work -------------------------------------------------------------------
-  ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal)
+  ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal){
+    rm(assignOut)
+  }
   ## this fxn is internal to the 'assign' fxn
   ifClonal <- function(cloneDat, clonal, buffGenet, ...) {
     ## arguments
@@ -93,9 +93,10 @@ inv <- sampleInv
   firstDatYear <- min(dat$Year)
   ## find the index of the first year in teh quadrat inventory
   firstYearIndex <- which(inv==firstDatYear)
+
   ## get the dataset for the first year of actually sampling
   tempCurrentYear <- dat[dat$Year==firstDatYear,]
-  ## assign genetIDs and trackIDs to the first year of sampling dataset
+  ## assign genetIDs to the first year of sampling dataset
   tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear, clonal = clonal, buffGenet = buffGenet)
   ## assign a unique trackID to every unique genetID in this first-year dataset
   IDs <- data.frame( "genetID" = sort(unique(tempCurrentYear$genetID)), ## get
@@ -108,6 +109,9 @@ inv <- sampleInv
                                           tempCurrentYear$genetID))))) ## get a
   # vector of  unique numbers that is the same length as the genetIDs in this
   # quad/year
+
+  ## get the row index numbers of the rows in 'IDs' that match the genetID of the row in 'tempCurrentYear'
+  tempCurrentYear$trackID <- IDs[match(tempCurrentYear$genetID, IDs$genetID),"trackID"]
 
   tempCurrentYear<- merge(tempCurrentYear[,names(tempCurrentYear) != "trackID"], IDs, by = "genetID")
 
@@ -140,8 +144,7 @@ inv <- sampleInv
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  for (i in (firstYearIndex+1):31){
-       #length(inv)) {
+  for (i in (firstYearIndex+1):length(inv)) {
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -256,7 +259,10 @@ inv <- sampleInv
             # every row is a unique parent trackID, and the columns are children
             # (not completely aggregated yet). The value is the overlap between
             # each parent/child pair
-            overlapsTemp <- reshape(overlaps, v.names = "overlappingArea", idvar = "parentTrackID", timevar = "childGenetID", direction = "wide")
+            overlapsTemp <- reshape(overlaps, v.names = "overlappingArea",
+                                    idvar = "parentTrackID",
+                                    timevar = "childGenetID",
+                                    direction = "wide")
 
             ## correct the column names for this data.frame
             ## remove old "parentTrackID" column
@@ -279,14 +285,12 @@ inv <- sampleInv
                                                   unlist)[2,])
             overlaps[is.na(overlaps)==TRUE] <- 0
 
-            overlaps <- as.data.frame(overlaps %>%
-                                        dplyr::group_by(genetID) %>%
-                                        dplyr::summarize(across(names(overlaps)[1:(ncol(overlaps)-1)], sum)))
-
+            ## aggregate the overlap data by genetID
+            overlaps <- aggregate(overlaps[,1:(ncol(overlaps)-1)],
+                                  by = list(overlaps$genetID), FUN = sum)
 
             temp <- as.data.frame(overlaps[,2:ncol(overlaps)])
-            rownames(temp) <- paste0("genet_",overlaps$genetID)
-            names(temp) <- names(overlaps)[2:ncol(overlaps)]
+            rownames(temp) <- paste0("genet_",overlaps$Group.1)
             overlaps <- temp
 
             ## transpose the matrix back so that each row is a parent and each
@@ -357,9 +361,9 @@ inv <- sampleInv
                   tempNextYear$trackID)==TRUE,"genetID"]$genetID)))))
 
             ## add the orphan trackIDs to the 'orphan's data.frame
-            orphans <- dplyr::left_join(orphans, orphanIDs, by = "genetID") %>%
-              dplyr::select(-trackID.x) %>%
-              dplyr::rename("trackID" = "trackID.y")
+            orphans$trackID <- orphanIDs[match(orphans$genetID,
+                                               orphanIDs$genetID),"trackID"]
+
             ## check that the orphans don't come after a gap in sampling (if
             # they do, then leave NA's for all demographic values, if they
             # don't, then proceed with the following code)
@@ -393,16 +397,21 @@ inv <- sampleInv
             }
             ## give the children the appropriate age column (only if the parents
             # don't have an 'NA' for age) (parent's age + 1)
-            tempParents <- sf::st_set_geometry(parents, NULL) %>%
-              dplyr::select(trackID, age)  %>%
-              dplyr::mutate(age = age +(inv[i] - inv[i-1])) %>%
-              dplyr::rename("trackIDtemp" = "trackID")
+            ## get the trackID and age+1 of the parents in the 'tempParents' df
+            ## get the two relevant columns and get rid of geometry column
+            tempParents <- sf::st_set_geometry(parents[,c("trackID", "age")], NULL)
+            ## add 1 to the parent age (get an 'NA' if the parent age is NA)
+            tempParents$age <- (tempParents$age + 1)
+            names(tempParents) <- c("trackIDtemp", "age")
 
+            ## add the'age'column from the appropriate parents (+1), joined by
+            # trackID
+
+            match(children$trackID, tempParents$trackIDtemp)
             children <- children %>%
               dplyr::select(-c(age)) %>% ## remove the 'age' column
               dplyr::left_join(tempParents, by = c("trackID"="trackIDtemp"))
-            ## add the'age'column from the appropriate parents (+1), joined by
-            # trackID
+
           }
 
           ## PARENTS

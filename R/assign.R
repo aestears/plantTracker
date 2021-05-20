@@ -8,33 +8,30 @@
 #' @param ...
 #'
 #' @return
-#' @export
 #' @examples
-#'
 #' @import sf
-#' @import dplyr
-#' @importFrom tidyr pivot_wider
-#'
+#' @importFrom stats aggregate reshape
+#' @export
 
 
 ## example input data ------------------------------------------------------
 # grasslandData (or exact same format), subset to a unique site, quad,
 # species
-load("./data/grasslandData.rda")
-load("./data/grasslandInventory.rda")
-# prepares the dataset to feed into the 'assign' function (the 'Assign'
-# function will do this ahead of time when the user calls it)
-sampleDat <- grasslandData[grasslandData$Site == "AZ"
-                           & grasslandData$Quad == "SG2"
-                           & grasslandData$Species == "Heteropogon contortus",]
-# this should be a data.frame
-dat <- sampleDat
-
-# get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# to tell the 'assign' function when the quadrat was sampled
-sampleInv <- grasslandInventory[["SG2"]]
-# this should be an integer vector
-inv <- sampleInv
+# load("./data/grasslandData.rda")
+# load("./data/grasslandInventory.rda")
+# # prepares the dataset to feed into the 'assign' function (the 'Assign'
+# # function will do this ahead of time when the user calls it)
+# sampleDat <- grasslandData[grasslandData$Site == "AZ"
+#                            & grasslandData$Quad == "SG2"
+#                            & grasslandData$Species == "Heteropogon contortus",]
+# # this should be a data.frame
+# dat <- sampleDat
+#
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+# sampleInv <- grasslandInventory[["SG2"]]
+# # this should be an integer vector
+# inv <- sampleInv
 #
  assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
 # arguments ---------------------------------------------------------------
@@ -77,9 +74,9 @@ inv <- sampleInv
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
     # is input into the PlantTracker::groupByGenet() fxn
     if(clonal==1) {
-      cloneDat$genetID <- PlantTracker::groupByGenet(cloneDat, buffGenet)
+      cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
-      tempCloneDat <- aggregate(Area ~ genetID, sum, data = cloneDat)
+      tempCloneDat <- stats::aggregate(Area ~ genetID, sum, data = cloneDat)
       names(tempCloneDat) <- c("tempGenetID", "rametArea")
       ## add aggregated size data to the cloneData df
       cloneDat$rametArea <- tempCloneDat[match(cloneDat$genetID, tempCloneDat$tempGenetID),"rametArea"]
@@ -120,9 +117,6 @@ inv <- sampleInv
   # the row in 'tempCurrentYear'
   tempCurrentYear$trackID <- IDs[match(tempCurrentYear$genetID, IDs$genetID),
                                  "trackID"]
-
-  tempCurrentYear<- merge(tempCurrentYear[,names(tempCurrentYear) != "trackID"],
-                          IDs, by = "genetID")
 
   ## give all individuals in year #1 a '0' in the ghost column
   tempCurrentYear$ghost <- 0
@@ -193,9 +187,8 @@ inv <- sampleInv
             # in this quad/year
 
             ## add trackIDs to the tempCurrentYear data.frame
-            tempCurrentYear<- merge(tempCurrentYear[,
-                                           names(tempCurrentYear) != "trackID"],
-                                    IDs, by = "genetID")
+            tempCurrentYear$trackID <- IDs[match(tempCurrentYear$genetID, IDs$genetID),
+                                           "trackID"]
 
           } ## end of 'if' that determines if there is genetID data, and if not,
           # assigns genetID and trackID
@@ -290,7 +283,7 @@ inv <- sampleInv
             overlapArea <- sf::st_set_geometry(overlapArea, NULL)
 
             ## aggregate the overlaps by rows (by 'parents')
-            overlaps <- aggregate(overlapArea$overlappingArea,
+            overlaps <- stats::aggregate(overlapArea$overlappingArea,
                                      by = list(overlapArea$trackID,
                                               overlapArea$genetID.1), FUN = sum)
 
@@ -306,7 +299,7 @@ inv <- sampleInv
             # every row is a unique parent trackID, and the columns are children
             # (not completely aggregated yet). The value is the overlap between
             # each parent/child pair
-            overlapsTemp <- reshape(overlaps, v.names = "overlappingArea",
+            overlapsTemp <- stats::reshape(overlaps, v.names = "overlappingArea",
                                     idvar = "parentTrackID",
                                     timevar = "childGenetID",
                                     direction = "wide")
@@ -333,7 +326,7 @@ inv <- sampleInv
             overlaps[is.na(overlaps)==TRUE] <- 0
 
             ## aggregate the overlap data by genetID
-            overlaps <- aggregate(overlaps[,1:(ncol(overlaps)-1)],
+            overlaps <- stats::aggregate(overlaps[,1:(ncol(overlaps)-1)],
                                   by = list(overlaps$genetID), FUN = sum)
 
             temp <- as.data.frame(overlaps[,2:ncol(overlaps)])
@@ -519,22 +512,19 @@ inv <- sampleInv
             ghosts <- ghosts[,names(children)]
             deadGhosts <- deadGhosts[,names(children)]
           }
-          if (dorm==0) { ## any trackID that doesn't have a child in year 'i' is 'dead'
-            deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in% tempNextYear$trackID),]
-            deadGhosts$survives_tplus1 <- 0
+          if (dorm==0) { ## any trackID that doesn't have a child in year 'i'
+            # is 'dead'
+            deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in%
+                                              tempNextYear$trackID),]
+            if(nrow(deadGhosts) > 0) { ## make sure there are deadGhosts
+              ## give the dead ghosts a '0' for survival
+              deadGhosts$survives_tplus1 <- 0
+            }
             deadGhosts <- deadGhosts[,names(children)]
             ghosts <- NULL
           }
 
-          # ## TESTING
-          #  plot(dat[dat$Year==2004,"geometry"])
-          #  plot(children$geometry, add= TRUE, col = "red")
-          #  plot(orphans$geometry, add = TRUE, col = "blue")
-          #
-          #  plot(dat[dat$Year==2003,"geometry"])
-          #  plot(parents$geometry, add= TRUE, col = "red")
-          #  plot(ghosts$geometry, add = TRUE, col = "blue")
-          #  plot(deadGhosts$geometry, add = TRUE, col = "green")
+
 
           ## PREPARE FOR NEXT i
           ## arrange columns of children, orphans, and ghosts into the same order
@@ -569,56 +559,48 @@ return(assignOut)
 
 
 # testing -----------------------------------------------------------------
-testOutput <- assign(sampleDat, sampleInv, dorm = 0, .05, .001, 1)
-
-ggplot(testOutput) +
-  geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
-  scale_fill_discrete(guide = FALSE) +
-  theme_classic()
-
-ggplot() +
-  geom_sf(data = testOutput[testOutput$Year==2003,], fill = "purple", alpha = 0.5) +
-  geom_sf(data = dat[dat$Year==2003,], fill = "green", alpha = 0.5) +
-  theme_linedraw()
-
-
-ggplot() +
-  geom_sf(data = dat[dat$Year==2003,], fill = "green", alpha = 0.5) +
-  geom_sf(data = testOutput[testOutput$Year==2003,], fill = "purple", alpha = 0.5) +
-  theme_linedraw()
-
-tempDat <- dat[dat$Year==2003,]
-tempOut <- testOutput[testOutput$Year==2003,]
-mapview(tempDat) + mapview(tempOut, col.regions = "green")
-
- ggplot() +
-  geom_sf(data = testOutput[testOutput$Year==2007,], fill = "purple", alpha = 0.5) +
-  geom_sf(data = dat[dat$Year==2007,], fill = "green", alpha = 0.5) +
-  theme_linedraw()
-
- ggplot() +
-  geom_sf(data = dat[dat$Year==2007,], fill = "green", alpha = 0.5) +
-  geom_sf(data = testOutput[testOutput$Year==2007,], fill = "purple", alpha = 0.5) +
-  theme_linedraw()
-
-## find duplicated polygons in testOutput d.f
-#testOutput_cent <- st_centroid(testOutput)
-
-dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
-
-dups <- testOutput[testOutput$geometry %in% dupValues,]
-plot(dups[dups$geometry==dupValues[1],"geometry"])
-
-mapview(dups[dups$geometry==dupValues[1],])
-## all the duplicates are in 2003, what?? that doesn't make sense
-unique(dups$Year)
-
-##see which obs. aren't in the outPut dataset (in comparison to the raw data)
-testDat <- st_drop_geometry(dat)
-testOutputTest <- st_drop_geometry(testOutput)
-testOutputTest$test <- "new"
-
-testTest <- left_join(testDat, testOutputTest)
-
-
-
+# testOutput <- assign(dat = sampleDat, inv = sampleInv, dorm = 1, buff = .05, buffGenet = .001, clonal =  1)
+#
+# ggplot(testOutput) +
+#   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
+#   scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
+#
+# ggplot() +
+#   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
+#   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+#   theme_linedraw()
+#
+#
+# ggplot() +
+#   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+#   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
+#   theme_linedraw()
+#
+# tempDat <- dat[dat$Year==1923,]
+# tempOut <- testOutput[testOutput$Year==1923,]
+# mapview(tempDat) + mapview(tempOut, col.regions = "green")
+#
+# ## find duplicated polygons in testOutput d.f
+# #testOutput_cent <- st_centroid(testOutput)
+#
+# dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
+#
+# dups <- testOutput[testOutput$geometry %in% dupValues,]
+# plot(dups[dups$geometry==dupValues[1],"geometry"])
+#
+# mapview(dups[dups$geometry==dupValues[1],])
+# ## all the duplicates are in 2003, what?? that doesn't make sense
+# unique(dups$Year)
+#
+# ##see which obs. aren't in the outPut dataset (in comparison to the raw data)
+# testDat <- st_drop_geometry(dat)
+# testDat$test <- "old"
+# testOutputTest <- st_drop_geometry(testOutput)
+# testOutputTest$test <- "new"
+#
+# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+#
+#
+#
+#

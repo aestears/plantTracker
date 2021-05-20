@@ -5,20 +5,14 @@
 #' @param buffGenet the distance you want the buffer to be (put 2.5 to group
 #' polygons that are 5cm from each other)
 #'
-#'
-#' @examples
-#'
-#' @importFrom igraph clusters
-#' @import Matrix
-#' @import sf
-#'
-#'
 #' @return
+#' @examples
+#' @import sf
+#' @import Matrix
+#' @importFrom igraph clusters graph_from_adjacency_matrix
+#' @importFrom methods as
 #' @export
-
-
-
-
+#'
 groupByGenet <-  function(sf, buffGenet){
   buffDat <- sf::st_buffer(sf, dist = buffGenet) ## buffers the data for the
   # focal year by the buff argument
@@ -32,7 +26,7 @@ groupByGenet <-  function(sf, buffGenet){
 
   connects <- Matrix::tcrossprod(tab, boolArith = TRUE)
   group <- igraph::clusters(igraph::graph_from_adjacency_matrix(
-    as(connects, "lsCMatrix")))$membership
+    methods::as(connects, "lsCMatrix")))$membership
 
   tapply(overlaps, group, function(x) sort(unique(unlist(x))))
   trackIDs <- tapply(1:length(overlaps), group, toString)

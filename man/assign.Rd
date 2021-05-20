@@ -15,6 +15,3 @@ assign(dat, inv, dorm, buff, buffGenet, clonal, ...)
 \description{
 This function tracks individual plants through time
 }
-\examples{
-
-}

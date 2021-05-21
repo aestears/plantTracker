@@ -79,7 +79,9 @@
       tempCloneDat <- stats::aggregate(Area ~ genetID, sum, data = cloneDat)
       names(tempCloneDat) <- c("tempGenetID", "rametArea")
       ## add aggregated size data to the cloneData df
-      cloneDat$rametArea <- tempCloneDat[match(cloneDat$genetID, tempCloneDat$tempGenetID),"rametArea"]
+      cloneDat$rametArea <- tempCloneDat[match(cloneDat$genetID,
+                                               tempCloneDat$tempGenetID),
+                                         "rametArea"]
     }
     ## assign unique genetIDs for every polygon (if clonal = 0)
     if(clonal==0) {
@@ -187,8 +189,8 @@
             # in this quad/year
 
             ## add trackIDs to the tempCurrentYear data.frame
-            tempCurrentYear$trackID <- IDs[match(tempCurrentYear$genetID, IDs$genetID),
-                                           "trackID"]
+            tempCurrentYear$trackID <- IDs[match(tempCurrentYear$genetID,
+                                                 IDs$genetID),"trackID"]
 
           } ## end of 'if' that determines if there is genetID data, and if not,
           # assigns genetID and trackID
@@ -232,7 +234,8 @@
           ## if the gap exceeds the dormancy argument, then those individuals
           # are 'dead,' get a '0' in the 'survival' column, and are added to the
           # 'assignOut' df
-          tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) > (dorm + 1)),"survives_tplus1"] <- 0
+          tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) > (dorm + 1)),
+                          "survives_tplus1"] <- 0
           ## put into 'deadGhosts' df, and order cols correctly
           unique(tempCurrentYear$survives_tplus1)
 
@@ -299,10 +302,11 @@
             # every row is a unique parent trackID, and the columns are children
             # (not completely aggregated yet). The value is the overlap between
             # each parent/child pair
-            overlapsTemp <- stats::reshape(overlaps, v.names = "overlappingArea",
-                                    idvar = "parentTrackID",
-                                    timevar = "childGenetID",
-                                    direction = "wide")
+            overlapsTemp <- stats::reshape(overlaps,
+                                           v.names = "overlappingArea",
+                                           idvar = "parentTrackID",
+                                           timevar = "childGenetID",
+                                           direction = "wide")
 
             ## correct the column names for this data.frame
             ## remove old "parentTrackID" column
@@ -498,7 +502,8 @@
             ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <= (dorm + 1)),]
             ## put the 'ghosts' that exceed the dormancy argument into their
             # own data.frame
-            deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) > (dorm + 1)),]
+            deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) >
+                                        (dorm + 1)),]
             ## ASSIGN DEMOGRAPHIC DATA TO GHOSTS
             ##give these survived ghosts a '1' in the 'ghost' column
             if (nrow(ghosts)>0) {
@@ -527,19 +532,20 @@
 
 
           ## PREPARE FOR NEXT i
-          ## arrange columns of children, orphans, and ghosts into the same order
+          ## arrange columns of children, orphans, and ghosts in the same order
           orphans <- orphans[, names(children)]
           parents <- parents[,names(children)]
 
-          ## bind children, orphans, and ghosts into one data.frame, that will become
-          # the data for the current year in the next iteration of the loop
+          ## bind children, orphans, and ghosts into one data.frame, that will
+          # become the data for the current year in the next i of the loop
           tempNextYear <- rbind(children, orphans, ghosts)
 
           ## STORE PARENTS DEMOGRAPHIC DATA
-          if (exists("assignOut")==TRUE) { ## if this is not the first year, then add demographic data
+          if (exists("assignOut")==TRUE) { ## if this is not the first year,
+            # then add demographic data
             assignOut <- rbind(assignOut, parents, deadGhosts)
           }
-          if (exists("assignOut")==FALSE) { ## if the assignOut data.frame is empty
+          if (exists("assignOut")==FALSE) { ## if the assignOut d.f is empty
             assignOut <- rbind(parents, deadGhosts)
           }
 

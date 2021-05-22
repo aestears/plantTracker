@@ -34,37 +34,61 @@
 # inv <- sampleInv
 #
  assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
-# arguments ---------------------------------------------------------------
-## double check the format of the inputs, and add additional columns
-  dat <- sf::st_sf(dat) # data in 'grasslandData' format, must be an sf object
-    ## add columns for trackID, age, size_t+1, and recruit
-    dat$trackID <- NA
-    dat$age <- NA
-    dat$size_tplus1 <- NA
-    dat$recruit <- NA
-    dat$survives_tplus1 <- NA
-    dat$index <- c(1:nrow(dat))## assign an arbitrary, unique index number to
-    # each row in the dataset
-    dat$ghost = NA
-    dat$rametArea = NA
-  ## inv is a vector of the years in which the target quadrat is sampled
-  inv <- sort(inv) ## integer vector of quadrat sampling years in
-  # sequential order
+  ## error-check arguments ---------------------------------------------------------------
+  ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
+  # 'POLYGON' or 'MULTIPOLYGON'?)
+  if(sum(st_is(dat, c("POLYGON", "MULTIPOLYGON"))) != nrow(dat)) {
+    stop("'dat' argument is not in correct sf format.
+         sfc must be POLYGON or MULTIPOLYGON")
+  }
 
-  # ## for testing
-  # dorm <- 1
-  # buff <- 0.05
-  # buffGenet <- 0.005
-  # clonal <- 1
+  ## is inv in the correct format? (a numeric vector)
+  if(is.numeric(inv)==FALSE) {
+    stop("'inv' argument is not in the correct format.
+         Must be a numeric vector")
+  }
+  ## make sure that 'inv' is in sequential order
+  inv <- sort(inv)
 
-  ## make sure that the 'assignOut' data.frame for the output is empty
-  if(exists("assignOut")){
-    rm(assignOut)
+  ## make sure that inv contains dates that included in dat
+  if(sum(inv %in% dat$Year)==0) {
+    stop("years in 'inv' do not match any years in 'dat'")
+  }
+
+  ## check dorm argument
+  if(dorm != 1 & dorm != 0 | ## dorm must be either 0 or 1
+     !is.numeric(dorm) | ## dorm must be numeric
+     length(dorm)!=1){ ## dorm must be a vector of length = 1
+    stop("'dorm' argument must be a numeric boolean vector of length = 1")
+  }
+
+  ## check clonal argument
+  if(clonal != 1 & clonal != 0 | ## clonal must be either 0 or 1
+     !is.numeric(clonal) | ## clonal must be numeric
+     length(clonal)!=1){ ## clonal must be a vector of length = 1
+    stop("'clonal' argument must be a numeric boolean vector of length = 1")
+  }
+
+  ## check buff argument
+  if(!is.numeric(buff) | ## buff must be numeric
+     buff > max(st_bbox(dat)[c("xmax", "ymax")])) {## buff must not be larger
+    # than the dimensions of the quadrat
+    stop("'buff' argument must be numeric and cannot exceed the maximum
+         dimensions of the quadrat")
+  }
+
+  ## check buffGenet argument
+  if(!is.numeric(buffGenet) | ## buffGenet must be numeric
+     buffGenet > max(st_bbox(dat)[c("xmax", "ymax")])) { ## buffGenet must not
+    # be larger than the dimensions of the quadrat
+    stop("'buffGenet' argument must be numeric and cannot exceed the maximum
+         dimensions of the quadrat")
     }
 
-  ## work -------------------------------------------------------------------
-  ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal){
+  ## check buffGenet argument
 
+  ## internal functions ------------------------------------------------------
+  ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal)
   ## this fxn is internal to the 'assign' fxn
   ifClonal <- function(cloneDat, clonal, buffGenet, ...) {
     ## arguments
@@ -92,6 +116,23 @@
     return(cloneDat)
   }
 
+  ## work -------------------------------------------------------------------
+  ## make sure that the 'assignOut' data.frame for the output is empty
+  if(exists("assignOut")){
+    rm(assignOut)
+  }
+
+  ## add columns to the 'dat' dataset needed for output from assign()
+  dat$trackID <- NA
+  dat$age <- NA
+  dat$size_tplus1 <- NA
+  dat$recruit <- NA
+  dat$survives_tplus1 <- NA
+  dat$ghost = NA
+  dat$rametArea = NA
+
+  ## assign an arbitrary, unique index number to each row in the dataset
+  dat$index <- c(1:nrow(dat))
 
   ## find the first year in the dataset that was actually sampled
   firstDatYear <- min(dat$Year)
@@ -559,7 +600,7 @@
   ## clean up output data.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
                          !(names(assignOut) %in% c("ghost","genetID", "index"))]
-# output ---------------------------------------------------------------
+  ## output ---------------------------------------------------------------
 return(assignOut)
   }
 

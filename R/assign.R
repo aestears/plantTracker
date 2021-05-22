@@ -13,26 +13,6 @@
 #' @importFrom stats aggregate reshape
 #' @export
 
-
-## example input data ------------------------------------------------------
-# grasslandData (or exact same format), subset to a unique site, quad,
-# species
-# load("./data/grasslandData.rda")
-# load("./data/grasslandInventory.rda")
-# # prepares the dataset to feed into the 'assign' function (the 'Assign'
-# # function will do this ahead of time when the user calls it)
-# sampleDat <- grasslandData[grasslandData$Site == "AZ"
-#                            & grasslandData$Quad == "SG2"
-#                            & grasslandData$Species == "Heteropogon contortus",]
-# # this should be a data.frame
-# dat <- sampleDat
-#
-# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # to tell the 'assign' function when the quadrat was sampled
-# sampleInv <- grasslandInventory[["SG2"]]
-# # this should be an integer vector
-# inv <- sampleInv
-#
  assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
   ## error-check arguments ---------------------------------------------------------------
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
@@ -84,8 +64,6 @@
     stop("'buffGenet' argument must be numeric and cannot exceed the maximum
          dimensions of the quadrat")
     }
-
-  ## check buffGenet argument
 
   ## internal functions ------------------------------------------------------
   ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal)
@@ -190,7 +168,7 @@
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  for (i in (firstYearIndex+1):length(inv)) {
+  for (i in (firstYearIndex+1): length(inv)) {
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -371,11 +349,15 @@
             overlaps[is.na(overlaps)==TRUE] <- 0
 
             ## aggregate the overlap data by genetID
-            overlaps <- stats::aggregate(overlaps[,1:(ncol(overlaps)-1)],
+            overlapsTemp <- stats::aggregate(overlaps[,1:(ncol(overlaps)-1)],
                                   by = list(overlaps$genetID), FUN = sum)
 
-            temp <- as.data.frame(overlaps[,2:ncol(overlaps)])
-            rownames(temp) <- paste0("genet_",overlaps$Group.1)
+            temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
+            ## fix rownames (childGenetID)
+            rownames(temp) <- paste0("genet_",overlapsTemp$Group.1)
+            ## fix colnames (parentTrackID)
+            names(temp) <- names(overlaps)[names(overlaps)!="genetID"]
+
             overlaps <- temp
 
             ## transpose the matrix back so that each row is a parent and each
@@ -536,23 +518,39 @@
             ## get the ghost individuals
             ghostsTemp <- tempCurrentYear[!(tempCurrentYear$trackID %in%
                                               tempNextYear$trackID),]
-            ## check that these individuals can be 'ghosts' in the next year (if
-            # the gap between the year of their observation and year i+1 is
-            # greater than the dormancy argument (+1), then) they are not
-            # ghosts, and get a 0 for survival
-            ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <= (dorm + 1)),]
-            ## put the 'ghosts' that exceed the dormancy argument into their
-            # own data.frame
-            deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) >
-                                        (dorm + 1)),]
+
+            ## is 'i' the last year of sampling? If not, then do the following:
+            if(inv[i] != max(inv)) {
+              ## check that these individuals can be 'ghosts' in the next year
+              # (if the gap between the year of their observation and year i+1
+              # is greater than the dormancy argument (+1), then) they are not
+              # ghosts, and get a 0 for survival
+              ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <=
+                                      (dorm + 1)),]
+              ## put the 'ghosts' that exceed the dormancy argument into their
+              # own data.frame
+              deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) >
+                                          (dorm + 1)),]
+            }
+            ## if the 'i' year is the last year of sampling:
+            if(inv[i] == max(inv)) {
+              ## get the 'ghost' data (have to use a different 'i+1' value if
+              # this is the next year)
+              ghosts <- ghostsTemp[inv[i]+1 - ghostsTemp$Year <= (dorm+1),]
+              ## get the 'deadGhost' data
+              deadGhosts <- ghostsTemp[inv[i]+1 - ghostsTemp$Year > (dorm+1),]
+              }
+
             ## ASSIGN DEMOGRAPHIC DATA TO GHOSTS
             ##give these survived ghosts a '1' in the 'ghost' column
             if (nrow(ghosts)>0) {
               ghosts$ghost <- 1
+              ghosts$survives_tplus1 <- NA
             }
             ## give the deadGhosts a 0 in survival (if there are any deadGhosts)
             if(nrow(deadGhosts)>0){
-              deadGhosts[,"survives_tplus1"] <- 0
+              deadGhosts$survives_tplus1 <- 0
+              deadGhosts$ghost <- 0
             }
             ## get the data.frames in a consistent format
             ghosts <- ghosts[,names(children)]
@@ -569,7 +567,6 @@
             deadGhosts <- deadGhosts[,names(children)]
             ghosts <- NULL
           }
-
 
 
           ## PREPARE FOR NEXT i
@@ -606,13 +603,35 @@ return(assignOut)
 
 
 # testing -----------------------------------------------------------------
-# testOutput <- assign(dat = sampleDat, inv = sampleInv, dorm = 1, buff = .05, buffGenet = .001, clonal =  1)
+ # example input data ------------------------------------------------------
+
+#  # prepares the dataset to feed into the 'assign' function (the 'Assign'
+#  # function will do this ahead of time when the user calls it)
+#  sampleDat <- grasslandData[grasslandData$Site == "AZ"
+#                             & grasslandData$Quad == "SG2"
+#                             & grasslandData$Species == "Heteropogon contortus",]
+#  # this should be a data.frame
+#  dat <- sampleDat
+#
+#  # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+#  # to tell the 'assign' function when the quadrat was sampled
+#  sampleInv <- grasslandInventory[["SG2"]]
+#  # this should be an integer vector
+#  inv <- sampleInv
+#
+#
+#  testOutput <- assign(dat = sampleDat,
+#                       inv = sampleInv,
+#                       dorm = 1,
+#                       buff = .05,
+#                       buffGenet = .001,
+#                       clonal =  1)
 #
 # ggplot(testOutput) +
 #   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
 #   scale_fill_discrete(guide = FALSE) +
 #   theme_classic()
-#
+# #
 # ggplot() +
 #   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
 #   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +

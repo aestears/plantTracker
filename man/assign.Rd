@@ -2,16 +2,80 @@
 % Please edit documentation in R/assign.R
 \name{assign}
 \alias{assign}
-\title{This function tracks individual plants through time}
+\title{Tracks genets through time}
 \usage{
 assign(dat, inv, dorm, buff, buffGenet, clonal, ...)
 }
 \arguments{
-\item{...}{}
+\item{dat}{An sf data.frame of the same format as
+\code{\link{grasslandData}}, but containing data for only one species and one
+distinct spatial area. More detail in the \code{\link{trackSpp}}
+documentation.}
+
+\item{inv}{A numeric vector of years in which the quadrat (or other distinct
+spatial
+area) was sampled.}
+
+\item{dorm}{A numeric vector of length 1, indicating the number of years this
+species is allowed to go dormant, i.e. be absent from the map but be
+considered the same individual when it reappears. This must be an integer
+greater than or equal to 0.}
+
+\item{buff}{A numeric vector of length 1 that is greater than or equal to
+zero, indicating how far (in the same units as spatial values in 'dat') a
+polygon can move from year \code{i} to year \code{i}+1 and still be
+considered the same individual.}
+
+\item{buffGenet}{A numeric vector of length 1 that is greater than or equal
+to zero, indicating how close (in the same units as spatial values in 'dat')
+polygons must be to one another in the same year to be grouped as a genet
+(if 'clonal' argument = 1). This argument is passed to the
+\code{\link{groupByGenet}} function, which is used inside
+\code{\link{assign}}}
+
+\item{clonal}{A numeric Boolean vector of length 1, indicating whether a
+species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
+can be grouped as one individual (genet)).}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
+An sf data.frame with the same columns as 'dat,' but with the
+following additional columns:
 
+\item{trackID}{A unique value for each individual genet, consisting of the
+6-letter species code, the year in which this individual was recruited, and a
+unique index number, all separated by a "_".}
+\item{age}{An integer indicating the age of this individual in year \emph{t}.
+Values of NA indicate that an accurate age cannot be calculated because this
+individual was observed either in the first year of sampling or in a year
+following a gap in sampling, so the exact year of recruitment is not known.}
+\item{size_tplus1}{The  size of this genet in year \emph{t+1}, in the same units
+as the 'area' column in 'dat'.}
+\item{recruit}{A Boolean integer indicating whether this individual is a new
+recruit in year \emph{t} (1), or existed in a previous year (0). Values of NA
+indicate that this individual was observed either in the first year of
+sampling or in a year following a gap in sampling, so it is not possible to
+accurately determine whether or not it is a new recruit in year \emph{t}.}
+\item{survives_plus1}{A Boolean integer indicating whether this individual
+survived (1), or died (0) in year \emph{t+1}.}
+\item{genetArea}{The size of this entire genet in year \emph{t}, in the same units
+as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
+will be identical to the 'area' column in 'dat'. }
 }
 \description{
-This function tracks individual plants through time
+This function tracks individual plants through time, but only of
+one species in one quadrat. It is designed for use within the
+\code{\link{trackSpp}} function, but can be used independently if input
+data.frame has data only for one species in the same spatial area
+(i.e. one quadrat).
+}
+\details{
+
+}
+\seealso{
+\code{\link[=trackSpp]{trackSpp()}}, which is a wrapper for the \code{\link[=assign]{assign()}} function that
+applies it over many species and quadrats. The \code{\link[=assign]{assign()}} function uses the
+\code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
+(if 'clonal' argument = 1).
 }

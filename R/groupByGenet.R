@@ -9,7 +9,7 @@
 #' \pkg{PlantTracker}, this function was designed to group ramets together into
 #' one genet, which is a genetically distinct individual. This function was
 #' designed for use within the \code{\link{assign}} function (and then the
-#' \code{\link{Assign}} function), but can be used independently.
+#' \code{\link{trackSpp}} function), but can be used independently.
 #'
 #' @param sf An sf object that contains polygons to be grouped. Typically should
 #' include data only for one species, one quadrat, and one year. For intended
@@ -30,9 +30,6 @@
 #' row in 'sf'.
 #'
 #' @examples
-#' # Use groupByGenet() to get unique genetIDs for a subset of
-#' \code{\link{grasslandData}}: Bouteloua gracilis from quadrat ungz_5a in 1997
-#' at the CO site.
 #'
 #' dat <- grasslandData[grasslandData$Site=="CO" &
 #' grasslandData$Quad == "ungz_5a" &
@@ -41,7 +38,7 @@
 #'
 #' groupByGenet(sf = dat, buffGenet = 0.005)
 #'
-#' @seealso [assign()] and [Assign()], \pkg{PlantTracker} functions that apply
+#' @seealso [assign()] and [trackSpp()], \pkg{PlantTracker} functions that apply
 #' this function across multiple species, quadrats, and years.
 #'
 #' @import sf

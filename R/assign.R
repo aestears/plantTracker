@@ -1,13 +1,67 @@
-#' This function tracks individual plants through time
-#' @param dat
-#' @param inv
-#' @param dorm
-#' @param buff
-#' @param buffGenet
-#' @param clonal
-#' @param ...
+#' Tracks genets through time
 #'
-#' @return
+#' @description This function tracks individual plants through time, but only of
+#'  one species in one quadrat. It is designed for use within the
+#'  \code{\link{trackSpp}} function, but can be used independently if input
+#'  data.frame has data only for one species in the same spatial area
+#'  (i.e. one quadrat).
+#'
+#' @details
+#'
+#' @param dat An sf data.frame of the same format as
+#' \code{\link{grasslandData}}, but containing data for only one species and one
+#' distinct spatial area. More detail in the \code{\link{trackSpp}}
+#' documentation.
+#' @param inv A numeric vector of years in which the quadrat (or other distinct
+#' spatial
+#' area) was sampled.
+#' @param dorm A numeric vector of length 1, indicating the number of years this
+#' species is allowed to go dormant, i.e. be absent from the map but be
+#' considered the same individual when it reappears. This must be an integer
+#' greater than or equal to 0.
+#' @param buff A numeric vector of length 1 that is greater than or equal to
+#' zero, indicating how far (in the same units as spatial values in 'dat') a
+#' polygon can move from year \code{i} to year \code{i}+1 and still be
+#' considered the same individual.
+#' @param buffGenet A numeric vector of length 1 that is greater than or equal
+#' to zero, indicating how close (in the same units as spatial values in 'dat')
+#' polygons must be to one another in the same year to be grouped as a genet
+#' (if 'clonal' argument = 1). This argument is passed to the
+#' \code{\link{groupByGenet}} function, which is used inside
+#' \code{\link{assign}}
+#' @param clonal A numeric Boolean vector of length 1, indicating whether a
+#' species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
+#' can be grouped as one individual (genet)).
+#' @param ... Other arguments passed on to methods. Not currently used.
+#'
+#' @return An sf data.frame with the same columns as 'dat,' but with the
+#' following additional columns:
+#'
+#' \item{trackID}{A unique value for each individual genet, consisting of the
+#' 6-letter species code, the year in which this individual was recruited, and a
+#' unique index number, all separated by a "_".}
+#' \item{age}{An integer indicating the age of this individual in year *t*.
+#' Values of NA indicate that an accurate age cannot be calculated because this
+#' individual was observed either in the first year of sampling or in a year
+#' following a gap in sampling, so the exact year of recruitment is not known.}
+#' \item{size_tplus1}{The  size of this genet in year *t+1*, in the same units
+#' as the 'area' column in 'dat'.}
+#' \item{recruit}{A Boolean integer indicating whether this individual is a new
+#' recruit in year *t* (1), or existed in a previous year (0). Values of NA
+#' indicate that this individual was observed either in the first year of
+#' sampling or in a year following a gap in sampling, so it is not possible to
+#' accurately determine whether or not it is a new recruit in year *t*.}
+#' \item{survives_plus1}{A Boolean integer indicating whether this individual
+#' survived (1), or died (0) in year *t+1*.}
+#' \item{genetArea}{The size of this entire genet in year *t*, in the same units
+#' as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
+#' will be identical to the 'area' column in 'dat'. }
+#'
+#' @seealso [trackSpp()], which is a wrapper for the [assign()] function that
+#' applies it over many species and quadrats. The [assign()] function uses the
+#' [groupByGenet()] function to group ramets into genets
+#' (if 'clonal' argument = 1).
+#'
 #' @examples
 #' @import sf
 #' @importFrom stats aggregate reshape
@@ -36,10 +90,12 @@
   }
 
   ## check dorm argument
-  if(dorm != 1 & dorm != 0 | ## dorm must be either 0 or 1
+  if(dorm < 0 | ## dorm must be greater than or equal to 0
      !is.numeric(dorm) | ## dorm must be numeric
+     round(dorm) != dorm | ## dorm must be a whole number
      length(dorm)!=1){ ## dorm must be a vector of length = 1
-    stop("'dorm' argument must be a numeric boolean vector of length = 1")
+    stop("'dorm' argument must be a a numeric vector of length = 1, containing a
+         positive, whole number")
   }
 
   ## check clonal argument
@@ -51,16 +107,20 @@
 
   ## check buff argument
   if(!is.numeric(buff) | ## buff must be numeric
-     buff > max(st_bbox(dat)[c("xmax", "ymax")])) {## buff must not be larger
-    # than the dimensions of the quadrat
+     buff > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buff must not be larger
+     # than the dimensions of the quadrat
+     buff < 0 ## buff must be greater than or equal to zero
+     ) {
     stop("'buff' argument must be numeric and cannot exceed the maximum
          dimensions of the quadrat")
   }
 
   ## check buffGenet argument
   if(!is.numeric(buffGenet) | ## buffGenet must be numeric
-     buffGenet > max(st_bbox(dat)[c("xmax", "ymax")])) { ## buffGenet must not
-    # be larger than the dimensions of the quadrat
+     buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet must not
+     # be larger than the dimensions of the quadrat
+     buffGenet < 0 ## buffGenet must be greater than or equal to zero
+     ) {
     stop("'buffGenet' argument must be numeric and cannot exceed the maximum
          dimensions of the quadrat")
     }
@@ -79,16 +139,16 @@
       cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
       tempCloneDat <- stats::aggregate(Area ~ genetID, sum, data = cloneDat)
-      names(tempCloneDat) <- c("tempGenetID", "rametArea")
+      names(tempCloneDat) <- c("tempGenetID", "genetArea")
       ## add aggregated size data to the cloneData df
-      cloneDat$rametArea <- tempCloneDat[match(cloneDat$genetID,
+      cloneDat$genetArea <- tempCloneDat[match(cloneDat$genetID,
                                                tempCloneDat$tempGenetID),
-                                         "rametArea"]
+                                         "genetArea"]
     }
     ## assign unique genetIDs for every polygon (if clonal = 0)
-    if(clonal==0) {
+    else if(clonal==0) {
       cloneDat$genetID <- 1:nrow(cloneDat)
-      cloneDat$rametArea <- cloneDat$Area
+      cloneDat$genetArea <- cloneDat$Area
     }
 
     return(cloneDat)
@@ -107,7 +167,7 @@
   dat$recruit <- NA
   dat$survives_tplus1 <- NA
   dat$ghost = NA
-  dat$rametArea = NA
+  dat$genetArea = NA
 
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
@@ -217,8 +277,8 @@
     } ## end of 'if' that determines what to do if the gap between years exceeds
     # the dormancy argument
 
-    if (inv[i] - inv[i-1] <= (dorm+1)) { ## if the gap between years does NOT
-      # exceed the dormancy argument
+    else if (inv[i] - inv[i-1] <= (dorm+1)) { ## if the gap between years does
+      # NOT exceed the dormancy argument
       ## 'tempCurrentYear' is the sf data.frame of the 'current' year
       ## need to get the sf data.frame of the 'next' year (year 'i')
       tempNextYear <- sf::st_as_sf(dat[dat$Year==inv[i],])
@@ -232,7 +292,7 @@
         tempCurrentYear <- sf::st_as_sf(tempNextYear)
         next
       } ## end of 'if' of what to do if tempCurrentYear is empty
-      if (nrow(tempCurrentYear)>0) { ## what to do if the 'tempCurrentYear'
+      else if (nrow(tempCurrentYear)>0) { ## what to do if the 'tempCurrentYear'
         # DOES have data
         ## add a buffer to the current year data
         tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
@@ -272,7 +332,7 @@
           ## go to next i
           next
       } ## end of 'else' that has steps if tempNextYear is empty
-        if (nrow(tempNextYear)>0) { ## if the tempNextYear data DOES exist,
+        else if (nrow(tempNextYear)>0) { ## if the tempNextYear data DOES exist,
           # proceed with the loop
           ## AGGREGATE BY GENET for year i (if clonal = 1)
           tempNextYear <- ifClonal(cloneDat = tempNextYear, clonal = clonal,
@@ -385,13 +445,7 @@
               maxChild <- strsplit(colnames(
                 whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
 
-              # ##testing
-              # ggplot() +
-              #   geom_sf(data = tempCurrentYear, aes(), fill = "grey", alpha = 0.5) +
-              #   geom_sf(data = tempCurrentYear[tempCurrentYear$trackID==maxParent,], aes(), fill = "red", alpha = 0.8) +
-              #   geom_sf(data = tempNextYear[tempNextYear$genetID == maxChild,], aes(), fill = "green", alpha = 0.8)
-
-              ## put the trackID from the parent into the tempNextYear dataframe
+              ## put the trackID from the parent into the tempNextYear d.f
               # rows that correspond to the genetID of the child
               tempNextYear[tempNextYear$genetID==maxChild,
                            "trackID"] <- maxParent
@@ -499,7 +553,7 @@
             ## assign size in the next year (From 'children' df) to the
             # appropriate rows in the parents data.frame
             childSizeTemp <- unique(sf::st_set_geometry(children[,c("trackID",
-                                                           "rametArea")],NULL))
+                                                           "genetArea")],NULL))
             names(childSizeTemp) <- c("trackIDtemp", "size_tplus1")
             ## join size_tplus data to 'parents' data.frame
             parents$size_tplus1 <- childSizeTemp[match(parents$trackID,
@@ -533,7 +587,7 @@
                                           (dorm + 1)),]
             }
             ## if the 'i' year is the last year of sampling:
-            if(inv[i] == max(inv)) {
+            else if(inv[i] == max(inv)) {
               ## get the 'ghost' data (have to use a different 'i+1' value if
               # this is the next year)
               ghosts <- ghostsTemp[inv[i]+1 - ghostsTemp$Year <= (dorm+1),]
@@ -556,8 +610,8 @@
             ghosts <- ghosts[,names(children)]
             deadGhosts <- deadGhosts[,names(children)]
           }
-          if (dorm==0) { ## any trackID that doesn't have a child in year 'i'
-            # is 'dead'
+          else if (dorm==0) { ## any trackID that doesn't have a child in year
+            # 'i' is 'dead'
             deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in%
                                               tempNextYear$trackID),]
             if(nrow(deadGhosts) > 0) { ## make sure there are deadGhosts
@@ -583,10 +637,11 @@
             # then add demographic data
             assignOut <- rbind(assignOut, parents, deadGhosts)
           }
-          if (exists("assignOut")==FALSE) { ## if the assignOut d.f is empty
+          else if (exists("assignOut")==FALSE) { ## if the assignOut df is empty
             assignOut <- rbind(parents, deadGhosts)
           }
-
+          ## assign the data from the current i (tempNextYear) to be the past
+          # year data (tempCurrentYear) for the next i
           tempCurrentYear <- tempNextYear
         } ## end of 'if' statement that determines if the tempNextYear data
         # exists
@@ -605,17 +660,17 @@ return(assignOut)
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 
-#  # prepares the dataset to feed into the 'assign' function (the 'Assign'
-#  # function will do this ahead of time when the user calls it)
-#  sampleDat <- grasslandData[grasslandData$Site == "AZ"
-#                             & grasslandData$Quad == "SG2"
-#                             & grasslandData$Species == "Heteropogon contortus",]
+ # prepares the dataset to feed into the 'assign' function (the 'Assign'
+ # function will do this ahead of time when the user calls it)
+#  sampleDat <- grasslandData[grasslandData$Site == "CO"
+#                             & grasslandData$Quad == "ungz_5a"
+#                             & grasslandData$Species == "Sphaeralcea coccinea",]
 #  # this should be a data.frame
 #  dat <- sampleDat
 #
 #  # get the appropriate grasslandInventory data for the "unun_11" quadrat,
 #  # to tell the 'assign' function when the quadrat was sampled
-#  sampleInv <- grasslandInventory[["SG2"]]
+#  sampleInv <- grasslandInventory[["ungz_5a"]]
 #  # this should be an integer vector
 #  inv <- sampleInv
 #
@@ -631,7 +686,7 @@ return(assignOut)
 #   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
 #   scale_fill_discrete(guide = FALSE) +
 #   theme_classic()
-# #
+#
 # ggplot() +
 #   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
 #   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
@@ -659,14 +714,11 @@ return(assignOut)
 # ## all the duplicates are in 2003, what?? that doesn't make sense
 # unique(dups$Year)
 #
-# ##see which obs. aren't in the outPut dataset (in comparison to the raw data)
+##see which obs. aren't in the outPut dataset (in comparison to the raw data)
 # testDat <- st_drop_geometry(dat)
 # testDat$test <- "old"
 # testOutputTest <- st_drop_geometry(testOutput)
 # testOutputTest$test <- "new"
 #
 # testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-#
-#
-#
 #

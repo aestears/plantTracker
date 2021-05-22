@@ -39,11 +39,10 @@ polygons that are closest to one another. In the context of
 \pkg{PlantTracker}, this function was designed to group ramets together into
 one genet, which is a genetically distinct individual. This function was
 designed for use within the \code{\link{assign}} function (and then the
-\code{\link{Assign}} function), but can be used independently.
+\code{\link{trackSpp}} function), but can be used independently.
 }
 \examples{
-# Use groupByGenet() to get unique genetIDs for a subset of the
-\code{\link{grasslandData}}: Bouteloua gracilis from quadrat
+
 dat <- grasslandData[grasslandData$Site=="CO" &
 grasslandData$Quad == "ungz_5a" &
 grasslandData$Species == "Bouteloua gracilis" &
@@ -53,6 +52,6 @@ groupByGenet(sf = dat, buffGenet = 0.005)
 
 }
 \seealso{
-\code{\link[=assign]{assign()}} and \link[=assign]{Assign()}, \pkg{PlantTracker} functions that apply
+\code{\link[=assign]{assign()}} and \code{\link[=trackSpp]{trackSpp()}}, \pkg{PlantTracker} functions that apply
 this function across multiple species, quadrats, and years.
 }

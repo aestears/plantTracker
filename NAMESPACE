@@ -3,6 +3,7 @@
 export(adding)
 export(assign)
 export(groupByGenet)
+export(trackSpp)
 import(Matrix)
 import(sf)
 importFrom(igraph,clusters)

@@ -1,9 +1,18 @@
-#' Tracks mapped individual plants through time to get growth and survival data
+#' Tracks genets through time for multiple species and sites
 #'
 #' @return
 #' @export
 #'
 #' @examples
 trackSpp <- function() {
+
+# argument checks ---------------------------------------------------------
+
+
+# work --------------------------------------------------------------------
+
+
+# output ------------------------------------------------------------------
+
 
 }

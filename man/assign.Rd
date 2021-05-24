@@ -71,6 +71,40 @@ data.frame has data only for one species in the same spatial area
 (i.e. one quadrat).
 }
 \details{
+This function loads spatial data from 'dat' for year \emph{t} of
+sampling, uses the \code{\link{groupByGenet}} function to assign genetIDs to
+polygons (if 'clonal' = 1). It then adds a buffer defined by 'buff' to each
+of the polygons in year \emph{t}. Then it calculates the amount of overlapping
+area between polygons of each year \emph{t} genet and polygons of each year \emph{t+1}
+genet (using \code{\link{sf::st_intersection()}}). If there is unambiguous
+overlap between a 'parent' genet from year \emph{t} and a 'child' genet from year
+\emph{t+1}, then that 'child' gets the same identifying trackID as the parent. If
+there is a 'tie,' where more than one parent overlaps the same child or more
+than one children overlap the same parent, the parent-child pair with the
+greatest amount of overlap are determined to be the same individual and
+receive the same trackID. Polygons in year \emph{t+1} that do not have a parent
+are given new trackIDs and are identified as new recruits. If dormancy is not
+allowed, then polygons in year \emph{t} that do not have child polygons get a '0'
+in the 'survival' column. If dormancy is allowed, parent polygons without
+child polygons are stored as 'ghosts' and are then compared to data from year
+\emph{t+1+i} to find potential child polygons, where \emph{i}='dorm' argument.
+}
+\examples{
+# get data for one site, quadrat, and species
+dat <- grasslandData[grasslandData$Site=="CO" &
+grasslandData$Quad == "ungz_5a" &
+grasslandData$Species == "Bouteloua gracilis",]
+
+# get inventory data for appropriate quadrat
+inv <- grasslandInventory[["ungz_5a"]]
+
+#use 'assign' function
+out_dat <- assign(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = 1)
 
 }
 \seealso{

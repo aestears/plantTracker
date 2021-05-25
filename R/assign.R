@@ -104,9 +104,19 @@
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
   # 'POLYGON' or 'MULTIPOLYGON'?)
   if(sum(st_is(dat, c("POLYGON", "MULTIPOLYGON"))) != nrow(dat)) {
-    stop("'dat' argument is not in correct sf format.
+    stop("'dat' is not in correct sf format.
          sfc must be POLYGON or MULTIPOLYGON")
   }
+
+  ## must be data for only one species
+  if(length(unique(dat$Species)) > 1) {
+    stop("'dat' can only contain data for one species")
+  }
+
+  ## must be data for only one quadrat
+   if(length(unique(dat$Quad)) > 1) {
+     stop("'dat' can only contain data for one quadrat")
+   }
 
   ## is inv in the correct format? (a numeric vector)
   if(is.numeric(inv)==FALSE) {
@@ -198,8 +208,8 @@
   dat$size_tplus1 <- NA
   dat$recruit <- NA
   dat$survives_tplus1 <- NA
-  dat$ghost = NA
-  dat$genetArea = NA
+  dat$ghost <- NA
+  dat$genetArea <- NA
 
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
@@ -260,13 +270,13 @@
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  for (i in (firstYearIndex+1): length(inv)) {
+  for (i in (firstYearIndex+1):3){ #length(inv)) {
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
     # this loop. If it is, then freshly redefine 'tempCurrentYear' and proceed
     # to the next 'i'
-    if ( inv[i] - inv[i-1] > (dorm+1)) { ## if the gap between years EXCEEDS the
+    if (inv[i] - inv[i-1] > (dorm+1)) { ## if the gap between years EXCEEDS the
       # dormancy argument
        ## if the gap between years exceeds the dormancy argument
       ## get data from year i and put in 'tempCurrentYear'
@@ -306,14 +316,20 @@
           } ## end of 'if' that determines if there is genetID data, and if not,
           # assigns genetID and trackID
         } ## end of 'if' that determines if there is data in year i
-    } ## end of 'if' that determines what to do if the gap between years exceeds
-    # the dormancy argument
-
-    else if (inv[i] - inv[i-1] <= (dorm+1)) { ## if the gap between years does
+        ## end of 'if' that determines what to do if the gap between years exceeds
+        # the dormancy argument
+        } else if (inv[i] - inv[i-1] <= (dorm+1)) { ## if the gap between years does
       # NOT exceed the dormancy argument
       ## 'tempCurrentYear' is the sf data.frame of the 'current' year
       ## need to get the sf data.frame of the 'next' year (year 'i')
-      tempNextYear <- sf::st_as_sf(dat[dat$Year==inv[i],])
+      tempNextYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
+
+      if (nrow(tempNextYear)>0 & clonal == 1) { ## if there is data in the
+        # tempNextYear d.f (and clonal arg. is true), then assign genetIDs
+        tempNextYear <- ifClonal(cloneDat = tempNextYear,
+                                         clonal = clonal,
+                                         buffGenet = buffGenet)
+      }
 
       ## MAKE SURE THERE IS DATA IN YEAR i-1 (tempCurrentYear isn't empty) If
       # not, then go to the next i (only after replacing 'tempCurrentYear' with
@@ -321,10 +337,17 @@
       if (nrow(tempCurrentYear) < 1) { ## what to do if 'tempCurrentYear' does
         # NOT exist, then overwrite the tempCurrentYear w/ data from the 'next'
         # year, and go to the next i
+        ## but first, give them trackIDs
+        if(nrow(tempNextYear) > 0) {tempTrackIDs <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,]
+        tempNextYear[is.na(tempNextYear$trackID)==TRUE,]$trackID <-
+          paste0(tempTrackIDs$sp_code_6,"_",
+                 tempTrackIDs$Year, "_",
+                 c(1:length(unique(tempTrackIDs$index))))}
+
         tempCurrentYear <- sf::st_as_sf(tempNextYear)
         next
-      } ## end of 'if' of what to do if tempCurrentYear is empty
-      else if (nrow(tempCurrentYear)>0) { ## what to do if the 'tempCurrentYear'
+        ## end of 'if' of what to do if tempCurrentYear is empty
+        } else if (nrow(tempCurrentYear)>0) { ## what to do if the 'tempCurrentYear'
         # DOES have data
         ## add a buffer to the current year data
         tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
@@ -336,35 +359,43 @@
           # i (year inv[i+1]) does not exceed the dormancy argument, then roll
           # those individuals over into 'tempCurrentYear' for the next i (with a
           # '1' in the 'ghost' column)
+
+          ## get 'ghosts' (if there are any)
+          ghosts <- tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) <=
+                                             (dorm + 1)),]
           ## put a '1' in the 'ghost' column for ghosts
-          tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) <=
-                             (dorm + 1)),"ghost"] <- 1
-          ## temporarily put those ghosts in their own d.f
-          tempGhosts <- tempCurrentYear[tempCurrentYear$ghost==1,]
+          if (nrow(ghosts)>0) {
+            ghosts$ghost <- '1'
+          }
 
-          ## if the gap exceeds the dormancy argument, then those individuals
-          # are 'dead,' get a '0' in the 'survival' column, and are added to the
-          # 'assignOut' df
-          tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) > (dorm + 1)),
-                          "survives_tplus1"] <- 0
-          ## put into 'deadGhosts' df, and order cols correctly
-          unique(tempCurrentYear$survives_tplus1)
-
-          deadGhosts <- tempCurrentYear[tempCurrentYear$survives_tplus1==0 &
-                                is.na(tempCurrentYear$survives_tplus1)==FALSE,
-                                names(assignOut)]
+          ## get 'deadGhosts' (if there are any) (if the gap between year
+          # i-1 and year i+1 exceeds the dormancy argument) and make sure
+          # columns are in correct order
+          deadGhosts <- tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) >
+                                                 (dorm + 1)),
+                                     c(names(dat)[-13],"genetID", "geometry")]
 
           ## rewrite 'tempCurrentYear' so it just has 'ghosts'(not 'deadGhosts')
-          tempCurrentYear <- tempGhosts[!(tempGhosts$index %in%
-                                            deadGhosts$index),]
+          tempCurrentYear <- ghosts
 
-          ## add the 'deadGhosts' to the 'assignOut' df
-          assignOut <- rbind(assignOut, deadGhosts)
+          if (nrow(deadGhosts)>0) {
+            ## deadGhosts get a '0' in the 'survival' column
+            deadGhosts$survives_tplus1 <- 0
+            ## add the 'deadGhosts' to the 'assignOut' df
+            if (exists("assignOut") == TRUE) {
+              ## if this is not the first year, then add demographic data to the
+              # output d.f
+              assignOut <- rbind(assignOut, deadGhosts)
+            } else if (exists("assignOut") == FALSE) {
+              ## if the assignOut df is empty
+              assignOut <- deadGhosts
+            }
+          }
 
           ## go to next i
           next
-      } ## end of 'else' that has steps if tempNextYear is empty
-        else if (nrow(tempNextYear)>0) { ## if the tempNextYear data DOES exist,
+          ## end of 'else' that has steps if tempNextYear is empty
+          } else if (nrow(tempNextYear)>0) { ## if the tempNextYear data DOES exist,
           # proceed with the loop
           ## AGGREGATE BY GENET for year i (if clonal = 1)
           tempNextYear <- ifClonal(cloneDat = tempNextYear, clonal = clonal,
@@ -503,7 +534,8 @@
                 done <- TRUE
               } ## end of 'if' that's redefining 'done' if matrix is all NAs
             } ## end of 'while' that's finding the max values in the matrix
-          } ## end of 'if' that contains the work if there ARE overlaps
+            ## end of 'if' that contains the work if there ARE overlaps
+          }
 
           ## ORPHANS: deal with 'child' polygons that don't have parents
           ## give them new trackIDs
@@ -606,7 +638,7 @@
                                               tempNextYear$trackID),]
 
             ## is 'i' the last year of sampling? If not, then do the following:
-            if(inv[i] != max(inv)) {
+            if (inv[i] != max(inv)) {
               ## check that these individuals can be 'ghosts' in the next year
               # (if the gap between the year of their observation and year i+1
               # is greater than the dormancy argument (+1), then) they are not
@@ -617,9 +649,8 @@
               # own data.frame
               deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) >
                                           (dorm + 1)),]
-            }
-            ## if the 'i' year is the last year of sampling:
-            else if(inv[i] == max(inv)) {
+              ## if the 'i' year is the last year of sampling:
+            } else if (inv[i] == max(inv)) {
               ## get the 'ghost' data (have to use a different 'i+1' value if
               # this is the next year)
               ghosts <- ghostsTemp[inv[i]+1 - ghostsTemp$Year <= (dorm+1),]
@@ -634,15 +665,14 @@
               ghosts$survives_tplus1 <- NA
             }
             ## give the deadGhosts a 0 in survival (if there are any deadGhosts)
-            if(nrow(deadGhosts)>0){
+            if (nrow(deadGhosts)>0){
               deadGhosts$survives_tplus1 <- 0
               deadGhosts$ghost <- 0
             }
             ## get the data.frames in a consistent format
             ghosts <- ghosts[,names(children)]
             deadGhosts <- deadGhosts[,names(children)]
-          }
-          else if (dorm==0) { ## any trackID that doesn't have a child in year
+          } else if (dorm==0) { ## any trackID that doesn't have a child in year
             # 'i' is 'dead'
             deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in%
                                               tempNextYear$trackID),]
@@ -664,14 +694,15 @@
           # become the data for the current year in the next i of the loop
           tempNextYear <- rbind(children, orphans, ghosts)
 
-          ## STORE PARENTS DEMOGRAPHIC DATA
-          if (exists("assignOut")==TRUE) { ## if this is not the first year,
-            # then add demographic data
+          if (exists("assignOut") == TRUE) {
+            ## if this is not the first year, then add demographic data to the
+            # output d.f
             assignOut <- rbind(assignOut, parents, deadGhosts)
-          }
-          else if (exists("assignOut")==FALSE) { ## if the assignOut df is empty
+          } else if (exists("assignOut") == FALSE) {
+            ## if the assignOut df is empty
             assignOut <- rbind(parents, deadGhosts)
           }
+
           ## assign the data from the current i (tempNextYear) to be the past
           # year data (tempCurrentYear) for the next i
           tempCurrentYear <- tempNextYear
@@ -692,65 +723,66 @@ return(assignOut)
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 
- # prepares the dataset to feed into the 'assign' function (the 'Assign'
- # function will do this ahead of time when the user calls it)
-#  sampleDat <- grasslandData[grasslandData$Site == "CO"
-#                             & grasslandData$Quad == "ungz_5a"
-#                             & grasslandData$Species == "Sphaeralcea coccinea",]
-#  # this should be a data.frame
-#  dat <- sampleDat
-#
-#  # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-#  # to tell the 'assign' function when the quadrat was sampled
-#  sampleInv <- grasslandInventory[["ungz_5a"]]
-#  # this should be an integer vector
-#  inv <- sampleInv
-#
-#
-#  testOutput <- assign(dat = sampleDat,
-#                       inv = sampleInv,
-#                       dorm = 1,
-#                       buff = .05,
-#                       buffGenet = .001,
-#                       clonal =  1)
-#
-# ggplot(testOutput) +
-#   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
-#   scale_fill_discrete(guide = FALSE) +
-#   theme_classic()
-#
-# ggplot() +
-#   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
-#   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
-#   theme_linedraw()
-#
-#
-# ggplot() +
-#   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
-#   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
-#   theme_linedraw()
-#
-# tempDat <- dat[dat$Year==1923,]
-# tempOut <- testOutput[testOutput$Year==1923,]
-# mapview(tempDat) + mapview(tempOut, col.regions = "green")
-#
-# ## find duplicated polygons in testOutput d.f
-# #testOutput_cent <- st_centroid(testOutput)
-#
-# dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
-#
-# dups <- testOutput[testOutput$geometry %in% dupValues,]
-# plot(dups[dups$geometry==dupValues[1],"geometry"])
-#
-# mapview(dups[dups$geometry==dupValues[1],])
-# ## all the duplicates are in 2003, what?? that doesn't make sense
-# unique(dups$Year)
-#
-##see which obs. aren't in the outPut dataset (in comparison to the raw data)
-# testDat <- st_drop_geometry(dat)
-# testDat$test <- "old"
-# testOutputTest <- st_drop_geometry(testOutput)
-# testOutputTest$test <- "new"
-#
-# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-#
+## prepares the dataset to feed into the 'assign' function (the 'Assign'
+# function will do this ahead of time when the user calls it)
+ sampleDat <- grasslandData[grasslandData$Site == "CO"
+                            & grasslandData$Quad == "unun_11"
+                            & grasslandData$Species == "Lepidium densiflorum",]
+ # this should be a data.frame
+ dat <- sampleDat
+
+ # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+ # to tell the 'assign' function when the quadrat was sampled
+ sampleInv <- grasslandInventory[["unun_11"]]
+ # this should be an integer vector
+ inv <- sampleInv
+
+
+ testOutput <- assign(dat = sampleDat,
+                      inv = sampleInv,
+                      dorm = 1,
+                      buff = .05,
+                      buffGenet = .001,
+                      clonal =  1)
+
+ggplot(testOutput) +
+  geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
+  scale_fill_discrete(guide = FALSE) +
+  theme_classic()
+
+ggplot() +
+  geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
+  geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+  theme_linedraw()
+
+
+ggplot() +
+  geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+  geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
+  theme_linedraw()
+
+tempDat <- dat[dat$Year==1923,]
+tempOut <- testOutput[testOutput$Year==1923,]
+mapview(tempDat) + mapview(tempOut, col.regions = "green")
+
+## find duplicated polygons in testOutput d.f
+#testOutput_cent <- st_centroid(testOutput)
+
+dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
+
+dups <- testOutput[testOutput$geometry %in% dupValues,]
+plot(dups[dups$geometry==dupValues[1],"geometry"])
+
+mapview(dups[dups$geometry==dupValues[1],])
+## all the duplicates are in 2003, what?? that doesn't make sense
+unique(dups$Year)
+
+#see which obs. aren't in the outPut dataset (in comparison to the raw data)
+testDat <- st_drop_geometry(dat)
+testDat$test <- "old"
+testOutputTest <- st_drop_geometry(testOutput)
+testOutputTest$test <- "new"
+
+testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+
+###AES### fxn runs, but need to figure out how to account for gaps in occurance accross years r.e. 'age' and 'recruit' columns, and storing 'deadGhosts' after they 'die' in a year with no observations

@@ -197,11 +197,6 @@
   }
 
   ## work -------------------------------------------------------------------
-  ## make sure that the 'assignOut' data.frame for the output is empty
-  if(exists("assignOut")){
-    rm(assignOut)
-  }
-
   ## add columns to the 'dat' dataset needed for output from assign()
   dat$trackID <- NA
   dat$age <- NA
@@ -210,6 +205,7 @@
   dat$survives_tplus1 <- NA
   dat$ghost <- NA
   dat$genetArea <- NA
+  dat$genetID <- NA
 
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
@@ -270,7 +266,7 @@
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  for (i in (firstYearIndex+1):length(inv)) {
+  for (i in (firstYearIndex+1):6){#length(inv)) {
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -386,7 +382,7 @@
           # columns are in correct order
           deadGhosts <- tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) >
                                                  (dorm + 1)),
-                                     c(names(dat)[-13],"genetID", "geometry")]
+                                     c(names(dat)[-13], "geometry")]
 
           ## rewrite 'tempCurrentYear' so it just has 'ghosts'(not 'deadGhosts')
           tempCurrentYear <- ghosts
@@ -737,64 +733,63 @@ return(assignOut)
 
 ## prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
- sampleDat <- grasslandData[grasslandData$Site == "CO"
-                            & grasslandData$Quad == "unun_11"
-                            & grasslandData$Species == "Bouteloua gracilis",]
- # this should be a data.frame
- dat <- sampleDat
-
- # get the appropriate grasslandInventory data for the "unun_11" quadrat,
- # to tell the 'assign' function when the quadrat was sampled
- sampleInv <- grasslandInventory[["unun_11"]]
- # this should be an integer vector
- inv <- sampleInv
-
-
- testOutput <- assign(dat = sampleDat,
-                      inv = sampleInv,
-                      dorm = 1,
-                      buff = .05,
-                      buffGenet = .001,
-                      clonal =  1)
-
-ggplot(testOutput) +
-  geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
-  scale_fill_discrete(guide = FALSE) +
-  theme_classic()
-
-ggplot() +
-  geom_sf(data = st_buffer(testOutput[testOutput$Year==2009,],.05), fill = "purple", alpha = 0.5) +
-  geom_sf(data = st_buffer(dat[dat$Year==2009,],.05), fill = "green", alpha = 0.5) +
-  theme_linedraw()
-
-
-ggplot() +
-  geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
-  geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
-  theme_linedraw()
-
-tempDat <- dat[dat$Year==1923,]
-tempOut <- testOutput[testOutput$Year==1923,]
-mapview(tempDat) + mapview(tempOut, col.regions = "green")
-
-## find duplicated polygons in testOutput d.f
-#testOutput_cent <- st_centroid(testOutput)
-
-dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
-
-dups <- testOutput[testOutput$geometry %in% dupValues,]
-plot(dups[dups$geometry==dupValues[1],"geometry"])
-
-mapview(dups[dups$geometry==dupValues[1],])
-## all the duplicates are in 2003, what?? that doesn't make sense
-unique(dups$Year)
-
-#see which obs. aren't in the outPut dataset (in comparison to the raw data)
-testDat <- st_drop_geometry(dat)
-testDat$test <- "old"
-testOutputTest <- st_drop_geometry(testOutput)
-testOutputTest$test <- "new"
-
-testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-
-###AES### fxn runs, but need to figure out how to account for gaps in occurance accross years r.e. 'age' and 'recruit' columns, and storing 'deadGhosts' after they 'die' in a year with no observations
+ # sampleDat <- grasslandData[grasslandData$Site == "CO"
+ #                            & grasslandData$Quad == "unun_11"
+ #                            & grasslandData$Species == "Bouteloua gracilis",]
+ # # this should be a data.frame
+ # dat <- sampleDat
+ #
+ # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+ # # to tell the 'assign' function when the quadrat was sampled
+ # sampleInv <- grasslandInventory[["unun_11"]]
+ # # this should be an integer vector
+ # inv <- sampleInv
+ #
+ #
+ # testOutput <- assign(dat = datSp,
+ #                      inv = invQuad,
+ #                      dorm = 1,
+ #                      buff = .05,
+ #                      buffGenet = .001,
+ #                      clonal =  1)
+#
+# ggplot(testOutput) +
+#   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
+#   scale_fill_discrete(guide = FALSE) +
+#   theme_classic()
+#
+# ggplot() +
+#   geom_sf(data = st_buffer(testOutput[testOutput$Year==2009,],.05), fill = "purple", alpha = 0.5) +
+#   geom_sf(data = st_buffer(dat[dat$Year==2009,],.05), fill = "green", alpha = 0.5) +
+#   theme_linedraw()
+#
+#
+# ggplot() +
+#   geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+#   geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
+#   theme_linedraw()
+#
+# tempDat <- dat[dat$Year==1923,]
+# tempOut <- testOutput[testOutput$Year==1923,]
+# mapview(tempDat) + mapview(tempOut, col.regions = "green")
+#
+# ## find duplicated polygons in testOutput d.f
+# #testOutput_cent <- st_centroid(testOutput)
+#
+# dupValues <- testOutput[duplicated(testOutput$geometry),"geometry"]$geometry
+#
+# dups <- testOutput[testOutput$geometry %in% dupValues,]
+# plot(dups[dups$geometry==dupValues[1],"geometry"])
+#
+# mapview(dups[dups$geometry==dupValues[1],])
+# ## all the duplicates are in 2003, what?? that doesn't make sense
+# unique(dups$Year)
+#
+# #see which obs. aren't in the outPut dataset (in comparison to the raw data)
+# testDat <- st_drop_geometry(dat)
+# testDat$test <- "old"
+# testOutputTest <- st_drop_geometry(testOutput)
+# testOutputTest$test <- "new"
+#
+# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+#

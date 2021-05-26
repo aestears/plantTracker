@@ -95,7 +95,7 @@ return(trackSppOut)
 
 
 # Testing -----------------------------------------------------------------
-
+#
 dat <- grasslandData
 inv <- grasslandInventory
 dorm <- 1
@@ -105,3 +105,17 @@ clonal <- data.frame('Species' = unique(dat$Species),
                      "clonal" = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
 
 testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
+
+
+testDat <- st_drop_geometry(dat)
+testDat$test <- "old"
+testOutputTest <- st_drop_geometry(testOut)
+testOutputTest$test <- "new"
+
+testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+testBad <- testTest[is.na(testTest$test.y),]
+
+testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" & testTest$Species == "Bouteloua gracilis",]
+
+ ###AES### for some reason is missing quite a few obs? need to figure out why###
+

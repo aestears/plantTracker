@@ -270,7 +270,7 @@
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  for (i in (firstYearIndex+1):3){ #length(inv)) {
+  for (i in (firstYearIndex+1):5){#12){#length(inv)) {
     ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
     # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
     # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -337,13 +337,33 @@
       if (nrow(tempCurrentYear) < 1) { ## what to do if 'tempCurrentYear' does
         # NOT exist, then overwrite the tempCurrentYear w/ data from the 'next'
         # year, and go to the next i
-        ## but first, give them trackIDs
-        if(nrow(tempNextYear) > 0) {tempTrackIDs <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,]
-        tempNextYear[is.na(tempNextYear$trackID)==TRUE,]$trackID <-
-          paste0(tempTrackIDs$sp_code_6,"_",
-                 tempTrackIDs$Year, "_",
-                 c(1:length(unique(tempTrackIDs$index))))}
+        ## but first, give them trackIDs and recruit/age data (if appropriate)--
+        # because they go directly into 'tempCurrentYear,' so don't get these
+        # data later in the 'orphans' section
+        if (nrow(tempNextYear) > 0) {
+          ## get a d.f that contains the obs. w/ no trackIDs
+          tempTrackIDs <- tempNextYear[is.na(tempNextYear$trackID)==TRUE,]
+          ## give them trackIDs
+          IDs <- data.frame( "genetID" = sort(unique(
+            tempTrackIDs$genetID)), ## get a vector of all the genetIDs
+            "trackID" = paste0(unique(dat$sp_code_6), ## get the sp. code
+                       "_",unique(tempTrackIDs$Year), ## get the unique year
+                     "_",c(1:length(unique(tempTrackIDs$genetID))))) ## get a
+          # vector of unique numbers that is the same length as the genetIDs
+          # in this quad/year
 
+          ## add trackIDs to the tempCurrentYear data.frame
+          tempNextYear[tempNextYear$genetID %in% IDs$genetID,]$trackID <-
+            IDs$trackID
+
+          ## then need to add 'age' and 'recruit' data (but first check that
+          # this isn't he first year after a gap in sampling)
+          tempNextYear[(tempNextYear$Year - inv[i-1]) < 2,
+                       c("age")] <- 0
+          tempNextYear[(tempNextYear$Year - inv[i-1]) < 2,
+                       c("recruit")] <- 1
+        }
+        ## put the tempNextYear data into tempCurrentYear, then go to the next i
         tempCurrentYear <- sf::st_as_sf(tempNextYear)
         next
         ## end of 'if' of what to do if tempCurrentYear is empty
@@ -684,7 +704,6 @@
             ghosts <- NULL
           }
 
-
           ## PREPARE FOR NEXT i
           ## arrange columns of children, orphans, and ghosts in the same order
           orphans <- orphans[, names(children)]
@@ -751,8 +770,8 @@ ggplot(testOutput) +
   theme_classic()
 
 ggplot() +
-  geom_sf(data = testOutput[testOutput$Year==1923,], fill = "purple", alpha = 0.5) +
-  geom_sf(data = dat[dat$Year==1923,], fill = "green", alpha = 0.5) +
+  geom_sf(data = st_buffer(testOutput[testOutput$Year==2009,],.05), fill = "purple", alpha = 0.5) +
+  geom_sf(data = st_buffer(dat[dat$Year==2009,],.05), fill = "green", alpha = 0.5) +
   theme_linedraw()
 
 

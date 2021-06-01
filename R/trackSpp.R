@@ -48,10 +48,14 @@ trackSpp <- function(dat, inv, dorm, buff, buffGenet, clonal, ...) {
     ## get the quadrats w/in that site
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
       ## get the quadratInventory data for this quad
-      invQuad <- inv[[j]]
-
+      if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
+        invQuad <- inv[[j]]
+      }
+      else if (is.vector(inv)) { ## if there is inv data for only 1 quadrat
+        invQuad <- inv
+      }
       ## get the species w/in that quad
-      for(k in unique(dat[dat$Site==i & dat$Quad==j,]$Species)) {
+      for (k in unique(dat[dat$Site==i & dat$Quad==j,]$Species)) {
         ## k = the name of the species
         datSp <- dat[dat$Site == i &
                        dat$Quad == j &
@@ -76,13 +80,13 @@ trackSpp <- function(dat, inv, dorm, buff, buffGenet, clonal, ...) {
                                                      "clonal"])
         )
         ## see if the output d.f exists yet (trackSpOut)
-        ## if not, then put datOut into trackSppOut b/c it is the first spp.
-        if(exists("trackSppOut")==FALSE) {
-          trackSppOut <- datOut
-        }
         ## if it does exist, then add datOut for the current spp. to the output
-        if(exists("trackSppOut")==TRUE){
+        if (exists("trackSppOut")==TRUE) {
           trackSppOut <- rbind(trackSppOut, datOut)
+        }
+        ## if not, then put datOut into trackSppOut b/c it is the first spp.
+        if (exists("trackSppOut")==FALSE) {
+          trackSppOut <- datOut
         }
       }
     }
@@ -96,26 +100,33 @@ return(trackSppOut)
 
 # Testing -----------------------------------------------------------------
 #
-dat <- grasslandData
-inv <- grasslandInventory
-dorm <- 1
-buff <- 0.05
-buffGenet <- 0.005
-clonal <- data.frame('Species' = unique(dat$Species),
-                     "clonal" = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-
-testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
-
-
-testDat <- st_drop_geometry(dat)
-testDat$test <- "old"
-testOutputTest <- st_drop_geometry(testOut)
-testOutputTest$test <- "new"
-
-testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-testBad <- testTest[is.na(testTest$test.y),]
-
-testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" & testTest$Species == "Bouteloua gracilis",]
+# dat <- grasslandData#[grasslandData$Site == "CO"
+#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# inv <- grasslandInventory
+# dorm <- 1
+# buff <- 0.05
+# buffGenet <- 0.005
+# clonal <- 1
+#   #data.frame('Species' = unique(dat$Species),
+#   #                   "clonal" = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+#
+# testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
+#
+# sampleInv <- list("unun_11"=grasslandInventory$"unun_11",
+#                   "ungz_5a" = grasslandInventory$"ungz_5a")
+# testOut <- trackSpp(dat, sampleInv, dorm = 1, buff = .05, buffGenet = .005, clonal = 1)
+#
+#
+# testDat <- st_drop_geometry(dat)
+# testDat$test <- "old"
+# testOutputTest <- st_drop_geometry(testOut)
+# testOutputTest$test <- "new"
+#
+# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+# testBad <- testTest[is.na(testTest$test.y),]
+#
+# testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" & testTest$Species == "Bouteloua gracilis",]
 
  ###AES### for some reason is missing quite a few obs? need to figure out why###
 

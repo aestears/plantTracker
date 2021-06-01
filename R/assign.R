@@ -733,15 +733,15 @@ return(assignOut)
 
 ## prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
- # sampleDat <- grasslandData[grasslandData$Site == "CO"
+ # sampleDat_1 <- grasslandData[grasslandData$Site == "CO"
  #                            & grasslandData$Quad == "unun_11"
  #                            & grasslandData$Species == "Bouteloua gracilis",]
  # # this should be a data.frame
  # dat <- sampleDat
- #
- # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
- # # to tell the 'assign' function when the quadrat was sampled
- # sampleInv <- grasslandInventory[["unun_11"]]
+ # #
+ # # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+ # # # to tell the 'assign' function when the quadrat was sampled
+ # sampleInv_1 <- grasslandInventory[["unun_11"]]
  # # this should be an integer vector
  # inv <- sampleInv
  #

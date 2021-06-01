@@ -8,7 +8,7 @@
 #'
 #' @examples
 #'
-#' @importFrom igraph clusters
+#' @importFrom igraph clusters graph_from_adjacency_matrix
 #' @import Matrix
 #' @import sf
 #'

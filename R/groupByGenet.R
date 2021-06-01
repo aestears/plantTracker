@@ -31,18 +31,15 @@
 #'
 #' @examples
 #'
-<<<<<<< HEAD
 #' @importFrom igraph clusters graph_from_adjacency_matrix
 #' @import Matrix
 #' @import sf
-=======
 #' dat <- grasslandData[grasslandData$Site=="CO" &
 #' grasslandData$Quad == "ungz_5a" &
 #' grasslandData$Species == "Bouteloua gracilis" &
 #' grasslandData$Year == 1997,]
 #'
 #' groupByGenet(sf = dat, buffGenet = 0.005)
->>>>>>> f42d0628dc7bfb9579e6c64712754982addb65cb
 #'
 #' @seealso [assign()] and [trackSpp()], \pkg{PlantTracker} functions that apply
 #' this function across multiple species, quadrats, and years.

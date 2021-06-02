@@ -79,6 +79,9 @@ trackSpp <- function(dat, inv, dorm, buff, buffGenet, clonal, ...) {
                                          no = clonal[clonal$Species==k,
                                                      "clonal"])
         )
+
+        ###AES### check if the number of rows of datSp is the number of rows of datOut
+        ###AES### add an output showing the progress
         ## see if the output d.f exists yet (trackSpOut)
         ## if it does exist, then add datOut for the current spp. to the output
         if (exists("trackSppOut")==TRUE) {
@@ -96,10 +99,8 @@ trackSpp <- function(dat, inv, dorm, buff, buffGenet, clonal, ...) {
 return(trackSppOut)
 }
 
-
-
 # Testing -----------------------------------------------------------------
-#
+
 # dat <- grasslandData#[grasslandData$Site == "CO"
 #                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
 #                      #& grasslandData$Species == "Bouteloua gracilis",]
@@ -112,10 +113,6 @@ return(trackSppOut)
 #   #                   "clonal" = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
 #
 # testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
-#
-# sampleInv <- list("unun_11"=grasslandInventory$"unun_11",
-#                   "ungz_5a" = grasslandInventory$"ungz_5a")
-# testOut <- trackSpp(dat, sampleInv, dorm = 1, buff = .05, buffGenet = .005, clonal = 1)
 #
 #
 # testDat <- st_drop_geometry(dat)

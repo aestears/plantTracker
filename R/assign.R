@@ -190,7 +190,7 @@
                                          "genetArea"]
     }
     ## assign unique genetIDs for every polygon (if clonal = 0)
-    else if(clonal==0) {
+    else { #if(clonal==0) {
       cloneDat$genetID <- 1:nrow(cloneDat)
       cloneDat$genetArea <- cloneDat$Area
     }
@@ -724,7 +724,7 @@
               deadGhosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) >
                                           (dorm + 1)),]
               ## if the 'i' year is the last year of sampling:
-            } else if (inv[i] == max(inv)) {
+            } else { #if (inv[i] == max(inv)) {
               ## get the 'ghost' data (have to use a different 'i+1' value if
               # this is the next year)
               ghosts <- ghostsTemp[inv[i]+1 - ghostsTemp$Year <= (dorm+1),]
@@ -771,7 +771,7 @@
             ## if this is not the first year, then add demographic data to the
             # output d.f
             assignOut <- rbind(assignOut, parents, deadGhosts)
-          } else if (exists("assignOut") == FALSE) {
+          } else { #if (exists("assignOut") == FALSE) {
             ## if the assignOut df is empty
             assignOut <- rbind(parents, deadGhosts)
           }

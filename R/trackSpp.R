@@ -100,7 +100,7 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-
+#
 # dat <- grasslandData#[grasslandData$Site == "CO"
 #                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
 #                      #& grasslandData$Species == "Bouteloua gracilis",]
@@ -124,6 +124,6 @@ return(trackSppOut)
 # testBad <- testTest[is.na(testTest$test.y),]
 #
 # testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" & testTest$Species == "Bouteloua gracilis",]
-
- ###AES### for some reason is missing quite a few obs? need to figure out why###
-
+#
+#  ###AES### for some reason is missing quite a few obs? need to figure out why###
+#

@@ -240,8 +240,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
         invQuad <- inv[[j]]
-      }
-      else if (is.vector(inv)) { ## if there is inv data for only 1 quadrat
+      } else if (is.vector(inv)) { ## if there is inv data for only 1 quadrat
         invQuad <- inv
       }
       ## get the species w/in that quad
@@ -257,7 +256,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
         ## are there species-specific arg values at all?
         if (exists('sppArgs')==TRUE) {
           ## are there species-specific values for this species?
-          if (sum(sppArgs$Species %in% k) > 0) {
+          if (sum(sppArgs$Species==k)==1) {
             ## if there ARE sp-specific values for this species, check that there
             # are values for each argument
 
@@ -300,16 +299,16 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
           } else {
             ## if there are NOT sp-specific values for this species, then use
             # default values
-            dormk <- dorm
-            buffk <- buff
-            buffGenetk <- buffGenet
+            dormK <- dorm
+            buffK <- buff
+            buffGenetK <- buffGenet
             clonalK <- clonal
           }
         } else {
           ## if there are not species-specific values at all
-          dormk <- dorm
-          buffk <- buff
-          buffGenetk <- buffGenet
+          dormK <- dorm
+          buffK <- buff
+          buffGenetK <- buffGenet
           clonalK <- clonal
         }
 
@@ -355,9 +354,10 @@ buffGenet <- 0.005
 clonal <- 1
 sppArgs <- data.frame('Species' = unique(dat$Species)[1:5],
                       'clonal' = c(1,1,0,0,0),
-                      #'buffGenet' = c(.005, .005, 0, 0, 0),
+                      'buffGenet' = c(.005, .005, 0, 0, 0),
                       'dorm' = c(1,1,1,1,1),
-                      'buff' = c(.05,.05,.05,.05,.05))
+                      'buff' = c(.05,.05,.05,.05,.05)
+                      )
 
 testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal, sppArgs)
 

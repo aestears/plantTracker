@@ -2,13 +2,21 @@
 % Please edit documentation in R/trackSpp.R
 \name{trackSpp}
 \alias{trackSpp}
-\title{Tracks mapped individual plants through time to get growth and survival data}
+\title{Tracks genets through time for multiple species and sites}
 \usage{
-trackSpp()
+trackSpp(
+  dat,
+  inv,
+  dorm = NULL,
+  buff = NULL,
+  buffGenet = NULL,
+  clonal = NULL,
+  ...
+)
 }
 \value{
 
 }
 \description{
-Tracks mapped individual plants through time to get growth and survival data
+Tracks genets through time for multiple species and sites
 }

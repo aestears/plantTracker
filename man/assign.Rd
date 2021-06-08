@@ -76,7 +76,7 @@ sampling, uses the \code{\link{groupByGenet}} function to assign genetIDs to
 polygons (if 'clonal' = 1). It then adds a buffer defined by 'buff' to each
 of the polygons in year \emph{t}. Then it calculates the amount of overlapping
 area between polygons of each year \emph{t} genet and polygons of each year \emph{t+1}
-genet (using \code{\link{sf::st_intersection()}}). If there is unambiguous
+genet (using \code{\link[sf]{st_intersection}}). If there is unambiguous
 overlap between a 'parent' genet from year \emph{t} and a 'child' genet from year
 \emph{t+1}, then that 'child' gets the same identifying trackID as the parent. If
 there is a 'tie,' where more than one parent overlaps the same child or more

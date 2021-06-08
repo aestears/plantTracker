@@ -30,10 +30,6 @@
 #' row in 'sf'.
 #'
 #' @examples
-#'
-#' @importFrom igraph clusters graph_from_adjacency_matrix
-#' @import Matrix
-#' @import sf
 #' dat <- grasslandData[grasslandData$Site=="CO" &
 #' grasslandData$Quad == "ungz_5a" &
 #' grasslandData$Species == "Bouteloua gracilis" &

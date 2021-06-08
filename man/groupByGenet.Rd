@@ -42,7 +42,6 @@ designed for use within the \code{\link{assign}} function (and then the
 \code{\link{trackSpp}} function), but can be used independently.
 }
 \examples{
-
 dat <- grasslandData[grasslandData$Site=="CO" &
 grasslandData$Quad == "ungz_5a" &
 grasslandData$Species == "Bouteloua gracilis" &

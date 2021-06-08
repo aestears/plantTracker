@@ -11,7 +11,7 @@
 #' polygons (if 'clonal' = 1). It then adds a buffer defined by 'buff' to each
 #' of the polygons in year *t*. Then it calculates the amount of overlapping
 #' area between polygons of each year *t* genet and polygons of each year *t+1*
-#' genet (using \code{\link{sf::st_intersection()}}). If there is unambiguous
+#' genet (using \code{\link[sf]{st_intersection}}). If there is unambiguous
 #' overlap between a 'parent' genet from year *t* and a 'child' genet from year
 #' *t+1*, then that 'child' gets the same identifying trackID as the parent. If
 #' there is a 'tie,' where more than one parent overlaps the same child or more
@@ -849,6 +849,7 @@
   ## clean up output data.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
                          !(names(assignOut) %in% c("ghost","genetID", "index"))]
+
   ## output ---------------------------------------------------------------
 return(assignOut)
   }
@@ -857,7 +858,7 @@ return(assignOut)
  # years of sampling/before a big gap--to expect 'NA' for survival in those years.
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
-
+#
 # ## prepares the dataset to feed into the 'assign' function (the 'Assign'
 # # function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "KS"
@@ -919,4 +920,4 @@ return(assignOut)
 # testOutputTest$test <- "new"
 #
 # testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-
+#

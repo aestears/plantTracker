@@ -853,7 +853,8 @@
 return(assignOut)
   }
 
-
+###AES try putting a 'warning/print' telling the user which years are the last
+ # years of sampling/before a big gap--to expect 'NA' for survival in those years.
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 

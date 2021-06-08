@@ -8,6 +8,10 @@
 trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
                      clonal = NULL, sppArgs = NULL, ...) {
 
+  ###AES start workign on documentation for this function
+  # -- can send assign and trackSpp both to the same help page! make help more
+  # generalized, then add details about the differences to the 'details' section
+
   # argument checks ---------------------------------------------------------
   ## arguments
 
@@ -18,6 +22,8 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
   #inv ## a list of the sampling years for each quadrat included in dat (in the
   # same format as grasslandInventory). SUbset by quad before being passed to
   # assign()
+
+  ###AES get rid of this argument, instead allow each of the dorm, buff, buffGenet, and clonal arguments to be either a single value OR a d.f --> then if it's a d.f, must have values for each species
 
   #sppArgs ## a data.frame that contains species-specific arguments for dorm,
   # clonal, buff, and buffGenet. Does not need to contain values for every
@@ -30,6 +36,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
   # defaults for dorm, clonal, buff, and buffGenet are not required!
   ## is there a sppArgs d.f?
   if (is.null(sppArgs)==FALSE) {
+    ### AES check that it is a data.frame
     ## check to make sure that the spp. listed in sppArgs are actually present
     # in dat
     if (is.null(sppArgs$Species)==TRUE) {
@@ -135,7 +142,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
         # exist?-- if not, don't need to check it!
         if(sum(!is.numeric(sppArgs$buffGenet) | ## buffGenet must be numeric
                sppArgs$buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) |
-               ## buffGenet must notbe larger than the dimensions of the quadrat
+               ## buffGenet must not be larger than the dims of the quadrat
                sppArgs$buffGenet < 0 ## buffGenet must be >= to zero
         ) > 0) {
           stop("'buffGenet' argument must be a numeric column in the sppArgs
@@ -367,7 +374,20 @@ testDat$test <- "old"
 testOutputTest <- st_drop_geometry(testOut)
 testOutputTest$test <- "new"
 
-testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone", "Seedling", "Stems", "Basal", "Type", "Site", "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone",
+                            "Seedling", "Stems", "Basal", "Type", "Site",
+                            "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
 testBad <- testTest[is.na(testTest$test.y),]
 
-testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" & testTest$Species == "Bouteloua gracilis",]
+testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" &
+                           testTest$Species == "Bouteloua gracilis",]
+
+### AES make an example in the documentation that specifies all args as numeric,
+# and another example where they specify all four arguments as data.frames
+
+### be careful about warnings: because people freak out about them
+
+###AES make fake errors in data to make sure that the argument checks are
+# working correctly  (i.e. a random NA in a column, character for dorm, etc.)
+
+###AES maybe also try to practice on larger subset of data.frame

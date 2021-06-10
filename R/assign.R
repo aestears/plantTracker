@@ -99,7 +99,7 @@
 #' @importFrom stats aggregate reshape
 #' @export
 
- assign <- function(dat, inv, dorm, buff, buffGenet, clonal,...){
+ assign <- function(dat, inv, dorm , buff , buffGenet, clonal, ...){
   ## argument checking ---------------------------------------------------------------
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
   # 'POLYGON' or 'MULTIPOLYGON'?)

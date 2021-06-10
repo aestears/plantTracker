@@ -5,8 +5,15 @@
 #'
 #' @examples
 
-trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
-                     clonal = NULL, ...) {
+trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
+                     datNames = c(
+                       "Species = Species",
+                       "Site = Site",
+                       "Quad = Quad",
+                       "Year = Year",
+                       "sp_code_6 = sp_code_6",
+                       "geometry = geometry"),
+                     ...) {
 
   ###AES start working on documentation for this function
   # -- can send assign and trackSpp both to the same help page! make help more
@@ -18,7 +25,45 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
   #dat ## an sf d.f that contains all of the raw digitized map data
   # (in grasslandData format) for as many sites and quads as you'd like. Subset
   # by spp. and quad. before being passed to assign()
-
+  ## make sure that the column names are 'correct' for what the function expects
+  ## check the datNames argument
+  if(is.character(datNames) == TRUE & ## datNames must be a character arg.
+     is.vector(datNames) == TRUE & ## must be a vector
+     length(datNames) == 6 ## must have 6 values, one for each required column
+     ){ ## if the datNames argument is a character vector of length 6,
+    # proceed with the following testing
+    if (sum(!sapply(regmatches(datNames,gregexpr(pattern = "=", datNames)),
+                    length) %in% c(1,1,1,1,1,1)) == 0 ## must have an '=' in
+        # each value of datNames, but only one '='
+        ) {
+      ## proceed with the following re-assignment of column names in dat
+      ## separate the default from 'new' values
+      datNamesTemp <- strsplit(datNames, "=")
+      ## remove any spaces from default and new values
+      datNamesTemp <- sapply(datNamesTemp, FUN = function(x) gsub(pattern = " ",
+                                                         x, replacement = ""))
+      ## check that the datNamesTemp 'default' values contain the required names
+      if (sum(!datNamesTemp[1,] %in% c("Species", "Site", "Quad", "Year",
+                                  "sp_code_6", "geometry")) != 0) {
+        stop("The first characters in each of the elements of the 'datNames'
+             argument must be exactly--including case-- 'Species', 'Site',
+             'Quad', 'Year', 'sp_code_6', and 'geometry'.")
+      } else { ## if the 'default' values of datNames are correct...
+        ## get a vector of 'default' names
+        defaultDatNames <- datNamesTemp[1,]
+        ## get a vector of 'new' names
+        userDatNames <- datNamesTemp[2,]
+        ## re-assign the names of dat to the default
+       names(dat)[which(names(dat) %in% userDatNames)] <- defaultDatNames
+       }
+      } else {
+      stop("The 'datNames' arg must have a single '=' in each value")
+    }
+  } else { ## if the datNames argument is NOT a character vector
+    stop("The 'datNames' arg, if specified, must be a character vector and
+         contain values for each of the required columns in dat ('Species =',
+         'Site =', 'Quad =', 'sp_code_6 =', 'geometry =')")
+    }
   #inv ## a list of the sampling years for each quadrat included in dat (in the
   # same format as grasslandInventory). SUbset by quad before being passed to
   # assign()
@@ -41,17 +86,22 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
              numeric value that is a whole number greater than or equal to 0")
       }
     } else if (is.data.frame(dorm)) {
-      if(sum(!unique(dat$Species) %in% dorm$Species) > 0 | ## dorm must have
-         # data for all species
-         sum(is.na(dat$dorm)) > 0 | ## can't have NA values in dorm
-         !is.numeric(dorm$dorm) | ## can't have non-numeric values for dorm$dorm
-         sum(dorm$dorm < 0) > 0 | ## can't be less than 0
-         round(dorm$dorm) != dorm$dorm ## must be whole numbers
-         ) {
-        stop("If the 'dorm' argument is specified by species, it must be a
+      if (sum(!names(dorm) %in% c("Species", "dorm")) == 0) {
+        if(sum(!unique(dat$Species) %in% dorm$Species) > 0 | ## dorm must have
+           # data for all species
+           sum(is.na(dat$dorm)) > 0 | ## can't have NA values in dorm
+           !is.numeric(dorm$dorm) | ## can't have non-numeric values for dorm$dorm
+           sum(dorm$dorm < 0) > 0 | ## can't be less than 0
+           round(dorm$dorm) != dorm$dorm ## must be whole numbers
+        ) {
+          stop("If the 'dorm' argument is specified by species, it must be a
              data.frame that includes a 'Species' column with a row for every
              species in 'dat', and a 'dorm' column that contains positive, whole
              number values for each species with no NAs.")
+        }
+      } else {
+        stop("If the 'dorm' argument is specifed by species, the column names
+             must be 'Species' and 'dorm'")
       }
     } else {
       stop("The 'dorm' argument must be either a single numeric value that is a
@@ -79,7 +129,8 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
              numeric value that is greater than or equal to 0")
       }
     } else if (is.data.frame(buff)) {
-      if(sum(!unique(dat$Species) %in% buff$Species) > 0 | ## buff must have
+      if (sum(!names(buff) %in% c("Species", "buff")) == 0) {
+        if(sum(!unique(dat$Species) %in% buff$Species) > 0 | ## buff must have
          # data for all species
          sum(is.na(dat$buff)) > 0 | ## can't have NA values in buff
          !is.numeric(buff$buff) | ## can't have non-numeric values for buff$buff
@@ -90,6 +141,10 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
              data.frame that includes a 'Species' column with a row for every
              species in 'dat', and a 'buff' column that contains positive,
              numeric values for each species with no NAs.")
+        }
+      } else {
+        stop("If the 'buff' argument is specifed by species, the column names
+             must be 'Species' and 'buff'")
       }
     } else {
       stop("The 'buff' argument must be either a single numeric value that is
@@ -117,6 +172,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
         single numeric value that is greater than or equal to 0")
       }
     } else if (is.data.frame(buffGenet)) {
+      if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
       if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 | ## buffGenet
          # must have data for all species
          sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in buffGenet
@@ -130,6 +186,10 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
              data.frame that includes a 'Species' column with a row for every
              species in 'dat', and a 'buffGenet' column that contains positive,
              numeric values for each species with no NAs.")
+      }
+      } else {
+        stop("If the 'buffGenet' argument is specifed by species, the column
+        names must be 'Species' and 'buffGenet'")
       }
     } else {
       stop("The 'buffGenet' argument must be either a single numeric value that
@@ -156,6 +216,7 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
         single numeric value that is either 0 or 1.")
       }
     } else if (is.data.frame(clonal)) {
+      if (sum(!names(clonal) %in% c("Species", "clonal")) == 0) {
       if(sum(!unique(dat$Species) %in% clonal$Species) > 0 | ## clonal
          # must have data for all species
          sum(is.na(clonal$clonal)) > 0 | ## can't have NA values in clonal
@@ -168,6 +229,10 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
              data.frame that includes a 'Species' column with a row for every
              species in 'dat', and a 'clonal' column that contains numeric
              values of either 0 or 1 for each species with no NAs.")
+      }
+      } else {
+        stop("If the 'clonal' argument is specifed by species, the column
+        names must be 'Species' and 'clonal'")
       }
     } else {
       stop("The 'clonal' argument must be either a single numeric value that
@@ -262,6 +327,11 @@ trackSpp <- function(dat, inv, dorm = NULL, buff = NULL, buffGenet = NULL,
       }
     }
   }
+
+  ## re-name the 'dat' input data.frame with the user-defined arguments
+  names(dat)[which(names(dat) %in% defaultDatNames)] <- userDatNames
+
+
 # output ------------------------------------------------------------------
 return(trackSppOut)
 }

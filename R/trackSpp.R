@@ -25,47 +25,14 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   #dat ## an sf d.f that contains all of the raw digitized map data
   # (in grasslandData format) for as many sites and quads as you'd like. Subset
   # by spp. and quad. before being passed to assign()
-  ## make sure that the column names are 'correct' for what the function expects
-  ## check the datNames argument
-  if(is.character(datNames) == TRUE & ## datNames must be a character arg.
-     is.vector(datNames) == TRUE & ## must be a vector
-     length(datNames) == 6 ## must have 6 values, one for each required column
-     ){ ## if the datNames argument is a character vector of length 6,
-    # proceed with the following testing
-    if (sum(!sapply(regmatches(datNames,gregexpr(pattern = "=", datNames)),
-                    length) %in% c(1,1,1,1,1,1)) == 0 ## must have an '=' in
-        # each value of datNames, but only one '='
-        ) {
-      ## proceed with the following re-assignment of column names in dat
-      ## separate the default from 'new' values
-      datNamesTemp <- strsplit(datNames, "=")
-      ## remove any spaces from default and new values
-      datNamesTemp <- sapply(datNamesTemp, FUN = function(x) gsub(pattern = " ",
-                                                         x, replacement = ""))
-      ## check that the datNamesTemp 'default' values contain the required names
-      if (sum(!datNamesTemp[1,] %in% c("Species", "Site", "Quad", "Year",
-                                  "sp_code_6", "geometry")) != 0) {
-        stop("The first characters in each of the elements of the 'datNames'
-             argument must be exactly--including case-- 'Species', 'Site',
-             'Quad', 'Year', 'sp_code_6', and 'geometry'.")
-      } else { ## if the 'default' values of datNames are correct...
-        ## get a vector of 'default' names
-        defaultDatNames <- datNamesTemp[1,]
-        ## get a vector of 'new' names
-        userDatNames <- datNamesTemp[2,]
-        ## re-assign the names of dat to the default
-       names(dat)[which(names(dat) %in% userDatNames)] <- defaultDatNames
-       }
-      } else {
-      stop("The 'datNames' arg must have a single '=' in each value")
-    }
-  } else { ## if the datNames argument is NOT a character vector
-    stop("The 'datNames' arg, if specified, must be a character vector and
-         contain values for each of the required columns in dat ('Species =',
-         'Site =', 'Quad =', 'sp_code_6 =', 'geometry =')")
-    }
+
+  ## check the 'dat' and 'inv' arguments using the 'checkDat' function
+  dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
+                  trackerFormat = TRUE, inheritFromTrackSpp = FALSE,
+                  printGoAhead = FALSE)
+
   #inv ## a list of the sampling years for each quadrat included in dat (in the
-  # same format as grasslandInventory). SUbset by quad before being passed to
+  # same format as grasslandInventory). Subset by quad before being passed to
   # assign()
 
   ###AES get rid of this argument, instead allow each of the dorm, buff, buffGenet, and clonal arguments to be either a single value OR a d.f --> then if it's a d.f, must have values for each species
@@ -337,7 +304,6 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-
 dat <- grasslandData#[grasslandData$Site == "CO"
                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
                      #& grasslandData$Species == "Bouteloua gracilis",]

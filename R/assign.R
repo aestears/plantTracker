@@ -99,86 +99,45 @@
 #' @importFrom stats aggregate reshape
 #' @export
 
- assign <- function(dat, inv, dorm , buff , buffGenet, clonal, ...){
-  ## argument checking ---------------------------------------------------------------
-  ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
-  # 'POLYGON' or 'MULTIPOLYGON'?)
-  if(sum(st_is(dat, c("POLYGON", "MULTIPOLYGON"))) != nrow(dat)) {
-    stop("'dat' is not in correct sf format.
-         sfc must be POLYGON or MULTIPOLYGON")
-  }
+## NOTE: this function assumes that the 'dat' argument has the exact required column names
+ assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
+                    datNames = c(
+   "Species = Species",
+   "Site = Site",
+   "Quad = Quad",
+   "Year = Year",
+   "sp_code_6 = sp_code_6",
+   "geometry = geometry"),
+   ...){
+  ## argument checking --------------------------------------------------------
+   ## check the 'dat' and 'inv' arguments, using the 'checkDat' function
+   dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
+                   trackerFormat = TRUE,
+                   inheritFromTrackSpp = TRUE,
+                   printGoAhead = FALSE)
 
-  ## must be data for only one quadrat
-   if(length(unique(dat$Quad)) > 1) {
-     stop("'dat' can only contain data for one quadrat")
+   ## do assign-specific argument checks of 'dat' and 'inv'
+   ## check the Species column -- assign-specific
+   if(length(unique(dat$Species)) > 1  ## must be data for only one species
+      ) {
+      stop("The 'Species' column must contain only one species name.")
    }
 
-  ## must have the correct column names, with the correct format
-  if (sum(!c("Year", "sp_code_6", "Species", "Quad") %in% names(dat)) > 0) {
-    ## if the 'dat' d.f. does not have 'Year', 'sp_code_6', 'Species', or 'Quad'
-    # columns, then stop the function and return an error statement
-    stop("The 'dat' data.frame must contain columns labeled 'Year', 'sp_code_6',
-         'Species', and 'Quad'.")
-  }
-
-   ## check the Species column
-  if (is.null(dat$Species) == FALSE) {
-    if (sum(is.na(dat$Species)) != 0 | ## cannot have 'NA' values for species
-        !is.character(dat$Species) | ## must be a character vector
-        length(unique(dat$Species)) > 1  ## must be data for only one species
+   ## check the 'Quad' column -- assign-specific
+   if (length(unique(dat$Quad)) > 1 ## must have data for only one quad
         ) {
-      stop("The 'Species' column must be a character column with no 'NA's and
-           contain only one species name.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'Species'.")
-  }
-   ## check the 'Year' column
-   if (is.null(dat$Year) == FALSE) { ## does the 'Year' column exist?
-     if (sum(is.na(dat$Year)) != 0 | ## cannot have 'NA' values for Year
-         !is.integer(dat$Year) ## must be an integer vector
-     ) {
-       stop("The 'Year' column must be an integer column with no 'NA's.")
+       stop("The 'Quad' column must contain only one quadrat name.")
      }
-   } else {
-     stop("The 'dat' data.frame must contain values in the column labeled
-          'Year'.")
-   }
-   ## check the 'Quad' column
-   if (is.null(dat$Quad) == FALSE) { ## does the 'Quad' column exist?
-     if (sum(is.na(dat$Quad)) != 0 | ## cannot have 'NA' values for Quad
-         !is.character(dat$Quad) | ## must be a character vector
-         length(unique(dat$Quad)) > 1 ## must have data for only one quad
-     ) {
-       stop("The 'Quad' column must be an character column with no 'NA's and
-            only one quadrat name.")
-     }
-   } else {
-     stop("The 'dat' data.frame must contain values in the column labeled
-          'Quad'.")
-   }
-  ## check the 'sq_code_6' column
-   if (is.null(dat$sp_code_6) == FALSE) { ## does the 'sp_code_6' column exist?
-     if (sum(is.na(dat$sp_code_6)) != 0 | ## cannot have 'NA' values for
-         # sp_code_6
-         !is.character(dat$sp_code_6) | ## must be a character vector
-         length(unique(dat$sp_code_6)) > 1 ## must have data for only one
-         # sp_code_6
-     ) {
+
+  ## check the 'sq_code_6' column -- assign-specific
+   if (length(unique(dat$sp_code_6)) > 1 ## must have data for only one
+       # sp_code_6
+       ) {
        stop("The 'sp_code_6' column must be an character column with no 'NA's
        and a 6-letter species code for only one species.")
      }
-   } else {
-     stop("The 'dat' data.frame must contain values in the column labeled
-          'sp_code_6'.")
-   }
 
-  ## is inv in the correct format? (a numeric vector)
-  if(is.numeric(inv)==FALSE) {
-    stop("'inv' argument is not in the correct format.
-         Must be a numeric vector")
-  }
+
   ## make sure that 'inv' is in sequential order
   inv <- sort(inv)
 

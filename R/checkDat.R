@@ -43,7 +43,6 @@ checkDat <- function (dat, inv, datNames =  c(
 # and 'assign' function. Default is 'TRUE'.
 
 # work --------------------------------------------------------------------
-if (inheritFromTrackSpp == FALSE) {
   ## check the datNames argument AND convert the names of the 'dat' argument to
   # be consistent with what this function expects
   if(is.character(datNames) == TRUE & ## datNames must be a character arg.
@@ -81,7 +80,8 @@ if (inheritFromTrackSpp == FALSE) {
          contain values for each of the required columns in dat ('Species =',
          'Site =', 'Quad =', 'sp_code_6 =', 'geometry =')")
   }
-
+  ## proceed with remaining checks
+  if (inheritFromTrackSpp == FALSE) {
   ## check the 'dat' argument (with default names)
   ## are the user-defined column names from namDat arg. actually present in the
   # user-defined 'dat' argument?
@@ -215,11 +215,15 @@ if (inheritFromTrackSpp == FALSE) {
 # output ------------------------------------------------------------------
   ## prepare the output
   if (trackerFormat == TRUE) {
+    ## return the 'dat' argument, with column names that are appropriate for use
+    # directly in 'assign' or 'trackSpp'
     datReturn <- dat
-  } else if (trackerFormat == FALSE) { ## if user does want an output, and wants names of 'dat' to be the same as the input
+    invReturn <- inv
+  } else if (trackerFormat == FALSE) { ## if user does want an output, but
+    # wants names of 'dat' to be the same as the input (names they provided)
     ## re-name the 'dat' input data.frame with the user-defined arguments
     names(dat)[which(names(dat) %in% defaultDatNames)] <- userDatNames
-    datReturn <- NULL
+    datReturn <- dat
     if (printGoAhead == TRUE){
       print("The format of 'dat' and 'inv' are ready to be used in the 'trackSpp' or 'assign' functions, although you'll need to include the same 'datNames' argument that you included in this function.")
     }
@@ -227,5 +231,8 @@ if (inheritFromTrackSpp == FALSE) {
     stop("The 'trackerFormat' argument must be logical (i.e. TRUE or FALSE).")
   }
 
-  return(datReturn)
+  return(list(dat = datReturn,
+              inv = invReturn,
+              userDatNames = userDatNames))
+
 }

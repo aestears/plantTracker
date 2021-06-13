@@ -29,7 +29,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   ## check the 'dat' and 'inv' arguments using the 'checkDat' function
   dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
                   trackerFormat = TRUE, inheritFromTrackSpp = FALSE,
-                  printGoAhead = FALSE)
+                  printGoAhead = FALSE)$dat
 
   #inv ## a list of the sampling years for each quadrat included in dat (in the
   # same format as grasslandInventory). Subset by quad before being passed to
@@ -268,8 +268,6 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                          buffGenet = buffGenetK,
                          clonal = clonalK
         )
-
-        ###AES### add an output showing the progress
         ## see if the output d.f exists yet (trackSpOut)
         ## if it does exist, then add datOut for the current spp. to the output
         if (exists("trackSppOut")==TRUE) {
@@ -295,8 +293,16 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
     }
   }
 
-  ## re-name the 'dat' input data.frame with the user-defined arguments
-  names(dat)[which(names(dat) %in% defaultDatNames)] <- userDatNames
+  ## re-name the appropriate columns in 'trackSppOut' data.frame with the
+  # user-provided names of 'dat'
+userDatNames <- checkDat(dat, inv, trackerFormat = FALSE,
+                         inheritFromTrackSpp = TRUE,
+           printGoAhead = FALSE)$userDatNames
+
+defaultDatNames <- c("Species", "Site", "Quad", "Year", "sp_code_6", "geometry")
+
+names(trackSppOut)[which(names(trackSppOut) %in% defaultDatNames)] <-
+  userDatNames
 
 
 # output ------------------------------------------------------------------

@@ -114,7 +114,7 @@
    dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
                    trackerFormat = TRUE,
                    inheritFromTrackSpp = TRUE,
-                   printGoAhead = FALSE)
+                   printGoAhead = FALSE)$dat
 
    ## do assign-specific argument checks of 'dat' and 'inv'
    ## check the Species column -- assign-specific

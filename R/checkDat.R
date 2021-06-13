@@ -154,6 +154,11 @@ if (inheritFromTrackSpp == FALSE) {
           'sp_code_6'.")
   }
 
+  ## are there the same number of unique values for 'Species' and 'sp_code_6'?
+  if (length(unique(dat$Species)) != length(unique(dat$sp_code_6))) {
+    stop("The number of unique values in the 'Species' column and the 'sp_code_6' column do not match. Every species listed in 'dat' should have a six-letter code in the 'sp_code_6' column. Check spelling, and check that multiple species do not have the same six-letter code.")
+  }
+
   ## check the 'inv' argument
   ## is inv a list?
   if (is.list(inv) == TRUE &  ## 'inv' argument must be a list

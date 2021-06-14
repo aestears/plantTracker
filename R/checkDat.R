@@ -6,15 +6,18 @@
 #' @examples
 
 ## check that the dat and inv arguments contain the appropriate values/formats?
+## is also reformatting the column names
 checkDat <- function (dat, inv, datNames =  c(
   "Species = Species",
   "Site = Site",
   "Quad = Quad",
   "Year = Year",
   "sp_code_6 = sp_code_6",
-  "geometry = geometry"),
-  trackerFormat = FALSE,
-  inheritFromTrackSpp = FALSE,
+  "geometry = geometry"), ###AES should change this so that each column name is an argument--allows you to change only one and leave the rest as default
+    ###AES can put them all into a list to do basic checks (i.e. that they are are all character vectors) -- then check them against dat.
+  trackerFormat = FALSE, ##AES change the name of this? 'reformatted data'?
+  inheritFromTrackSpp = FALSE, ##AES make this an argument in the 'assign'
+  # function instead--to run or not run the checkDat function if
   printGoAhead = TRUE,
   ...) {
 
@@ -45,6 +48,8 @@ checkDat <- function (dat, inv, datNames =  c(
 # work --------------------------------------------------------------------
   ## check the datNames argument AND convert the names of the 'dat' argument to
   # be consistent with what this function expects
+
+  ###AES should subset the 'dat' d.f. by required columns, and then put them back together before outputting to the user
   if(is.character(datNames) == TRUE & ## datNames must be a character arg.
      is.vector(datNames) == TRUE & ## must be a vector
      length(datNames) == 6 ## must have 6 values, one for each required column
@@ -59,7 +64,7 @@ checkDat <- function (dat, inv, datNames =  c(
       datNamesTemp <- strsplit(datNames, "=")
       ## remove any spaces from default and new values
       datNamesTemp <- sapply(datNamesTemp, FUN = function(x) gsub(pattern = " ",
-                                                                  x, replacement = ""))
+                                                           x, replacement = ""))
       ## check that the datNamesTemp 'default' values contain the required names
       if (sum(!datNamesTemp[1,] %in% c("Species", "Site", "Quad", "Year",
                                        "sp_code_6", "geometry")) != 0) {
@@ -92,10 +97,10 @@ checkDat <- function (dat, inv, datNames =  c(
                                         names(dat)[which(names(dat) %in% userDatNames)]==0)]
     missingNameString <- paste(missingName, collapse = ", and ")
     ## stop the function and give an error
-    stop(paste0("The column names ", missingNameString, " were provided in the 'datNames' argument of this function, but there are no columns in 'dat' called ", missingNameString, ". Either a column is missing in 'dat', or the column name in 'datNames' has been misspelled."))
+    stop(paste0("The column names ", missingNameString, " were given as column names in 'dat' in the 'datNames' argument of this function, but there are no columns in 'dat' called ", missingNameString, ". Either a column is missing in 'dat', or the column name in 'datNames' has been misspelled."))
   }
 
-  ## re-assign the names of dat to the default
+  ## re-assign the names of dat to the default column names
   names(dat)[which(names(dat) %in% userDatNames)] <- defaultDatNames
 
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
@@ -236,3 +241,21 @@ checkDat <- function (dat, inv, datNames =  c(
               userDatNames = userDatNames))
 
 }
+
+# testing -----------------------------------------------------------------
+
+dat <- grasslandData
+names(dat)[1] <- "species"
+names(dat)[8] <- "quadrat"
+
+inv <- grasslandInventory
+
+datNames =  c(
+  "Species = species",
+  "Site = Site",
+  "Quad = quadrat",
+  "Year = Year",
+  "sp_code_6 = sp_code_6",
+  "geometry = geometry")
+
+checkDat(dat, inv, datNames)

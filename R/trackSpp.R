@@ -310,31 +310,31 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData#[grasslandData$Site == "CO"
-                     #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-inv <- grasslandInventory
-dorm <- 1
-buff <- 0.05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-
-testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
-
-
-testDat <- st_drop_geometry(dat)
-testDat$test <- "old"
-testOutputTest <- st_drop_geometry(testOut)
-testOutputTest$test <- "new"
-
-testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone",
-                            "Seedling", "Stems", "Basal", "Type", "Site",
-                            "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-testBad <- testTest[is.na(testTest$test.y),]
-
-testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" &
-                           testTest$Species == "Bouteloua gracilis",]
+# dat <- grasslandData#[grasslandData$Site == "CO"
+#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# inv <- grasslandInventory
+# dorm <- 1
+# buff <- 0.05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+#
+# testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
+#
+#
+# testDat <- st_drop_geometry(dat)
+# testDat$test <- "old"
+# testOutputTest <- st_drop_geometry(testOut)
+# testOutputTest$test <- "new"
+#
+# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone",
+#                             "Seedling", "Stems", "Basal", "Type", "Site",
+#                             "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
+# testBad <- testTest[is.na(testTest$test.y),]
+#
+# testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" &
+#                            testTest$Species == "Bouteloua gracilis",]
 
 ### AES make an example in the documentation that specifies all args as numeric,
 # and another example where they specify all four arguments as data.frames

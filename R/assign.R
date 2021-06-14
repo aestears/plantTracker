@@ -99,7 +99,13 @@
 #' @importFrom stats aggregate reshape
 #' @export
 
-## NOTE: this function assumes that the 'dat' argument has the exact required column names
+### AES probably don't need to export this function--make documentation very
+# minimal--put most of it in the 'trackSpp' function
+### AES have clear visual docmumentation (in a vignette, e.g.) of what the
+# 'assign' function is actually doing (start a rough draft)
+### ideas about vignettes: make it clear what the steps are--don't break the
+# code blocks up too much -- use one vignette to communicate one idea/workflow
+### AES can remove pretty much all of the error-checking arguments from
  assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
                     datNames = c(
    "Species = Species",

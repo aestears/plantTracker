@@ -107,20 +107,16 @@
 # code blocks up too much -- use one vignette to communicate one idea/workflow
 ### AES can remove pretty much all of the error-checking arguments from
  assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
-                    datNames = c(
-   "Species = Species",
-   "Site = Site",
-   "Quad = Quad",
-   "Year = Year",
-   "sp_code_6 = sp_code_6",
-   "geometry = geometry"),
-   ...){
+                      species = "Species",
+                      site = "Site",
+                      quad = "Quad",
+                      year = "Year",
+                      geometry = "geometry",
+                    ...){
   ## argument checking --------------------------------------------------------
-   ## check the 'dat' and 'inv' arguments, using the 'checkDat' function
-   dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
-                   trackerFormat = TRUE,
-                   inheritFromTrackSpp = TRUE,
-                   printGoAhead = FALSE)$dat
+   ## don't really do arg. checking, since this function is not exported, and
+   # expects to recieve an input directly from the 'trackSpp' function, which
+   # has already done comprehensive arg. checking.
 
    ## do assign-specific argument checks of 'dat' and 'inv'
    ## check the Species column -- assign-specific
@@ -826,8 +822,6 @@
 return(assignOut)
   }
 
-###AES try putting a 'warning/print' telling the user which years are the last
- # years of sampling/before a big gap--to expect 'NA' for survival in those years.
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 #

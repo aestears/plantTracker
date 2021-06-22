@@ -7,18 +7,14 @@
 
 ## check that the dat and inv arguments contain the appropriate values/formats?
 ## is also reformatting the column names
-checkDat <- function (dat, inv, datNames =  c(
-  "Species = Species",
-  "Site = Site",
-  "Quad = Quad",
-  "Year = Year",
-  "sp_code_6 = sp_code_6",
-  "geometry = geometry"), ###AES should change this so that each column name is an argument--allows you to change only one and leave the rest as default
+checkDat <- function (dat, inv,
+                      species = "Species",
+                      site = "Site",
+                      quad = "Quad",
+                      year = "Year",
+                      geometry = "geometry",
     ###AES can put them all into a list to do basic checks (i.e. that they are are all character vectors) -- then check them against dat.
-  trackerFormat = FALSE, ##AES change the name of this? 'reformatted data'?
-  inheritFromTrackSpp = FALSE, ##AES make this an argument in the 'assign'
-  # function instead--to run or not run the checkDat function if
-  printGoAhead = TRUE,
+  reformatDat = FALSE, ##AES change the name of this? 'reformatted data'?
   ...) {
 
 # arguments ---------------------------------------------------------------
@@ -28,79 +24,61 @@ checkDat <- function (dat, inv, datNames =  c(
 #inv ## a list of the sampling years for each quadrat included in dat (in the
 # same format as grasslandInventory).
 
-# datNames ## a character vector indicating the names in dat for each of the
-# required columns (Species, Site, Quad, Year, sp_code_6, geometry)
+# species/site/quad/year/geometry ## each arg. is a a character vector
+# indicating the name in dat for the corresponding required columns
+# (Species, Site, Quad, Year, sp_code_6, geometry)
 
-# trackerFormat ## a T/F argument that indicates whether this function outputs a
+# reformatDat ## a T/F argument that indicates whether this function outputs a
 # data.frame that is in the exact format (including column names) required by
 # trackSpp, assign, and groupByGenet functions. If 'TRUE', then 'dat' and 'inv'
-# are returned in this format. Otherwise, dat and inv are not returned from this
-# function (there is no output as long as there are no errors). Default is FALSE
+# are returned in this format. Default is FALSE
 
-# inheritFromTrackSpp ## a T/F argument that indicates whether 'dat' is being inherited rom 'trackSpp' function. If 'TRUE', then the error-checks of
-# 'checkDat' are not conducted, since this function was already run in
-# 'trackSpp' as part of the 'dat' argument-checking process. Default == FALSE.
-
-# printGoAhead ## a T/F argument that indicates whether you want the function to
-# tell you if the 'dat' and 'inv' arguments are ready to go into the 'trackSpp'
-# and 'assign' function. Default is 'TRUE'.
 
 # work --------------------------------------------------------------------
   ## check the datNames argument AND convert the names of the 'dat' argument to
   # be consistent with what this function expects
 
-  ###AES should subset the 'dat' d.f. by required columns, and then put them back together before outputting to the user
-  if(is.character(datNames) == TRUE & ## datNames must be a character arg.
-     is.vector(datNames) == TRUE & ## must be a vector
-     length(datNames) == 6 ## must have 6 values, one for each required column
-  ){ ## if the datNames argument is a character vector of length 6,
-    # proceed with the following testing
-    if (sum(!sapply(regmatches(datNames,gregexpr(pattern = "=", datNames)),
-                    length) %in% c(1,1,1,1,1,1)) == 0 ## must have an '=' in
-        # each value of datNames, but only one '='
-    ) {
-      ## proceed with the following re-assignment of column names in dat
-      ## separate the default from 'new' values
-      datNamesTemp <- strsplit(datNames, "=")
-      ## remove any spaces from default and new values
-      datNamesTemp <- sapply(datNamesTemp, FUN = function(x) gsub(pattern = " ",
-                                                           x, replacement = ""))
-      ## check that the datNamesTemp 'default' values contain the required names
-      if (sum(!datNamesTemp[1,] %in% c("Species", "Site", "Quad", "Year",
-                                       "sp_code_6", "geometry")) != 0) {
-        stop("The first characters in each of the elements of the 'datNames'
-             argument must be exactly--including case-- 'Species', 'Site',
-             'Quad', 'Year', 'sp_code_6', and 'geometry'.")
-      } else { ## if the 'default' values of datNames are correct...
-        ## get a vector of 'default' names
-        defaultDatNames <- datNamesTemp[1,]
-        ## get a vector of 'new' names
-        userDatNames <- datNamesTemp[2,]
-      }
-    } else {
-      stop("The 'datNames' arg must have a single '=' in each value")
+  ## put column name args. into a list for basic checks
+  newNames <- list("species" = species, "site" = site, "quad" = quad,
+                   "year" = year, "geometry" = geometry)
+  ## check that each arg. is a character vector
+  if (sum(sapply(newNames, is.character)) != 5) { ## if there is one or more
+    # elements of the newNames list that is not a character vector
+    ## find which elements are not character vectors
+    badArgs <- paste(names(which(sapply(newNames, is.character) == FALSE)),
+                     collapse = ", and ")
+
+    stop(paste0("The argument(s) ", badArgs, " must each contain a single
+    character string that gives the name(s) of the column(s) in 'dat' that
+                contain the data for ", badArgs))
+
+  } else { ## if each of the elements of 'newNames' is a character vector
+    ## make sure that each of the elements of newNames is present as a column
+    # name in 'dat'
+    if (sum(unlist(newNames) %in% names(dat)) != 5) { ## if the column names of
+      # 'dat' do NOT match the values provided in 'newNames'
+      badBadArgs <- paste(names(newNames)[which(!unlist(newNames) %in%
+                                                  names(dat))],
+                          collapse = ", and ")
+      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
+      column names in 'dat'. These arguments must be character vectors that give
+                  the name(s) of the column(s) in 'dat' that contain the data
+                  for ", badBadArgs, ". Check for spelling errors." ))
     }
-  } else { ## if the datNames argument is NOT a character vector
-    stop("The 'datNames' arg, if specified, must be a character vector and
-         contain values for each of the required columns in dat ('Species =',
-         'Site =', 'Quad =', 'sp_code_6 =', 'geometry =')")
-  }
-  ## proceed with remaining checks
-  if (inheritFromTrackSpp == FALSE) {
-  ## check the 'dat' argument (with default names)
-  ## are the user-defined column names from namDat arg. actually present in the
-  # user-defined 'dat' argument?
-  if(sum(!userDatNames %in% names(dat)[which(names(dat) %in%
-                                             userDatNames)]) > 0) {
-    ## get the name(s) of the user columns which are missing from the 'dat' arg.
-    missingName <- userDatNames[which(userDatNames %in%
-                                        names(dat)[which(names(dat) %in% userDatNames)]==0)]
-    missingNameString <- paste(missingName, collapse = ", and ")
-    ## stop the function and give an error
-    stop(paste0("The column names ", missingNameString, " were given as column names in 'dat' in the 'datNames' argument of this function, but there are no columns in 'dat' called ", missingNameString, ". Either a column is missing in 'dat', or the column name in 'datNames' has been misspelled."))
   }
 
+  ## proceed with remaining checks
+  ## check the 'dat' argument (with default names)
+
   ## re-assign the names of dat to the default column names
+  ## assign an arbitrary index number to each row so we can re-join later
+  dat$nameIndex <- c(1:nrow(dat))
+  ## remove the 'extra' columns and store to rejoin with 'dat' later
+  datStore <- dat[, !names(dat) %in% unlist(newNames)]
+  dat <- dat[, names(dat) %in% c(unlist(newNames), "nameIndex") ]
+
+
+
   names(dat)[which(names(dat) %in% userDatNames)] <- defaultDatNames
 
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
@@ -210,12 +188,7 @@ checkDat <- function (dat, inv, datNames =  c(
     stop("The 'inv' argument must be a list, and each element of that list must
          be a numeric vector with at least one value.")
   }
-} else { ## if the 'inheritFromTrackSpp' arg. is TRUE
-  ## make sure that the trackerFormat arg. is set to 'TRUE', since we want an
-  # output dataset in the 'correct' format because we want an output that will
-  # then be used in the 'assign' function
-  trackerFormat <- TRUE
-}
+
 
 # output ------------------------------------------------------------------
   ## prepare the output

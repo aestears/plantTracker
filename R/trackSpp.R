@@ -6,13 +6,11 @@
 #' @examples
 
 trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
-                     datNames = c(
-                       "Species = Species",
-                       "Site = Site",
-                       "Quad = Quad",
-                       "Year = Year",
-                       "sp_code_6 = sp_code_6",
-                       "geometry = geometry"),
+                     species = "Species",
+                     site = "Site",
+                     quad = "Quad",
+                     year = "Year",
+                     geometry = "geometry",
                      ...) {
 
   ###AES start working on documentation for this function

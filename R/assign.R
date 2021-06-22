@@ -231,6 +231,12 @@
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
 
+  ## make a column in the d.f with the 6-letter species code for each row
+  dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
+    paste0(substr(toupper(x[1]), 1, 3), ## species name
+    substr(toupper(x[2]), 1, 3)) ## genus name
+    )
+
   ## find the first year in the dataset that was actually sampled
   firstDatYear <- min(dat$Year)
   ## find the index of the first year in teh quadrat inventory
@@ -813,7 +819,8 @@
     } ## end of loop i
   ## clean up output data.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
-                         !(names(assignOut) %in% c("ghost","genetID", "index"))]
+                         !(names(assignOut) %in% c("ghost","genetID", "index",
+                                                   "sp_code_6"))]
 
   ## output ---------------------------------------------------------------
 return(assignOut)

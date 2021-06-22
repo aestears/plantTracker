@@ -243,19 +243,19 @@ checkDat <- function (dat, inv, datNames =  c(
 }
 
 # testing -----------------------------------------------------------------
-
-dat <- grasslandData
-names(dat)[1] <- "species"
-names(dat)[8] <- "quadrat"
-
-inv <- grasslandInventory
-
-datNames =  c(
-  "Species = species",
-  "Site = Site",
-  "Quad = quadrat",
-  "Year = Year",
-  "sp_code_6 = sp_code_6",
-  "geometry = geometry")
-
-checkDat(dat, inv, datNames)
+#
+# dat <- grasslandData
+# names(dat)[1] <- "species"
+# names(dat)[8] <- "quadrat"
+#
+# inv <- grasslandInventory
+#
+# datNames =  c(
+#   "Species = species",
+#   "Site = Site",
+#   "Quad = quadrat",
+#   "Year = Year",
+#   "sp_code_6 = sp_code_6",
+#   "geometry = geometry")
+#
+# checkDat(dat, inv, datNames)

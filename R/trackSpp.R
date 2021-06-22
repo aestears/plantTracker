@@ -35,8 +35,6 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   # same format as grasslandInventory). Subset by quad before being passed to
   # assign()
 
-  ###AES get rid of this argument, instead allow each of the dorm, buff, buffGenet, and clonal arguments to be either a single value OR a d.f --> then if it's a d.f, must have values for each species
-
   # dorm ## either a single value (applied to all spp.) or a data.frame with the
   # same number of rows as the number of species in dat that indicates the
   # dormancy (in years) that is allowed. If multiple values, is subset by spp.
@@ -208,6 +206,13 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
              values of either 0 or 1 for each species with no NAs.")
     }
   }
+
+  #Species
+  #Site
+  #Quad
+  #Year
+  #sp_code_6
+  #geometry
 
   # work --------------------------------------------------------------------
   ## get the site(s)

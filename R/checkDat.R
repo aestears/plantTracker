@@ -246,4 +246,4 @@ checkDat <- function (dat, inv,
 #   "sp_code_6 = sp_code_6",
 #   "geometry = geometry")
 #
-checkDat(dat, inv,  quad = "location", year = "YeAr", reformatDat = TRUE)
+# checkDat(dat, inv,  quad = "location", year = "YeAr", reformatDat = TRUE)

@@ -27,7 +27,9 @@
 #' @param dat An sf data.frame of the same format as
 #' \code{\link{grasslandData}}, but containing data for only one species and one
 #' distinct spatial area. More detail in the \code{\link{trackSpp}}
-#' documentation.
+#' documentation. This function will add columns called "basalArea", "trackID",
+#' "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
+#' contain columns with these names.
 #' @param inv A numeric vector of years in which the quadrat (or other distinct
 #' spatial
 #' area) was sampled.
@@ -97,7 +99,6 @@
 #'
 #' @import sf
 #' @importFrom stats aggregate reshape
-#' @export
 
 ### AES probably don't need to export this function--make documentation very
 # minimal--put most of it in the 'trackSpp' function
@@ -107,82 +108,11 @@
 # code blocks up too much -- use one vignette to communicate one idea/workflow
 ### AES can remove pretty much all of the error-checking arguments from
  assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
-                      species = "Species",
-                      site = "Site",
-                      quad = "Quad",
-                      year = "Year",
-                      geometry = "geometry",
                     ...){
   ## argument checking --------------------------------------------------------
    ## don't really do arg. checking, since this function is not exported, and
    # expects to recieve an input directly from the 'trackSpp' function, which
    # has already done comprehensive arg. checking.
-
-   ## do assign-specific argument checks of 'dat' and 'inv'
-   ## check the Species column -- assign-specific
-   if(length(unique(dat$Species)) > 1  ## must be data for only one species
-      ) {
-      stop("The 'Species' column must contain only one species name.")
-   }
-
-   ## check the 'Quad' column -- assign-specific
-   if (length(unique(dat$Quad)) > 1 ## must have data for only one quad
-        ) {
-       stop("The 'Quad' column must contain only one quadrat name.")
-     }
-
-  ## check the 'sq_code_6' column -- assign-specific
-   if (length(unique(dat$sp_code_6)) > 1 ## must have data for only one
-       # sp_code_6
-       ) {
-       stop("The 'sp_code_6' column must be an character column with no 'NA's
-       and a 6-letter species code for only one species.")
-     }
-
-
-  ## make sure that 'inv' is in sequential order
-  inv <- sort(inv)
-
-  ## make sure that inv contains dates that included in dat
-  if(sum(inv %in% dat$Year)==0) {
-    stop("years in 'inv' do not match any years in 'dat'")
-  }
-
-  ## check dorm argument
-  if(dorm < 0 | ## dorm must be greater than or equal to 0
-     !is.numeric(dorm) | ## dorm must be numeric
-     round(dorm) != dorm | ## dorm must be a whole number
-     length(dorm)!=1){ ## dorm must be a vector of length = 1
-    stop("'dorm' argument must be a a numeric vector of length = 1, containing a
-         positive, whole number")
-  }
-
-  ## check clonal argument
-  if(clonal != 1 & clonal != 0 | ## clonal must be either 0 or 1
-     !is.numeric(clonal) | ## clonal must be numeric
-     length(clonal)!=1){ ## clonal must be a vector of length = 1
-    stop("'clonal' argument must be a numeric boolean vector of length = 1")
-  }
-
-  ## check buff argument
-  if(!is.numeric(buff) | ## buff must be numeric
-     buff > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buff must not be larger
-     # than the dimensions of the quadrat
-     buff < 0 ## buff must be greater than or equal to zero
-     ) {
-    stop("'buff' argument must be numeric and cannot exceed the maximum
-         dimensions of the quadrat")
-  }
-
-  ## check buffGenet argument
-  if(!is.numeric(buffGenet) | ## buffGenet must be numeric
-     buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet must not
-     # be larger than the dimensions of the quadrat
-     buffGenet < 0 ## buffGenet must be greater than or equal to zero
-     ) {
-    stop("'buffGenet' argument must be numeric and cannot exceed the maximum
-         dimensions of the quadrat")
-    }
 
   ## internal functions ------------------------------------------------------
   ## FUNCTION FOR AGGREGATING BY GENET (if clonal or not clonal)
@@ -197,7 +127,7 @@
     if(clonal==1) {
       cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
-      tempCloneDat <- stats::aggregate(Area ~ genetID, sum, data = cloneDat)
+      tempCloneDat <- stats::aggregate(basalArea ~ genetID, sum, data = cloneDat)
       names(tempCloneDat) <- c("tempGenetID", "genetArea")
       ## add aggregated size data to the cloneData df
       cloneDat$genetArea <- tempCloneDat[match(cloneDat$genetID,
@@ -207,7 +137,7 @@
     ## assign unique genetIDs for every polygon (if clonal = 0)
     else { #if(clonal==0) {
       cloneDat$genetID <- 1:nrow(cloneDat)
-      cloneDat$genetArea <- cloneDat$Area
+      cloneDat$genetArea <- cloneDat$basalArea
     }
 
     return(cloneDat)
@@ -226,12 +156,6 @@
 
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
-
-  ## make a column in the d.f with the 6-letter species code for each row
-  dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
-    paste0(substr(toupper(x[1]), 1, 3), ## species name
-    substr(toupper(x[2]), 1, 3)) ## genus name
-    )
 
   ## find the first year in the dataset that was actually sampled
   firstDatYear <- min(dat$Year)
@@ -431,7 +355,7 @@
               # columns are in correct order
               deadGhosts <- tempCurrentYear[((inv[i+1]-tempCurrentYear$Year) >
                                                (dorm + 1)),
-                                            c(names(dat)[-13], "geometry")]
+                                            names(dat)]
 
               ## rewrite 'tempCurrentYear' so it just has 'ghosts'(not 'deadGhosts')
               tempCurrentYear <- ghosts
@@ -458,7 +382,7 @@
               # columns are in correct order
               deadGhosts <- tempCurrentYear[(((inv[i]+1)-tempCurrentYear$Year) >
                                                (dorm + 1)),
-                                            c(names(dat)[-13], "geometry")]
+                                            c(names(dat))]
 
               if (nrow(deadGhosts)>0) {
                 ## deadGhosts get a '0' in the 'survival' column
@@ -825,8 +749,8 @@ return(assignOut)
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 #
-# ## prepares the dataset to feed into the 'assign' function (the 'Assign'
-# # function will do this ahead of time when the user calls it)
+## prepares the dataset to feed into the 'assign' function (the 'Assign'
+# function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "KS"
 #                            & grasslandData$Quad == "q33"
 #                            & grasslandData$Species == "Ambrosia psilostachya",]
@@ -845,8 +769,8 @@ return(assignOut)
 #                      buff = .05,
 #                      buffGenet = .001,
 #                      clonal =  1)
-#
-#
+
+
 # # ggplot(testOutput) +
 # #   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
 # #   scale_fill_discrete(guide = FALSE) +

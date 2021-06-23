@@ -24,14 +24,22 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   # (in grasslandData format) for as many sites and quads as you'd like. Subset
   # by spp. and quad. before being passed to assign()
 
-  ## check the 'dat' and 'inv' arguments using the 'checkDat' function
-  dat <- checkDat(dat = dat, inv = inv, datNames = datNames,
-                  trackerFormat = TRUE, inheritFromTrackSpp = FALSE,
-                  printGoAhead = FALSE)$dat
-
   #inv ## a list of the sampling years for each quadrat included in dat (in the
   # same format as grasslandInventory). Subset by quad before being passed to
   # assign()
+
+  ## check the 'dat' and 'inv' arguments using the 'checkDat' function
+  checkData <- checkDat(dat = dat, inv = inv,
+                        species = species,
+                        site = site,
+                        quad = quad,
+                        year = year,
+                        geometry = geometry,
+                        reformatDat = TRUE)
+
+  dat <- checkData$dat
+  inv <- checkData$inv
+  usrNames <- checkData$nameReturn
 
   # dorm ## either a single value (applied to all spp.) or a data.frame with the
   # same number of rows as the number of species in dat that indicates the
@@ -205,14 +213,30 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
     }
   }
 
-  #Species
-  #Site
-  #Quad
-  #Year
-  #sp_code_6
-  #geometry
-
   # work --------------------------------------------------------------------
+  ## first, break the 'dat' d.f into two pieces, one with columns we need, and
+  # another with columns that are 'extra'--will rejoin at the end of the
+  # function
+  ## assign an arbitary index number so we can re-join the data at the end
+  dat$indexStore <- c(1:nrow(dat))
+  ## put the 'extra' data into a separate d.f to 'store'
+  datStore <- dat[, !names(dat) %in% c("Site", "Quad", "Year", "Species",
+                                       "geometry")]
+  datStore <- st_drop_geometry(datStore)
+  ## put the data we actually need into the 'dat' object
+  dat <- dat[,names(dat) %in% c("Site", "Quad", "Year", "Species",
+                                "geometry", "indexStore")]
+
+  ## get the 6-letter species code for each observation
+  ## make a column in the d.f with the 6-letter species code for each row
+  dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
+    paste0(substr(toupper(x[1]), 1, 3), ## species name
+           substr(toupper(x[2]), 1, 3)) ## genus name
+  )
+
+  ## get the basal area for each observation
+  dat$basalArea <- st_area(dat)
+
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
     print(paste0("Site: ",i))
@@ -296,16 +320,24 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
     }
   }
 
+  ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
+  trackSppOut <- merge(trackSppOut, datStore, by = "indexStore")
+  ## remove the 'indexStore' value
+  trackSppOut <- trackSppOut[,names(trackSppOut) != "indexStore"]
+
   ## re-name the appropriate columns in 'trackSppOut' data.frame with the
   # user-provided names of 'dat'
-userDatNames <- checkDat(dat, inv, trackerFormat = FALSE,
-                         inheritFromTrackSpp = TRUE,
-           printGoAhead = FALSE)$userDatNames
+  ## from above, user-provided names are stored in 'usrNames'
+  ## make a vector of default column names
+  defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry")
 
-defaultDatNames <- c("Species", "Site", "Quad", "Year", "sp_code_6", "geometry")
+  ## reset the names for the columns that we changed to 'default' values
+  names(trackSppOut)[which(names(trackSppOut) %in% defaultNames)] <-
+  usrNames
 
-names(trackSppOut)[which(names(trackSppOut) %in% defaultDatNames)] <-
-  userDatNames
+  ## remove the '_USER' from the 'extra' column names
+  names(trackSppOut)[grep(names(trackSppOut), pattern = "_USER")] <-
+    gsub(names(trackSppOut), pattern = "_USER", replacement = "")
 
 
 # output ------------------------------------------------------------------
@@ -313,18 +345,18 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData#[grasslandData$Site == "CO"
-#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-#                      #& grasslandData$Species == "Bouteloua gracilis",]
-# inv <- grasslandInventory
-# dorm <- 1
-# buff <- 0.05
-# buffGenet <- 0.005
-# clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-#
-# testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
-#
+dat <- grasslandData#[grasslandData$Site == "CO"
+                     #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+                     #& grasslandData$Species == "Bouteloua gracilis",]
+inv <- grasslandInventory
+dorm <- 1
+buff <- 0.05
+buffGenet <- 0.005
+clonal <- data.frame(Species = unique(dat$Species),
+                     clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+
+testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
+
 #
 # testDat <- st_drop_geometry(dat)
 # testDat$test <- "old"

@@ -13,7 +13,6 @@ checkDat <- function (dat, inv,
                       quad = "Quad",
                       year = "Year",
                       geometry = "geometry",
-    ###AES can put them all into a list to do basic checks (i.e. that they are are all character vectors) -- then check them against dat.
   reformatDat = FALSE,
   ...) {
 
@@ -59,10 +58,7 @@ checkDat <- function (dat, inv,
       badBadArgs <- paste(names(newNames)[which(!unlist(newNames) %in%
                                                   names(dat))],
                           collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
-      column names in 'dat'. These arguments must be character vectors that give
-                  the name(s) of the column(s) in 'dat' that contain the data
-                  for ", badBadArgs, ". Check for spelling errors." ))
+      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column names in 'dat'. These arguments must be character vectors that give the name(s) of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for spelling errors." ))
     }
   }
 
@@ -168,13 +164,9 @@ checkDat <- function (dat, inv,
         misMatchQuads <- paste0(unique(sapply(strsplit(datQuadYear[
           which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),
           collapse = ", and ")
-        stop(paste0("Mismatch between years in 'dat' and years in 'inv' for
-                    quadrat(s) ", misMatchQuads, ". The mismatch is for the
-                    following quadrat/year combinations: ",
+        stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) ", misMatchQuads, ". The mismatch is for the following quadrat/year combinations: ",
                     paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)],
-                           collapse = ", " ), " . Either 'inv' does not contain
-                    all the years in which these quadrats were measured, or the
-                    years in 'dat' for these observations are incorrect."))
+                           collapse = ", " ), " . Either 'inv' does not contain all the years in which these quadrats were measured, or the years in 'dat' for these observations are incorrect."))
       }
     } else { ## there is NOT data in 'inv' that corresponds to every quadrat
       # in 'dat'

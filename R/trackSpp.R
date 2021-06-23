@@ -320,6 +320,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
     }
   }
 
+  trackOutOld <- trackSppOut
   ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
   trackSppOut <- merge(trackSppOut, datStore, by = "indexStore")
   ## remove the 'indexStore' value
@@ -336,26 +337,28 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   usrNames
 
   ## remove the '_USER' from the 'extra' column names
-  names(trackSppOut)[grep(names(trackSppOut), pattern = "_USER")] <-
-    gsub(names(trackSppOut), pattern = "_USER", replacement = "")
-
+  names(trackSppOut) <- gsub(names(trackSppOut),
+                             pattern = "_USER", replacement = "")
 
 # output ------------------------------------------------------------------
 return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData#[grasslandData$Site == "CO"
-                     #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-inv <- grasslandInventory
-dorm <- 1
-buff <- 0.05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-
-testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal)
+# dat <- grasslandData#[grasslandData$Site == "CO"
+#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# inv <- grasslandInventory
+# dorm <- 1
+# buff <- 0.05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+#
+# testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal,
+#                     species = "Species_Name")
 
 #
 # testDat <- st_drop_geometry(dat)

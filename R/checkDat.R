@@ -14,7 +14,7 @@ checkDat <- function (dat, inv,
                       year = "Year",
                       geometry = "geometry",
     ###AES can put them all into a list to do basic checks (i.e. that they are are all character vectors) -- then check them against dat.
-  reformatDat = FALSE, ##AES change the name of this? 'reformatted data'?
+  reformatDat = FALSE,
   ...) {
 
 # arguments ---------------------------------------------------------------
@@ -28,11 +28,10 @@ checkDat <- function (dat, inv,
 # indicating the name in dat for the corresponding required columns
 # (Species, Site, Quad, Year, sp_code_6, geometry)
 
-# reformatDat ## a T/F argument that indicates whether this function outputs a
-# data.frame that is in the exact format (including column names) required by
-# trackSpp, assign, and groupByGenet functions. If 'TRUE', then 'dat' and 'inv'
-# are returned in this format. Default is FALSE
-
+# reformatDat ## a T/F argument. If 'T', then this function to output a list of
+# data that is ready to go into the trackSpp function. If 'F', this function
+# will output a message that indicates whether your dataset is ready for use in
+# the trackSpp function.
 
 # work --------------------------------------------------------------------
   ## check the datNames argument AND convert the names of the 'dat' argument to
@@ -67,19 +66,29 @@ checkDat <- function (dat, inv,
     }
   }
 
+  ## re-assign the names of dat to the default column names
+  ## make a vector of 'user names'
+  usrNames <- unlist(newNames)
+  ## make a vector of 'default names'
+  defaultNames <- c("Species", "Site", "Quad", "Year",
+                    "geometry")
+
+  ## add on a suffix to the column names that are not the column names that
+  # must be specified in this function call
+  otherNames <- names(dat)[!names(dat) %in% unlist(newNames)]
+
+  ## change the names of the 'extra' columns so they don't get overwritten
+  names(dat)[names(dat) %in% otherNames] <- paste0(
+    names(dat)[!names(dat) %in% unlist(newNames)],
+    "_USER"
+  )
+
+  ## replace the user-provided names in 'dat' with the default names
+  names(dat)[which(names(dat) %in% usrNames)] <- defaultNames
+
+
   ## proceed with remaining checks
   ## check the 'dat' argument (with default names)
-
-  ## re-assign the names of dat to the default column names
-  ## assign an arbitrary index number to each row so we can re-join later
-  dat$nameIndex <- c(1:nrow(dat))
-  ## remove the 'extra' columns and store to rejoin with 'dat' later
-  datStore <- dat[, !names(dat) %in% unlist(newNames)]
-  dat <- dat[, names(dat) %in% c(unlist(newNames), "nameIndex") ]
-
-
-
-  names(dat)[which(names(dat) %in% userDatNames)] <- defaultDatNames
 
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
   # 'POLYGON' or 'MULTIPOLYGON'?)
@@ -124,24 +133,6 @@ checkDat <- function (dat, inv,
           'Quad'.")
   }
 
-  ## check the 'sq_code_6' column
-  if (is.null(dat$sp_code_6) == FALSE) { ## does the 'sp_code_6' column exist?
-    if (sum(is.na(dat$sp_code_6)) != 0 | ## cannot have 'NA' values for
-        # sp_code_6
-        !is.character(dat$sp_code_6)  ## must be a character vector
-    ) {
-      stop("The 'sp_code_6' column must be an character column with no 'NA's.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-          'sp_code_6'.")
-  }
-
-  ## are there the same number of unique values for 'Species' and 'sp_code_6'?
-  if (length(unique(dat$Species)) != length(unique(dat$sp_code_6))) {
-    stop("The number of unique values in the 'Species' column and the 'sp_code_6' column do not match. Every species listed in 'dat' should have a six-letter code in the 'sp_code_6' column. Check spelling, and check that multiple species do not have the same six-letter code.")
-  }
-
   ## check the 'inv' argument
   ## is inv a list?
   if (is.list(inv) == TRUE &  ## 'inv' argument must be a list
@@ -177,7 +168,13 @@ checkDat <- function (dat, inv,
         misMatchQuads <- paste0(unique(sapply(strsplit(datQuadYear[
           which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),
           collapse = ", and ")
-        stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) ", misMatchQuads, ". The mismatch is for the following quadrat/year combinations: ", paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)], collapse = ", " ), " . Either 'inv' does not contain all the years in which these quadrats were measured, or the years in 'dat' for these observations are incorrect."))
+        stop(paste0("Mismatch between years in 'dat' and years in 'inv' for
+                    quadrat(s) ", misMatchQuads, ". The mismatch is for the
+                    following quadrat/year combinations: ",
+                    paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)],
+                           collapse = ", " ), " . Either 'inv' does not contain
+                    all the years in which these quadrats were measured, or the
+                    years in 'dat' for these observations are incorrect."))
       }
     } else { ## there is NOT data in 'inv' that corresponds to every quadrat
       # in 'dat'
@@ -192,26 +189,44 @@ checkDat <- function (dat, inv,
 
 # output ------------------------------------------------------------------
   ## prepare the output
-  if (trackerFormat == TRUE) {
+  if (reformatDat == TRUE) {
     ## return the 'dat' argument, with column names that are appropriate for use
     # directly in 'assign' or 'trackSpp'
     datReturn <- dat
     invReturn <- inv
-  } else if (trackerFormat == FALSE) { ## if user does want an output, but
-    # wants names of 'dat' to be the same as the input (names they provided)
-    ## re-name the 'dat' input data.frame with the user-defined arguments
-    names(dat)[which(names(dat) %in% defaultDatNames)] <- userDatNames
-    datReturn <- dat
-    if (printGoAhead == TRUE){
-      print("The format of 'dat' and 'inv' are ready to be used in the 'trackSpp' or 'assign' functions, although you'll need to include the same 'datNames' argument that you included in this function.")
+    nameReturn <- usrNames
+  } else if (reformatDat == FALSE) { ## if the user does not want the function
+    # to return an output that is ready to go into the trackSpp function, but
+    # just wants to know that their dataset is in the correct format
+    ## make datReturn and invReturn empty so that the function has no output
+    nameReturn <- NULL
+    datReturn <- NULL
+    invReturn <- NULL
+
+    ## determine if there are any user-specified column names (that differ
+    # from the defaults)
+    if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO differences
+      # in column names between the input 'dat' d.f. and the defualt required
+      # names
+      print("The data you put into the 'checkDat()' function for the 'dat' and
+      'inv'arguments are ready to be used in the 'trackSpp()' function! You do
+      not need to include any values for the 'species', 'site', 'quad', 'year',
+      and 'geometry' arguments in 'trackSpp()")
+
+    } else if (sum(!usrNames %in% defaultNames) > 0) { ## if there ARE
+      # differences in column names between the input 'dat' d.f. and the defualt
+      # required names
+      ## get the usrNames that are different than the default Names
+      neededArgs <- newNames[!usrNames %in% defaultNames]
+      print(paste0("The data you put into the 'checkDat()' function for the 'dat' and 'inv' arguments are ready to be used in the 'trackSpp()' function! However, make sure that you include the character value(s): ", paste0("'", unlist(neededArgs), "'", collapse = ", and "), " in the corresponding ",paste0("'", names(neededArgs), "'", collapse = ", and ")," arguments"))
     }
   } else {
-    stop("The 'trackerFormat' argument must be logical (i.e. TRUE or FALSE).")
+    stop("The 'reformatDat' argument must be logical (i.e. TRUE or FALSE).")
   }
 
   return(list(dat = datReturn,
               inv = invReturn,
-              userDatNames = userDatNames))
+              nameReturn = usrNames))
 
 }
 
@@ -225,10 +240,10 @@ checkDat <- function (dat, inv,
 #
 # datNames =  c(
 #   "Species = species",
-#   "Site = Site",
+#   "Site = ",
 #   "Quad = quadrat",
 #   "Year = Year",
 #   "sp_code_6 = sp_code_6",
 #   "geometry = geometry")
 #
-# checkDat(dat, inv, datNames)
+checkDat(dat, inv,  quad = "location", year = "YeAr", reformatDat = TRUE)

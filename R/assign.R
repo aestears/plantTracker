@@ -6,6 +6,9 @@
 #'
 #' @details see \code{\link{trackSpp}} for details of arguments and usage.
 #'
+#' ###AES add descriptions of parameters back in
+#' @param
+#'
 #' @seealso [trackSpp()], which is a wrapper for the [assign()] function that
 #' applies it over many species and quadrats. The [assign()] function uses the
 #' [groupByGenet()] function to group ramets into genets

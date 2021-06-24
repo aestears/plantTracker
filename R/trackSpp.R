@@ -184,40 +184,40 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   ## check dorm argument
   if (missing(dorm)) {
     stop("The 'dorm' argument must have a value.")
-  } else {
-    if (is.numeric(dorm) & length(dorm == 1)) { ## is the value of dorm a single numeric integer?
-      if (dorm < 0 | ## dorm must be greater than or equal to 0
-          round(dorm) != dorm | ## dorm must be a whole number
-          length(dorm)!=1) { ## dorm must be a vector of length 1
-stop("If 'dorm' is not specified for every species, it must be a single numeric
+  } else {if (is.numeric(dorm) & length(dorm == 1)) { ## is the value of dorm a single
+    # numeric integer?
+    if (dorm < 0 | ## dorm must be greater than or equal to 0
+        round(dorm) != dorm | ## dorm must be a whole number
+        length(dorm)!=1) { ## dorm must be a vector of length 1
+      stop("If 'dorm' is not specified for every species, it must be a single numeric
 value that is a whole number greater than or equal to 0")
-      }
-    } else if (is.data.frame(dorm)) {
-      if (sum(!names(dorm) %in% c("Species", "dorm")) == 0) {
-        if(sum(!unique(dat$Species) %in% dorm$Species) > 0 | ## dorm must have
-           # data for all species
-           sum(is.na(dat$dorm)) > 0 | ## can't have NA values in dorm
-           !is.numeric(dorm$dorm) | ## can't have non-numeric values for
-           # dorm$dorm
-           sum(dorm$dorm < 0) > 0 | ## can't be less than 0
-           round(dorm$dorm) != dorm$dorm ## must be whole numbers
-        ) {
-stop("If the 'dorm' argument is specified by species, it must be a data.frame
+    }
+  } else if (is.data.frame(dorm)) {
+    if (sum(!names(dorm) %in% c("Species", "dorm")) == 0) {
+      if(sum(!unique(dat$Species) %in% dorm$Species) > 0 | ## dorm must have
+         # data for all species
+         sum(is.na(dat$dorm)) > 0 | ## can't have NA values in dorm
+         !is.numeric(dorm$dorm) | ## can't have non-numeric values for
+         # dorm$dorm
+         sum(dorm$dorm < 0) > 0 | ## can't be less than 0
+         round(dorm$dorm) != dorm$dorm ## must be whole numbers
+      ) {
+        stop("If the 'dorm' argument is specified by species, it must be a data.frame
 that includes a 'Species' column with a row for every species in 'dat', and a
 'dorm' column that contains positive, whole number values for each species with
 no NAs.")
-        }
-      } else {
-stop("If the 'dorm' argument is specifed by species, the column names must be
-'Species' and 'dorm'")
       }
     } else {
-stop("The 'dorm' argument must be either a single numeric value that is a whole
+      stop("If the 'dorm' argument is specifed by species, the column names must be
+'Species' and 'dorm'")
+    }
+  } else {
+    stop("The 'dorm' argument must be either a single numeric value that is a whole
 number greater than or equal to 0, OR a data.frame that has a 'Species' column
 with values for each species in 'dat', and a 'dorm' column with numeric,
 positive whole number values for each species.")
-    }
   }
+    }
 
   #buff ## either a single value (applied to all spp.) or a data.frame with the
   # same number of rows as the number of species in dat that indicates the
@@ -272,7 +272,8 @@ species.")
   if(missing(buffGenet)) {
     stop("The 'buffGenet' argument must have a value.")
   } else {
-    if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of buffGenet a single numeric?
+    if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of
+      # buffGenet a single numeric?
       if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
           buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
           # must not be larger than the dimensions of the quadrat
@@ -490,23 +491,23 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData#[grasslandData$Site == "CO"
-#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-#                      #& grasslandData$Species == "Bouteloua gracilis",]
-# names(dat)[1]<- "Species_Name"
-# names(dat)[8] <- "location"
-# #dat <- dat[dat$location != "ungz_5a",]
-# #dat <- dat[,c(1:6,8:13)]
-# inv <- grasslandInventory
-# #inv <- inv[1:5]
-# dorm <- 1
-# buff <- .05
-# buffGenet <- 0.005
-# clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+dat <- grasslandData#[grasslandData$Site == "CO"
+                     #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+                     #& grasslandData$Species == "Bouteloua gracilis",]
+names(dat)[1]<- "Species_Name"
+names(dat)[8] <- "location"
+#dat <- dat[dat$location != "ungz_5a",]
+#dat <- dat[,c(1:6,8:13)]
+inv <- grasslandInventory
+#inv <- inv[1:5]
+dorm <- 1
+buff <- .05
+buffGenet <- 0.005
+clonal <- data.frame(Species = unique(dat$Species),
+                     clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
 
-testOut <- trackSpp(dat, inv, buff, buffGenet, clonal
-                    ,species = "Species_Name",
+testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+                    clonal = clonal , species = "Species_Name",
                     quad = "location")
 
 #

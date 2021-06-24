@@ -29,7 +29,7 @@
 #' argument.
 #'
 #' @param dat An sf data.frame of the same format as
-#' \code{\link{grasslandData}}. It must have columns that contains a unique
+#' \code{\link{grasslandData}}. It must have columns that contain a unique
 #' identification for each research site (default name is "Site"), species name
 #' (default name is "Species"), quadrat identifier (default name is "Quad"),
 #' year of data collection (default name is "Year") and an s.f 'geometry' column
@@ -42,8 +42,8 @@
 #' name in 'dat', and the contents of that list element is a numeric vector of
 #' all of the years in which that quadrat (or other unique spatial area) was
 #' sampled.
-#' @param dorm A numeric vector of length 1, indicating the number of years this
-#' species is allowed to go dormant, i.e. be absent from the map but be
+#' @param dorm A numeric vector of length 1, indicating the number of years
+#' these species is allowed to go dormant, i.e. be absent from the map but be
 #' considered the same individual when it reappears. This must be an integer
 #' greater than or equal to 0. OR dorm can be a data.frame with
 #' the columns "Species" and "dorm". This data.frame must have a row for each
@@ -69,7 +69,7 @@
 #' in the "Species" column, and a numeric value greater than or equal to 0 in
 #' the 'buffGenet' column that indicates how close polygons of that species must
 #' be to one another to be considered the same genet. This argument is passed to
-#' the \code{\link{groupByGenet}} function, which is used inside
+#' the \code{\link{groupByGenet}} function, which is used inside the
 #' \code{\link{assign}} function.
 #' @param clonal A numeric Boolean vector of length 1, indicating whether a
 #' species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
@@ -491,24 +491,24 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData#[grasslandData$Site == "CO"
-                     #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-names(dat)[1]<- "Species_Name"
-names(dat)[8] <- "location"
-#dat <- dat[dat$location != "ungz_5a",]
-#dat <- dat[,c(1:6,8:13)]
-inv <- grasslandInventory
-#inv <- inv[1:5]
-dorm <- 1
-buff <- .05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-
-testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-                    clonal = clonal , species = "Species_Name",
-                    quad = "location")
+# dat <- grasslandData#[grasslandData$Site == "CO"
+#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
+# inv <- grasslandInventory
+# #inv <- inv[1:5]
+# dorm <- 1
+# buff <- .05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+#
+# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+#                     clonal = clonal , species = "Species_Name",
+#                     quad = "location")
 
 #
 # testDat <- st_drop_geometry(dat)

@@ -6,6 +6,44 @@
 \usage{
 assign(dat, inv, dorm, buff, buffGenet, clonal, ...)
 }
+\arguments{
+\item{dat}{An sf data.frame of the same format as
+\code{\link{grasslandData}}. 'dat' can contain data for only one species in
+one quadrat. It must have columns that contain a unique
+identification for each research site (default name is "Site"), species name
+(default name is "Species"), quadrat identifier (default name is "Quad"),
+year of data collection (default name is "Year") and an s.f 'geometry' column
+that contains a polygon or multipolygon data type for each
+individual observation.
+This function will add columns called "basalArea", "trackID",
+"age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
+contain columns with these names.}
+
+\item{inv}{An integer vector that contains all of years in which this quadrat (or other unique spatial area) was sampled. Years must be ordered sequentially.}
+
+\item{dorm}{A numeric vector of length 1, indicating the number of years this
+species is allowed to go dormant, i.e. be absent from the map but be
+considered the same individual when it reappears. This must be an integer
+greater than or equal to 0.}
+
+\item{buff}{A numeric vector of length 1 that is greater than or equal to
+zero, indicating how far (in the same units as spatial values in 'dat') a
+polygon can move from year \code{i} to year \code{i}+1 and still be
+considered the same individual.}
+
+\item{buffGenet}{A numeric vector of length 1 that is greater than or equal
+to zero, indicating how close (in the same units as spatial values in 'dat')
+polygons must be to one another in the same year to be grouped as a genet
+(if 'clonal' argument = 1). This argument is passed to
+the \code{\link{groupByGenet}} function, which is used inside the
+\code{\link{assign}} function.}
+
+\item{clonal}{A numeric Boolean vector of length 1, indicating whether this
+species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
+can be grouped as one individual (genet)).}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
+}
 \description{
 This function tracks individual plants through time, but only of
 one species in one quadrat. It is designed for use within the

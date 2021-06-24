@@ -21,7 +21,7 @@ trackSpp(
 }
 \arguments{
 \item{dat}{An sf data.frame of the same format as
-\code{\link{grasslandData}}. It must have columns that contains a unique
+\code{\link{grasslandData}}. It must have columns that contain a unique
 identification for each research site (default name is "Site"), species name
 (default name is "Species"), quadrat identifier (default name is "Quad"),
 year of data collection (default name is "Year") and an s.f 'geometry' column
@@ -36,8 +36,8 @@ name in 'dat', and the contents of that list element is a numeric vector of
 all of the years in which that quadrat (or other unique spatial area) was
 sampled.}
 
-\item{dorm}{A numeric vector of length 1, indicating the number of years this
-species is allowed to go dormant, i.e. be absent from the map but be
+\item{dorm}{A numeric vector of length 1, indicating the number of years
+these species is allowed to go dormant, i.e. be absent from the map but be
 considered the same individual when it reappears. This must be an integer
 greater than or equal to 0. OR dorm can be a data.frame with
 the columns "Species" and "dorm". This data.frame must have a row for each
@@ -65,7 +65,7 @@ each unique species present in 'dat', with species name as a character string
 in the "Species" column, and a numeric value greater than or equal to 0 in
 the 'buffGenet' column that indicates how close polygons of that species must
 be to one another to be considered the same genet. This argument is passed to
-the \code{\link{groupByGenet}} function, which is used inside
+the \code{\link{groupByGenet}} function, which is used inside the
 \code{\link{assign}} function.}
 
 \item{clonal}{A numeric Boolean vector of length 1, indicating whether a

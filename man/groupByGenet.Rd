@@ -4,20 +4,20 @@
 \alias{groupByGenet}
 \title{Assign genetIDs to grouped ramet polygons}
 \usage{
-groupByGenet(sf, buffGenet, ...)
+groupByGenet(dat, buffGenet, ...)
 }
 \arguments{
-\item{sf}{An sf object that contains polygons to be grouped. Typically should
-include data only for one species, one quadrat, and one year. For intended
-use, this dataset should be of the format described in
-\code{\link{grasslandData}}. This function will run if 'sf' contains
+\item{dat}{An sf object that contains polygons to be grouped. Typically
+should include data only for one species, one quadrat, and one year. For
+intended use, this dataset should be of the format described in
+\code{\link{grasslandData}}. This function will run if 'dat' contains
 only 'geometry' data, but it is \emph{strongly} recommended that other columns
 specified in \code{\link{grasslandData}} are included.}
 
 \item{buffGenet}{A numeric argument indicating the maximum distance
 between individual ramets (polygons) that the function will group together as
 one genet. Note that this argument is in the same units that are used in the
-'sf' argument. For example, if buffGenet = 0.005 and we use the
+'dat' argument. For example, if buffGenet = 0.005 and we use the
 \code{\link{grasslandData}} (in which measurements are in meters), then
 polygons that are 0.005 m (0.5 cm) apart or less will be grouped as a genet.}
 
@@ -25,8 +25,8 @@ polygons that are 0.005 m (0.5 cm) apart or less will be grouped as a genet.}
 }
 \value{
 A numeric vector of unique genetIDs that is as long as the number of
-rows in 'sf.' Each \code{i} in the output is the genetID for the \code{i}th
-row in 'sf'.
+rows in 'dat.' Each element \code{i} in the output is the genetID for the
+\code{i}th row in 'dat'.
 }
 \description{
 This function assigns a unique 'genetID' to polygons if they are within a
@@ -47,7 +47,7 @@ grasslandData$Quad == "ungz_5a" &
 grasslandData$Species == "Bouteloua gracilis" &
 grasslandData$Year == 1997,]
 
-groupByGenet(sf = dat, buffGenet = 0.005)
+groupByGenet(dat = dat, buffGenet = 0.005)
 
 }
 \seealso{

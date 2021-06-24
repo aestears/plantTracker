@@ -7,16 +7,173 @@
 trackSpp(
   dat,
   inv,
-  dorm = NULL,
-  buff = NULL,
-  buffGenet = NULL,
-  clonal = NULL,
+  dorm,
+  buff,
+  buffGenet,
+  clonal,
+  species = "Species",
+  site = "Site",
+  quad = "Quad",
+  year = "Year",
+  geometry = "geometry",
   ...
 )
 }
-\value{
+\arguments{
+\item{dat}{An sf data.frame of the same format as
+\code{\link{grasslandData}}. It must have columns that contains a unique
+identification for each research site (default name is "Site"), species name
+(default name is "Species"), quadrat identifier (default name is "Quad"),
+year of data collection (default name is "Year") and an s.f 'geometry' column
+that contains a polygon or multipolygon data type for each
+individual observation.
+This function will add columns called "basalArea", "trackID",
+"age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
+contain columns with these names.}
 
+\item{inv}{A named list. The name of each element of the list is a quadrat
+name in 'dat', and the contents of that list element is a numeric vector of
+all of the years in which that quadrat (or other unique spatial area) was
+sampled.}
+
+\item{dorm}{A numeric vector of length 1, indicating the number of years this
+species is allowed to go dormant, i.e. be absent from the map but be
+considered the same individual when it reappears. This must be an integer
+greater than or equal to 0. OR dorm can be a data.frame with
+the columns "Species" and "dorm". This data.frame must have a row for each
+unique species present in 'dat', with species name as a character string in
+the "Species" column, and a numeric value greater than or equal to 0 in the
+'dorm' column that indicates the number of years this species is allowed to
+go dormant.}
+
+\item{buff}{A numeric vector of length 1 that is greater than or equal to
+zero, indicating how far (in the same units as spatial values in 'dat') a
+polygon can move from year \code{i} to year \code{i}+1 and still be
+considered the same individual. OR buff can be a data.frame with
+the columns "Species" and "buff". This data.frame must have a row for each
+unique species present in 'dat', with species name as a character string in
+the "Species" column, and a numeric value in the 'buff' column that indicates
+how far a polygon can move from year to year and still be considered the same
+genet.}
+
+\item{buffGenet}{A numeric vector of length 1 that is greater than or equal
+to zero, indicating how close (in the same units as spatial values in 'dat')
+polygons must be to one another in the same year to be grouped as a genet
+(if 'clonal' argument = 1). OR buffGenet can be a data.frame with
+the columns "Species" and "buffGenet". This data.frame must have a row for
+each unique species present in 'dat', with species name as a character string
+in the "Species" column, and a numeric value greater than or equal to 0 in
+the 'buffGenet' column that indicates how close polygons of that species must
+be to one another to be considered the same genet. This argument is passed to
+the \code{\link{groupByGenet}} function, which is used inside
+\code{\link{assign}} function.}
+
+\item{clonal}{A numeric Boolean vector of length 1, indicating whether a
+species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
+can be grouped as one individual (genet)). OR clonal can be a data.frame with
+the columns "Species" and "clonal". This data.frame must have a row for each
+unique species present in 'dat', with species name as a character string in
+the "Species" column, and a Boolean value in the 'clonal' column indicating
+whether that species is allowed to be clonal (1) or not (0).}
+
+\item{species}{An optional single character string argument that indicates
+the name of the column in 'dat' that contains species name data. It is
+unnecessary to include a value for this argument if the column name is
+"Species".}
+
+\item{site}{An optional single character string argument that indicates
+the name of the column in 'dat' that contains site name data. It is
+unnecessary to include a value for this argument if the column name is
+"Site".}
+
+\item{quad}{An optional single character string argument that indicates
+the name of the column in 'dat' that contains quadrat name data. It is
+unnecessary to include a value for this argument if the column name is
+"Quad".}
+
+\item{year}{An optional single character string argument that indicates
+the name of the column in 'dat' that contains data for year of sampling. It
+is unnecessary to include a value for this argument if the column name is
+"Year".}
+
+\item{geometry}{An optional single character string argument that indicates
+the name of the column in 'dat' that contains sf geometry data. It is
+unnecessary to include a value for this argument if the column name is
+"geometry".}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
+}
+\value{
+An sf data.frame with the same columns as 'dat,' but with the
+following additional columns:
+
+\item{trackID}{A unique value for each individual genet, consisting of the
+6-letter species code, the year in which this individual was recruited, and a
+unique index number, all separated by a "_".}
+\item{age}{An integer indicating the age of this individual in year \emph{t}.
+Values of NA indicate that an accurate age cannot be calculated because this
+individual was observed either in the first year of sampling or in a year
+following a gap in sampling, so the exact year of recruitment is not known.}
+\item{size_tplus1}{The  size of this genet in year \emph{t+1}, in the same units
+as the 'area' column in 'dat'.}
+\item{recruit}{A Boolean integer indicating whether this individual is a new
+recruit in year \emph{t} (1), or existed in a previous year (0). Values of NA
+indicate that this individual was observed either in the first year of
+sampling or in a year following a gap in sampling, so it is not possible to
+accurately determine whether or not it is a new recruit in year \emph{t}.}
+\item{survives_plus1}{A Boolean integer indicating whether this individual
+survived (1), or died (0) in year \emph{t+1}.}
+\item{genetArea}{The size of this entire genet in year \emph{t}, in the same units
+as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
+will be identical to the 'area' column in 'dat'. }
 }
 \description{
-Tracks genets through time for multiple species and sites
+This function tracks individual plants in a mapped quadrat
+through time to generate a demographic data dataset that includes survival
+and growth.
+}
+\details{
+This function is a wrapper function that applies the \code{\link{assign}}
+function accross multiple species, quadrats, or sites. For each species and
+quadrat, \code{\link[=trackSpp]{trackSpp()}} loads a spatially referenced data.frame ('dat'), and
+then uses the \code{\link{groupByGenet}} function to assign genetIDs to
+polygons (if 'clonal' = 1) such that polygons that form the same genet have
+the same genetID. A buffer of a distance defined by 'buff' is applied around
+each genet polygon. Then, the spatial data for each genet from the current
+year (year \emph{t}) is compared to individuals in the next year (year \emph{t+1}).
+Then \code{\link[=trackSpp]{trackSpp()}} calculates the amount of overlapping area between polygons
+of each year \emph{t} genet and polygons of each year \emph{t+1} genet (using
+\code{\link[sf]{st_intersection}}). If there is unambiguous overlap between a
+'parent' genet from year \emph{t} and a 'child' genet from year \emph{t+1}, then that
+'child' gets the same identifying trackID as the parent. If there is a 'tie,'
+where more than one parent overlaps the same child or more than one child
+overlaps the same parent, the parent-child pair with the greatest amount of
+overlap receives the same trackID. Polygons in year \emph{t+1} that do not have a
+parent are given new trackIDs and are identified as new recruits. If dormancy
+is not allowed, then polygons in year \emph{t} that do not have child polygons get
+a '0' in the 'survival' column. If dormancy is allowed, parent polygons
+without child polygons are stored as 'ghosts' and are then compared to data
+from year \emph{t+1+i} to find potential child polygons, where \emph{i}='dorm'
+argument.
+}
+\examples{
+dat <- grasslandData[grasslandData$Site \%in\% c("CO", "AZ"),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+out_dat <- trackSpp(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = data.frame("Species" = unique(dat$speciesName),
+ "clonal" = c(1,1,0,0,1,1,0,0)),
+ species = "speciesName"
+ )
+
+}
+\seealso{
+\code{\link[=assign]{assign()}}, which is used inside the \code{\link[=trackSpp]{trackSpp()}} function.
+\code{\link[=trackSpp]{trackSpp()}} applies the \code{\link[=assign]{assign()}} function over multiple species and
+quadrats. The \code{\link[=assign]{assign()}} function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group
+ramets into genets (if 'clonal' argument = 1).
 }

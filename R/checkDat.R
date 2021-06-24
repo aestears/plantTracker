@@ -1,9 +1,99 @@
 #' checkDat
+#' @description A function that both checks and prepares a data.frame for use in
+#' the \code{\link{trackSpp}} function.
 #'
-#' @return
+#' @details This function is used internally in \code{\link{trackSpp}} to check
+#' the 'dat' and 'inv' arguments and ensure that they are in the correct format
+#' with the correct column names. [checkDat()] can also be used independently
+#' to check that a data.frame is in the correct format and contains the correct
+#' data to be used in the [trackSpp()] function.
+#'
+#' @param dat An sf data.frame of the same format as
+#' \code{\link{grasslandData}}. It must have columns that contains a unique
+#' identification for each research site (default name is "Site"), species name
+#' (default name is "Species"), quadrat identifier (default name is "Quad"),
+#' year of data collection (default name is "Year") and an s.f 'geometry' column
+#' that contains a polygon or multipolygon data type for each
+#' individual observation.
+#' @param inv A named list. The name of each element of the list is a quadrat
+#' name in 'dat', and the contents of that list element is a numeric vector of
+#' all of the years in which that quadrat (or other unique spatial area) was
+#' sampled.
+#' @param species An optional single character string argument that indicates
+#' the name of the column in 'dat' that contains species name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Species".
+#' @param site An optional single character string argument that indicates
+#' the name of the column in 'dat' that contains site name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Site".
+#' @param quad An optional single character string argument that indicates
+#' the name of the column in 'dat' that contains quadrat name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Quad".
+#' @param year An optional single character string argument that indicates
+#' the name of the column in 'dat' that contains data for year of sampling. It
+#' is unnecessary to include a value for this argument if the column name is
+#' "Year".
+#' @param geometry An optional single character string argument that indicates
+#' the name of the column in 'dat' that contains sf geometry data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "geometry".
+#'
+#' @param reformatDat A TRUE/FALSE argument. If 'FALSE', which is the default
+#' value, then [checkDat()] prints a message that says the 'dat' and 'inv'
+#' datasets are ready for use in the [trackSpp()] function. This message
+#' includes any column name arguments that must be included in the [trackSpp()]
+#' function call for these datasets.
+#' If 'TRUE', [checkDat()] returns a list with three elements: a version of
+#' 'dat' that has been checked for errors and is ready to be input directly into
+#' the [trackSpp()] or [assign()] functions, a version of 'inv' that is checked
+#' are ready for input into [trackSpp()] or [assign()], and a character vector
+#' called 'userColNames' that has all of the user-defined column names that were
+#' used in the original version of 'dat'.
+#'
+#' @param ... Other arguments passed on to methods. Not currently used.
+#'
+#' @return If the 'reformatDat' argument is FALSE (the default), the return of
+#' this function is a message that says the 'dat' and 'inv' datasets are ready
+#' for use in the [trackSpp()] function. This message includes any column name
+#' arguments that must be included in the [trackSpp()] function call for these
+#' datasets.
+#' If the 'reformatDat' argument is TRUE, then [checkDat()] returns a list that
+#' contains versions of 'dat' and 'inv' that are ready to go directly into the
+#' [trackSpp()] or [assign()] functions. The list has the following elements:
+#'
+#'\item{dat}{An sf data.frame that has five columns called 'Species', 'Site',
+#''Quad', 'Year', and 'geometry'. Any additional columns that were present in
+#'the version of 'dat' input into the [checkDat()] function will also be
+#'included in this version, although the column names will be appended with
+#'"_USER".}
+#'\item{inv}{A named list. The name of each element of the list is a quadrat
+#' name in 'dat', and the contents of that list element is a numeric vector of
+#' all of the years in which that quadrat (or other unique spatial area) was
+#' sampled. For each list element, the vector of years is in sequential order
+#' from oldest to most recent.}
+#'\item{userColNames}{A named character vector. This vector contains the column
+#'names provided by the user for all of the required data columns in the
+#'original version of 'dat'. The name of each vector element indicates the type
+#'of data that is contained in the column with the name in that vector element.
+#'For example, if the 'dat' data.frame input into [checkDat()] has the names
+#''Species','location' 'quadrat', 'Year', and 'geometry', then this list element
+#'will be a character vector of these values with the names 'species', 'site',
+#''quad', 'year', and 'geometry'. }
+#'
 #' @export
 #'
 #' @examples
+#' checkDat(dat = grasslandData,
+#' inv = grasslandInventory)
+#'
+#' checkDat(dat = grasslandData,
+#' inv = grasslandInventory,
+#' reformatDat = TRUE)
+#'
+#' @import sf
+#'
 
 ## check that the dat and inv arguments contain the appropriate values/formats?
 ## is also reformatting the column names
@@ -46,9 +136,9 @@ checkDat <- function (dat, inv,
     badArgs <- paste(names(which(sapply(newNames, is.character) == FALSE)),
                      collapse = ", and ")
 
-    stop(paste0("The argument(s) ", badArgs, " must each contain a single
-    character string that gives the name(s) of the column(s) in 'dat' that
-                contain the data for ", badArgs))
+stop(paste0("The argument(s) ", badArgs, " must each contain a single character
+string that gives the name(s) of the column(s) in 'dat' that contain the data
+for ", badArgs))
 
   } else { ## if each of the elements of 'newNames' is a character vector
     ## make sure that each of the elements of newNames is present as a column
@@ -58,7 +148,10 @@ checkDat <- function (dat, inv,
       badBadArgs <- paste(names(newNames)[which(!unlist(newNames) %in%
                                                   names(dat))],
                           collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column names in 'dat'. These arguments must be character vectors that give the name(s) of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for spelling errors." ))
+stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column
+names in 'dat'. These arguments must be character vectors that give the name(s)
+of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for
+spelling errors." ))
     }
   }
 
@@ -101,8 +194,8 @@ checkDat <- function (dat, inv,
       stop("The 'Species' column must be a character column with no 'NA's.")
     }
   } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'Species'.")
+stop("The 'dat' data.frame must contain values in the column labeled 'Species'."
+     )
   }
 
   ## check the 'Year' column
@@ -125,8 +218,7 @@ checkDat <- function (dat, inv,
       stop("The 'Quad' column must be an character column with no 'NA's.")
     }
   } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-          'Quad'.")
+stop("The 'dat' data.frame must contain values in the column labeled 'Quad'.")
   }
 
   ## check the 'inv' argument
@@ -164,18 +256,23 @@ checkDat <- function (dat, inv,
         misMatchQuads <- paste0(unique(sapply(strsplit(datQuadYear[
           which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),
           collapse = ", and ")
-        stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) ", misMatchQuads, ". The mismatch is for the following quadrat/year combinations: ",
-                    paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)],
-                           collapse = ", " ), " . Either 'inv' does not contain all the years in which these quadrats were measured, or the years in 'dat' for these observations are incorrect."))
+stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) "
+, misMatchQuads, ". The mismatch is for the following quadrat/year combinations:
+", paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)], collapse = ", " ),
+" . Either 'inv' does not contain all the years in which these quadrats were
+measured, or the years in 'dat' for these observations are incorrect."))
       }
     } else { ## there is NOT data in 'inv' that corresponds to every quadrat
       # in 'dat'
       quadMissing <- datQuads[!datQuads %in% names(inv)]
-      stop(paste0("The 'inv' argument does not contain sampling year data for quadrat ", quadMissing, ", which is present in the 'dat' argument. The 'inv' list must contain an element that contains the sampling year data for quadrat ", quadMissing))
+stop(paste0("The 'inv' argument does not contain sampling year data for quadrat
+", quadMissing, ", which is present in the 'dat' argument. The 'inv' list must
+contain an element that contains the sampling year data for quadrat ",
+            quadMissing))
     }
   } else {
-    stop("The 'inv' argument must be a list, and each element of that list must
-         be a numeric vector with at least one value.")
+stop("The 'inv' argument must be a list, and each element of that list must be a
+numeric vector with at least one value.")
   }
 
 
@@ -187,6 +284,11 @@ checkDat <- function (dat, inv,
     datReturn <- dat
     invReturn <- inv
     nameReturn <- usrNames
+    ## return the reformatted data
+    return(list(dat = datReturn,
+                inv = invReturn,
+                userColNames = nameReturn))
+
   } else if (reformatDat == FALSE) { ## if the user does not want the function
     # to return an output that is ready to go into the trackSpp function, but
     # just wants to know that their dataset is in the correct format
@@ -200,26 +302,25 @@ checkDat <- function (dat, inv,
     if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO differences
       # in column names between the input 'dat' d.f. and the defualt required
       # names
-      print("The data you put into the 'checkDat()' function for the 'dat' and
-      'inv'arguments are ready to be used in the 'trackSpp()' function! You do
-      not need to include any values for the 'species', 'site', 'quad', 'year',
-      and 'geometry' arguments in 'trackSpp()")
+cat("The data you put into the 'checkDat()' function for the 'dat' and 'inv'
+arguments are ready to be used in the 'trackSpp()' function! You do not need to
+include any values for the 'species', 'site', 'quad', 'year', and 'geometry'
+arguments in 'trackSpp()")
 
     } else if (sum(!usrNames %in% defaultNames) > 0) { ## if there ARE
       # differences in column names between the input 'dat' d.f. and the defualt
       # required names
       ## get the usrNames that are different than the default Names
       neededArgs <- newNames[!usrNames %in% defaultNames]
-      print(paste0("The data you put into the 'checkDat()' function for the 'dat' and 'inv' arguments are ready to be used in the 'trackSpp()' function! However, make sure that you include the character value(s): ", paste0("'", unlist(neededArgs), "'", collapse = ", and "), " in the corresponding ",paste0("'", names(neededArgs), "'", collapse = ", and ")," arguments"))
+cat(paste0("The data you put into the 'checkDat()' function for the 'dat' and
+'inv' arguments are ready to be used in the 'trackSpp()' function! However, make
+sure that you include the character value(s): ", paste0("'", unlist(neededArgs),
+"'", collapse = ", and "), " in the corresponding ",paste0("'",
+names(neededArgs), "'", collapse = ", and ")," arguments"))
     }
   } else {
     stop("The 'reformatDat' argument must be logical (i.e. TRUE or FALSE).")
   }
-
-  return(list(dat = datReturn,
-              inv = invReturn,
-              nameReturn = usrNames))
-
 }
 
 # testing -----------------------------------------------------------------

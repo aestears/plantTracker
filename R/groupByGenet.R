@@ -11,9 +11,9 @@
 #' designed for use within the \code{\link{assign}} function (and then the
 #' \code{\link{trackSpp}} function), but can be used independently.
 #'
-#' @param dat An sf object that contains polygons to be grouped. Typically should
-#' include data only for one species, one quadrat, and one year. For intended
-#' use, this dataset should be of the format described in
+#' @param dat An sf object that contains polygons to be grouped. Typically
+#' should include data only for one species, one quadrat, and one year. For
+#' intended use, this dataset should be of the format described in
 #' \code{\link{grasslandData}}. This function will run if 'dat' contains
 #' only 'geometry' data, but it is *strongly* recommended that other columns
 #' specified in \code{\link{grasslandData}} are included.
@@ -26,8 +26,8 @@
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return A numeric vector of unique genetIDs that is as long as the number of
-#' rows in 'dat.' Each \code{i} in the output is the genetID for the \code{i}th
-#' row in 'dat'.
+#' rows in 'dat.' Each element \code{i} in the output is the genetID for the
+#' \code{i}th row in 'dat'.
 #'
 #' @examples
 #' dat <- grasslandData[grasslandData$Site=="CO" &
@@ -40,7 +40,6 @@
 #' @seealso [assign()] and [trackSpp()], \pkg{PlantTracker} functions that apply
 #' this function across multiple species, quadrats, and years.
 #'
-#' @import dat
 #' @import Matrix
 #' @importFrom igraph clusters graph_from_adjacency_matrix
 #' @importFrom methods as
@@ -56,44 +55,55 @@ groupByGenet <-  function(dat, buffGenet,...){
       if (sum(names(dat) == "geometry") == 1) {
         ## does the 'geometry' column contain sf data?
         if (sum(!st_is(dat$geometry, c("POLYGON", "MULTIPOLYGON"))) != 0) {
-          stop("The 'dat' data.frame must contain the spatial data in the column called 'geometry'")
+          stop("The 'dat' data.frame must contain the spatial data in the column
+               called 'geometry'")
         }
       } else {
-        stop("The 'dat' data.frame must have its 'sf' data in a column called 'geometry.'")
+        stop("The 'dat' data.frame must have its 'sf' data in a column called
+             'geometry.'")
       }
     } else { ## if 'dat' is not in the correct sf format
       stop("'dat' is not in correct sf format.
          sfc must be POLYGON or MULTIPOLYGON")
     }
 
-  ## if there is a column for 'species,' it must contain data for only one species
+  ## if there is a column for 'species,' it must contain data for only one
+  # species
   if (sum(names(dat) %in% "Species") == 1) {
     if (length(unique(dat$Species)) > 1  ## must be data for only one species
     ) {
-      stop("The 'Species' column in 'dat' must contain only one species name, because 'dat' must be subset by species before being used in this function.")
+      stop("The 'Species' column in 'dat' must contain only one species name,
+           because 'dat' must be subset by species before being used in this
+           function.")
     }
   } else { ## if the dat d.f. does not have a column called "Species"
-    warning("It is recommended that the 'dat' data.frame contains a column called 'Species' that contains character vectors of species names.")
+    warning("It is recommended that the 'dat' data.frame contains a column
+            called 'Species' that contains character vectors of species names.")
   }
 
   ## if there is a column for 'quad,' it must contain data for only one quadrat
   if (sum(names(dat) %in% "Quad") == 1) {
     if (length(unique(dat$Quad)) > 1  ## must be data for only one quadrat
     ) {
-      stop("The 'Quad' column in 'dat' must contain only one quadrat name, because 'dat' must be subset by quadrat before being used in this function.")
+      stop("The 'Quad' column in 'dat' must contain only one quadrat name,
+           because 'dat' must be subset by quadrat before being used in this
+           function.")
     }
   } else { ## if the dat d.f. does not have a column called "Quad"
-    warning("It is recommended that the 'dat' data.frame contains a column called 'Quad' that contains character vectors of quadrat names.")
+    warning("It is recommended that the 'dat' data.frame contains a column
+            called 'Quad' that contains character vectors of quadrat names.")
   }
 
   ## if there is a column for 'Year,' it must contain data for only one year
   if (sum(names(dat) %in% "Year") == 1) {
     if (length(unique(dat$Year)) > 1  ## must be data for only one species
     ) {
-      stop("The 'Year' column in 'dat' must contain only one year value, because 'dat' must be subset by year before being used in this function.")
+      stop("The 'Year' column in 'dat' must contain only one year value, because
+           'dat' must be subset by year before being used in this function.")
     }
   } else { ## if the dat d.f. does not have a column called "Year"
-    warning("It is recommended that the 'dat' data.frame contains a column called 'Year' that contains character vectors of species names.")
+    warning("It is recommended that the 'dat' data.frame contains a column
+            called 'Year' that contains character vectors of species names.")
   }
 
   ## check the 'buffGenet' argument

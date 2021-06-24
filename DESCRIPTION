@@ -17,7 +17,9 @@ RoxygenNote: 7.1.1
 Depends: 
     R (>= 2.10)
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
 Imports: 
     Matrix,
@@ -25,3 +27,4 @@ Imports:
     sf,
     methods,
     stats
+VignetteBuilder: knitr

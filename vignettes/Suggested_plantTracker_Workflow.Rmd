@@ -1,0 +1,25 @@
+---
+title: "Suggested plantTracker Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Suggested_plantTracker_Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Welcome to plantTracker! This package was designed to transform long-term 
+quadrat maps that show plant occurence and size into demographic data that can 
+be used to answer questions about population and community ecology. 
+This vignette is designed to help you use plantTracker functions to move from a 
+spatially referenced dataset containing plant cover data, to an output dataset 
+that contains growth and survival data for each observed individual. 
+```{r setup}
+library(PlantTracker)
+```
+

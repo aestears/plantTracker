@@ -182,10 +182,10 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   # dormancy (in years) that is allowed. If multiple values, is subset by spp.
   # before being passed to assign()
   ## check dorm argument
-  if(is.null(dorm)==TRUE) {
+  if (missing(dorm)) {
     stop("The 'dorm' argument must have a value.")
   } else {
-    if (is.numeric(dorm)) { ## is the value of dorm a single numeric integer?
+    if (is.numeric(dorm) & length(dorm == 1)) { ## is the value of dorm a single numeric integer?
       if (dorm < 0 | ## dorm must be greater than or equal to 0
           round(dorm) != dorm | ## dorm must be a whole number
           length(dorm)!=1) { ## dorm must be a vector of length 1
@@ -225,10 +225,11 @@ positive whole number values for each species.")
   # the same units as distances in dat). If multiple values, is subset by spp.
   # before being passed to assign()
   ## check buff argument
-  if(is.null(buff)==TRUE) {
+  if(missing(buff)) {
     stop("The 'buff' argument must have a value.")
   } else {
-    if (is.numeric(buff)) { ## is the value of buff a single numeric?
+    if (is.numeric(buff) & length(buff) == 1) { ## is the value of buff a single
+      # numeric value?
       if (buff < 0 | ## buff must be greater than or equal to 0
           buff > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buff must
           # not be larger than the dimensions of the quadrat
@@ -268,10 +269,10 @@ species.")
   # units as distances in dat). If multiple values, is subset by spp. before
   # being passed to assign() (and then passed to groupByGenet())
   ## check buffGenet argument
-  if(is.null(buffGenet)==TRUE) {
+  if(missing(buffGenet)) {
     stop("The 'buffGenet' argument must have a value.")
   } else {
-    if (is.numeric(buffGenet)) { ## is the value of buffGenet a single numeric?
+    if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of buffGenet a single numeric?
       if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
           buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
           # must not be larger than the dimensions of the quadrat
@@ -313,10 +314,10 @@ for each species.")
   # species names, he second column contains clonal args. If multiple values, is
   # subset by spp. before being passed to assign()
   ## check clonal argument
-  if(is.null(clonal)==TRUE) {
+  if(missing(clonal)) {
     stop("The 'clonal' argument must have a value.")
   } else {
-    if (is.numeric(clonal)) { ## is the value of clonal a single numeric?
+    if (is.numeric(clonal) & length(clonal == 1)) { ## is the value of clonal a single numeric?
       if (clonal != 1 & clonal != 0 | ## clonal must be either 0 or 1
         !is.numeric(clonal) | ## clonal must be numeric
         length(clonal)!=1){ ## clonal must be a vector of length = 1
@@ -494,16 +495,19 @@ return(trackSppOut)
 #                      #& grasslandData$Species == "Bouteloua gracilis",]
 # names(dat)[1]<- "Species_Name"
 # names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
 # inv <- grasslandInventory
+# #inv <- inv[1:5]
 # dorm <- 1
-# buff <- 0.05
+# buff <- .05
 # buffGenet <- 0.005
 # clonal <- data.frame(Species = unique(dat$Species),
 #                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
-#
-# testOut <- trackSpp(dat, inv, dorm, buff, buffGenet, clonal,
-#                     species = "Species_Name",
-#                     quad = "location")
+
+testOut <- trackSpp(dat, inv, buff, buffGenet, clonal
+                    ,species = "Species_Name",
+                    quad = "location")
 
 #
 # testDat <- st_drop_geometry(dat)

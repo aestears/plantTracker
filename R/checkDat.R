@@ -133,8 +133,8 @@ checkDat <- function (dat, inv,
   if (sum(sapply(newNames, is.character)) != 5) { ## if there is one or more
     # elements of the newNames list that is not a character vector
     ## find which elements are not character vectors
-    badArgs <- paste(names(which(sapply(newNames, is.character) == FALSE)),
-                     collapse = ", and ")
+    badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
+                     "'", collapse = ", and ")
 
 stop(paste0("The argument(s) ", badArgs, " must each contain a single character
 string that gives the name(s) of the column(s) in 'dat' that contain the data
@@ -145,13 +145,13 @@ for ", badArgs))
     # name in 'dat'
     if (sum(unlist(newNames) %in% names(dat)) != 5) { ## if the column names of
       # 'dat' do NOT match the values provided in 'newNames'
-      badBadArgs <- paste(names(newNames)[which(!unlist(newNames) %in%
-                                                  names(dat))],
+      badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
+                                                  names(dat))],"'",
                           collapse = ", and ")
 stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column
 names in 'dat'. These arguments must be character vectors that give the name(s)
 of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for
-spelling errors." ))
+spelling errors, or make sure that you have included values for these arguments that give the name of the columns in 'dat' that contain these data types." ))
     }
   }
 
@@ -253,8 +253,8 @@ stop("The 'dat' data.frame must contain values in the column labeled 'Quad'.")
         ## find those quads that have a mismatch between 'dat' and 'inv' (the
         # 'inv' data for this quad does not contain some/all years that are
         # present in 'dat' for this quad)
-        misMatchQuads <- paste0(unique(sapply(strsplit(datQuadYear[
-          which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),
+        misMatchQuads <- paste0("'",unique(sapply(strsplit(datQuadYear[
+          which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),"'",
           collapse = ", and ")
 stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) "
 , misMatchQuads, ". The mismatch is for the following quadrat/year combinations:
@@ -264,11 +264,9 @@ measured, or the years in 'dat' for these observations are incorrect."))
       }
     } else { ## there is NOT data in 'inv' that corresponds to every quadrat
       # in 'dat'
-      quadMissing <- datQuads[!datQuads %in% names(inv)]
-stop(paste0("The 'inv' argument does not contain sampling year data for quadrat
-", quadMissing, ", which is present in the 'dat' argument. The 'inv' list must
-contain an element that contains the sampling year data for quadrat ",
-            quadMissing))
+      quadMissing <- paste0("'",datQuads[!datQuads %in% names(inv)],"'",
+                            collapse = ", and ")
+stop(paste0("The 'inv' argument does not contain sampling year data for quadrat(s) ", quadMissing, ", which have data in the 'dat' argument. The 'inv' list must contain element(s) for each quadrat, and each must contain an integer vector of years in which that quadrat was sampled."))
     }
   } else {
 stop("The 'inv' argument must be a list, and each element of that list must be a

@@ -30,19 +30,123 @@ getNeighbors <- function (dat, radius, method, bySpecies = TRUE,
 
 # argument checks ---------------------------------------------------------
 ## use the checkDat function to check the 'dat' function
+checkedDat <- checkDat(dat = dat, species = species, site = site, quad = quad,
+                       year = year, geometry = geometry, reformatDat = TRUE)
+
+dat <- checkedDat$dat
+
+## check trackID arg.
+trackIDuserName <- paste0(trackID,"_USER")
+trackIDdefaultName <- "trackID"
+## change the name of the 'trackID
 
 # work --------------------------------------------------------------------
-## loop through each site
-for (i in unique(dat$Site))
-  ## loop through each quadrat
+## make an empty column in 'dat' to contain the output data
+dat$neighbors <- NA
+## assign a unique index to each row to simplify the looping process
+dat$index <- 1:nrow(dat)
+for (i in unique(dat$Site)) { ## loop through each site
+  for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
+    # quadrat
+    for (k in unique(dat[dat$Site == i & dat$Quad == j, "Year"]$Year)) { ## loop
+      # through each year
+      if (bySpecies == TRUE) { ## calculating conspecific neighborhood (need to
+        # subset by species)
+        for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
+                             "Species"]$Species)) {
+          ## get the data for this site/quad/year/species combo
+          datOneSp <- dat[dat$Site == i & dat$Quad == j &
+                         dat$Year == k & dat$Species == l,]
+            if (byRamet == TRUE) { ## calculate the neighborhood for each
+              # individual ramet
+              for (n in 1:nrow(datOneSp)) { ## loop through each unique row
+                ## make a buffer around the focal individual of the specified
+                # 'radius'
+                rametBuff <- suppressWarnings(st_buffer(x = datOneSp[n,],
+                                                        dist = radius))
+                ## subtract the focal ramet from the radius
+                rametNeigh <- suppressWarnings(st_difference(x = rametBuff,
+                                                             y = datOneSp[n,]))
+                ## compare 'rametNeigh' (without the focal ramet) to the rest of
+                # the ramets in this quad (of this spp.) (make sure to remove
+                # the overlap with the focal individual)
+                overlaps <- suppressWarnings(
+                  st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
+                    rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
+                    ,])
+
+                if ( method == 'count') {
+                  ## get the number of genets that are w/in the radius
+                  count <- length(unique(overlaps$trackID_USER.2))
+                  ## put this value into 'dat' in the 'neighbors' column
+                  dat[dat$index == datOneSp[n,"index"]$index,
+                      "neighbors"]$neighbors <- count
+                } else if (method == 'area') {
+                  ## get the area of the ramets that are w/in the radius
+                  area <- st_area(overlaps)
+                  ## put this value into 'dat' in the 'neighbors' column
+                  dat[dat$index == datOneSp[n,"index"]$index,
+                      "neighbors"]$neighbors <- area
+                }
+              }
+            } else if (byRamet == FALSE) { ## calculate the neighborhood for
+              # each genet
+              ## loop through each unique trackID
+              for (m in unique(datOneSp$trackID_USER)) {
+                ## make a buffer around the focal individual of the specified
+                # 'radius'
+                rametBuff <- suppressWarnings(st_buffer(
+                  x = datOneSp[datOneSp$trackID_USER == m,],
+                  dist = radius))
+                ## make into one large polygon
+                rametBuff <- st_union(rametBuff)
+                ## subtract the focal ramet from the radius
+                rametNeigh <- suppressWarnings(
+                  st_difference(x = rametBuff,
+                                y = st_union(datOneSp[datOneSp$trackID_USER == m,])))
+                ## compare 'rametNeigh' (without the focal ramet) to the rest of
+                # the ramets in this quad (of this spp.) (make sure to remove
+                # the overlap with the focal individual)
+                overlaps <- suppressWarnings(
+                  st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
+                    rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
+                  ,])
+
+                if ( method == 'count') {
+                  ## get the number of genets that are w/in the radius
+                  count <- length(unique(overlaps$trackID_USER.2))
+                  ## put this value into 'dat' in the 'neighbors' column
+                  dat[dat$index == datOneSp[n,"index"]$index,
+                      "neighbors"]$neighbors <- count
+                } else if (method == 'area') {
+                  ## get the area of the ramets that are w/in the radius
+                  area <- st_area(overlaps)
+                  ## put this value into 'dat' in the 'neighbors' column
+                  dat[dat$index == datOneSp[n,"index"]$index,
+                      "neighbors"]$neighbors <- area
+                }
+              }
+            }
+        } ## end of loop to get data by species
+      } else if (bySpecies == FALSE) { ## calculating heterospecific
+        # neighborhood (don't need to subset by species)
+        ## get the data for this site/quad/year combo
+        datSpp<- dat[dat$Site == i & dat$Quad == j &
+                          dat$Year == k ,]
+
+      } ## end of loop to get heterospecific dataset (all species present)
+    } ## end of loop to get data by year
+    } ## end of loop to get data by quadrat
+  } ## end of loop to get data by site
+
+
     ## loop through each species OR don't loop through each species
       ## loop through each genet OR ramet
         ## count OR sum area of genets w/in the specified radius
 
 # output ------------------------------------------------------------------
 
-
-}
+} ## end of 'getNeighbors()'
 
 
 # testing -----------------------------------------------------------------

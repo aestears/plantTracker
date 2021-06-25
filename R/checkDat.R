@@ -97,7 +97,7 @@
 
 ## check that the dat and inv arguments contain the appropriate values/formats?
 ## is also reformatting the column names
-checkDat <- function (dat, inv,
+checkDat <- function (dat, inv = NULL,
                       species = "Species",
                       site = "Site",
                       quad = "Quad",
@@ -221,105 +221,157 @@ stop("The 'dat' data.frame must contain values in the column labeled 'Species'."
 stop("The 'dat' data.frame must contain values in the column labeled 'Quad'.")
   }
 
-  ## check the 'inv' argument
-  ## is inv a list?
-  if (is.list(inv) == TRUE &  ## 'inv' argument must be a list
-      sum(!sapply(inv, is.numeric)) == 0 & ## each element of 'inv' must be a
-      # numeric vector
-      sum(!sapply(inv, length) > 0) == 0 ## each element must contain at least
-      #one value
-  ) {
-    ## get unique quadrats in 'dat'
-    datQuads <- unique(dat[,"Quad"]$Quad)
-    if (sum(!datQuads %in% names(inv))==0) { ## do the quadrats in 'dat' have
-      #corresponding inventory data in 'inv'? If yes:
-      ## check that the years for each quadrat in 'dat' match the years for each
-      # quadrat in 'inv'
-      ## get the quadrat/year combos present in 'dat'
-      datQuadYear <- unique(st_drop_geometry(dat[,c("Quad", "Year")]))
-      datQuadYear<- paste0(datQuadYear$Quad,":",datQuadYear$Year)
-      ## get the years present for each quad in 'inv'
-      invYears <- unlist(inv)
-      names(invYears) <- NULL
-      ## make a data.frame that contains the quads included in 'inv' and the
-      # years present in 'inv' for each quadrat
-      invQuadYear <- data.frame(
-        "Quad" = rep(names(inv), times = sapply(inv,length)),
-        "Year" = invYears)
-      invQuadYear <- paste0(invQuadYear$Quad, ":", invQuadYear$Year)
-      ## compare the 'datQuadYear' vector and the 'invQuadYear' to make sure
-      # that the years in 'dat' are represented in 'inv'
-      if (sum(!datQuadYear %in% invQuadYear) != 0) {
-        ## find those quads that have a mismatch between 'dat' and 'inv' (the
-        # 'inv' data for this quad does not contain some/all years that are
-        # present in 'dat' for this quad)
-        misMatchQuads <- paste0("'",unique(sapply(strsplit(datQuadYear[
-          which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),"'",
-          collapse = ", and ")
+  if (is.null(inv) == FALSE) { ## if there is an argument for 'inv' (the default
+    # is NULL, so if it is not NULL, then we need to check it)
+    ## check the 'inv' argument
+    ## is inv a list?
+    if (is.list(inv) == TRUE &  ## 'inv' argument must be a list
+        sum(!sapply(inv, is.numeric)) == 0 & ## each element of 'inv' must be a
+        # numeric vector
+        sum(!sapply(inv, length) > 0) == 0 ## each element must contain at least
+        #one value
+    ) {
+      ## get unique quadrats in 'dat'
+      datQuads <- unique(dat[,"Quad"]$Quad)
+      if (sum(!datQuads %in% names(inv))==0) { ## do the quadrats in 'dat' have
+        #corresponding inventory data in 'inv'? If yes:
+        ## check that the years for each quadrat in 'dat' match the years for
+        # each quadrat in 'inv'
+        ## get the quadrat/year combos present in 'dat'
+        datQuadYear <- unique(st_drop_geometry(dat[,c("Quad", "Year")]))
+        datQuadYear<- paste0(datQuadYear$Quad,":",datQuadYear$Year)
+        ## get the years present for each quad in 'inv'
+        invYears <- unlist(inv)
+        names(invYears) <- NULL
+        ## make a data.frame that contains the quads included in 'inv' and the
+        # years present in 'inv' for each quadrat
+        invQuadYear <- data.frame(
+          "Quad" = rep(names(inv), times = sapply(inv,length)),
+          "Year" = invYears)
+        invQuadYear <- paste0(invQuadYear$Quad, ":", invQuadYear$Year)
+        ## compare the 'datQuadYear' vector and the 'invQuadYear' to make sure
+        # that the years in 'dat' are represented in 'inv'
+        if (sum(!datQuadYear %in% invQuadYear) != 0) {
+          ## find those quads that have a mismatch between 'dat' and 'inv' (the
+          # 'inv' data for this quad does not contain some/all years that are
+          # present in 'dat' for this quad)
+          misMatchQuads <- paste0("'",unique(sapply(strsplit(datQuadYear[
+            which(!datQuadYear %in% invQuadYear)], ":"), function(x) x[1])),"'",
+            collapse = ", and ")
 stop(paste0("Mismatch between years in 'dat' and years in 'inv' for quadrat(s) "
 , misMatchQuads, ". The mismatch is for the following quadrat/year combinations:
 ", paste0(datQuadYear[which(!datQuadYear %in% invQuadYear)], collapse = ", " ),
 " . Either 'inv' does not contain all the years in which these quadrats were
 measured, or the years in 'dat' for these observations are incorrect."))
+        }
+      } else { ## there is NOT data in 'inv' that corresponds to every quadrat
+        # in 'dat'
+        quadMissing <- paste0("'",datQuads[!datQuads %in% names(inv)],"'",
+                              collapse = ", and ")
+stop(paste0("The 'inv' argument does not contain sampling year data for
+quadrat(s) ", quadMissing, ", which have data in the 'dat' argument. The 'inv'
+list must contain element(s) for each quadrat, and each must contain an integer
+vector of years in which that quadrat was sampled."))
       }
-    } else { ## there is NOT data in 'inv' that corresponds to every quadrat
-      # in 'dat'
-      quadMissing <- paste0("'",datQuads[!datQuads %in% names(inv)],"'",
-                            collapse = ", and ")
-stop(paste0("The 'inv' argument does not contain sampling year data for quadrat(s) ", quadMissing, ", which have data in the 'dat' argument. The 'inv' list must contain element(s) for each quadrat, and each must contain an integer vector of years in which that quadrat was sampled."))
-    }
-  } else {
+    } else {
 stop("The 'inv' argument must be a list, and each element of that list must be a
 numeric vector with at least one value.")
+    }
   }
+
 
 
 # output ------------------------------------------------------------------
   ## prepare the output
-  if (reformatDat == TRUE) {
-    ## return the 'dat' argument, with column names that are appropriate for use
-    # directly in 'assign' or 'trackSpp'
-    datReturn <- dat
-    invReturn <- inv
-    nameReturn <- usrNames
-    ## return the reformatted data
-    return(list(dat = datReturn,
-                inv = invReturn,
-                userColNames = nameReturn))
 
-  } else if (reformatDat == FALSE) { ## if the user does not want the function
-    # to return an output that is ready to go into the trackSpp function, but
-    # just wants to know that their dataset is in the correct format
-    ## make datReturn and invReturn empty so that the function has no output
-    nameReturn <- NULL
-    datReturn <- NULL
-    invReturn <- NULL
+  if (is.null(inv) == FALSE) { ## if there IS an argument for 'inv'
+    if (reformatDat == TRUE) {
+      ## return the 'dat' argument, with column names that are appropriate for
+      # use directly in 'assign' or 'trackSpp'
+      datReturn <- dat
+      invReturn <- inv
+      nameReturn <- usrNames
+      ## return the reformatted data
+      return(list(dat = datReturn,
+                  inv = invReturn,
+                  userColNames = nameReturn))
 
-    ## determine if there are any user-specified column names (that differ
-    # from the defaults)
-    if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO differences
-      # in column names between the input 'dat' d.f. and the defualt required
-      # names
+    } else if (reformatDat == FALSE) { ## if the user does not want the function
+      # to return an output that is ready to go into the trackSpp function, but
+      # just wants to know that their dataset is in the correct format
+      ## make datReturn and invReturn empty so that the function has no output
+      nameReturn <- NULL
+      datReturn <- NULL
+      invReturn <- NULL
+
+      ## determine if there are any user-specified column names (that differ
+      # from the defaults)
+      if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO
+        # differences in column names between the input 'dat' d.f. and the
+        # defualt required names
 cat("The data you put into the 'checkDat()' function for the 'dat' and 'inv'
 arguments are ready to be used in the 'trackSpp()' function! You do not need to
 include any values for the 'species', 'site', 'quad', 'year', and 'geometry'
 arguments in 'trackSpp()")
 
-    } else if (sum(!usrNames %in% defaultNames) > 0) { ## if there ARE
-      # differences in column names between the input 'dat' d.f. and the defualt
-      # required names
-      ## get the usrNames that are different than the default Names
-      neededArgs <- newNames[!usrNames %in% defaultNames]
+      } else if (sum(!usrNames %in% defaultNames) > 0) { ## if there ARE
+        # differences in column names between the input 'dat' d.f. and the
+        # defualt required names
+        ## get the usrNames that are different than the default Names
+        neededArgs <- newNames[!usrNames %in% defaultNames]
 cat(paste0("The data you put into the 'checkDat()' function for the 'dat' and
 'inv' arguments are ready to be used in the 'trackSpp()' function! However, make
 sure that you include the character value(s): ", paste0("'", unlist(neededArgs),
 "'", collapse = ", and "), " in the corresponding ",paste0("'",
 names(neededArgs), "'", collapse = ", and ")," arguments"))
+      }
+    } else {
+      stop("The 'reformatDat' argument must be logical (i.e. TRUE or FALSE).")
     }
-  } else {
-    stop("The 'reformatDat' argument must be logical (i.e. TRUE or FALSE).")
+  } else if (is.null(inv) == TRUE) { ## if there is not an input for 'inv'
+if (reformatDat == TRUE) {
+      ## return the 'dat' argument, with column names that are appropriate for
+      # use directly in 'assign' or 'trackSpp'
+      datReturn <- dat
+      nameReturn <- usrNames
+      ## return the reformatted data
+      return(list(dat = datReturn,
+                  userColNames = nameReturn))
+
+    } else if (reformatDat == FALSE) { ## if the user does not want the function
+      # to return an output that is ready to go into the trackSpp function, but
+      # just wants to know that their dataset is in the correct format
+      ## make datReturn and invReturn empty so that the function has no output
+      nameReturn <- NULL
+      datReturn <- NULL
+
+      ## determine if there are any user-specified column names (that differ
+      # from the defaults)
+      if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO
+        # differences in column names between the input 'dat' d.f. and the
+        # defualt required names
+cat("The data you put into the 'checkDat()' function for the 'dat' and 'inv'
+arguments are ready to be used in the 'trackSpp()' function! You do not need to
+include any values for the 'species', 'site', 'quad', 'year', and 'geometry'
+arguments in 'trackSpp()")
+
+      } else if (sum(!usrNames %in% defaultNames) > 0) { ## if there ARE
+        # differences in column names between the input 'dat' d.f. and the
+        # defualt required names
+        ## get the usrNames that are different than the default Names
+        neededArgs <- newNames[!usrNames %in% defaultNames]
+cat(paste0("The data you put into the 'checkDat()' function for the 'dat' and
+'inv' arguments are ready to be used in the 'trackSpp()' function! However, make
+sure that you include the character value(s): ", paste0("'", unlist(neededArgs),
+ "'", collapse = ", and "), " in the corresponding ",paste0("'",
+names(neededArgs), "'", collapse = ", and ")," arguments"))
+      }
+    } else {
+      stop("The 'reformatDat' argument must be logical (i.e. TRUE or FALSE).")
+    }
   }
-}
+  }
+
 
 # testing -----------------------------------------------------------------
 #

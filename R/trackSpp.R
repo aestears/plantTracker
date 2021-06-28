@@ -184,7 +184,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   ## check dorm argument
   if (missing(dorm)) {
     stop("The 'dorm' argument must have a value.")
-  } else {if (is.numeric(dorm) & length(dorm == 1)) { ## is the value of dorm a single
+  } else if (is.numeric(dorm) & length(dorm == 1)) { ## is the value of dorm a single
     # numeric integer?
     if (dorm < 0 | ## dorm must be greater than or equal to 0
         round(dorm) != dorm | ## dorm must be a whole number

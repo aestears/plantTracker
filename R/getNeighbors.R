@@ -1,5 +1,6 @@
-getNeighbors <- function (dat, radius, method, bySpecies = TRUE,
-                          byRamet = FALSE,
+getNeighbors <- function (dat, radius, method,
+                          compType = 'allSpp',
+                          focal = 'genet',
                           trackID = 'trackID',
                           species = "Species",
                           quad = "Quad",
@@ -9,7 +10,7 @@ getNeighbors <- function (dat, radius, method, bySpecies = TRUE,
                           ...
                           ) {
   #dat ## a df that has been assigned demographic data by the 'trackSpp'
-  # function. If bySpecies == FALSE, 'dat' must include ALL species present in
+  # function. If compType == 'allSpp', 'dat' must include ALL species present in
   # the quadrat
   #radius # a numeric value that has the desired radius around each individual
   # for which neighborhood area/count will be calculated.
@@ -17,14 +18,12 @@ getNeighbors <- function (dat, radius, method, bySpecies = TRUE,
   # genets within the specified radius will be counted. If 'area', then the area
   # within the specified radius that is occupied will be calculated.
   ###AES question: for count method--should I use ramets or genets??
-  #bySpecies ## a logical argument with a default value of 'TRUE'. TRUE
-  # indicates that only conpsecific competition will be calculated. 'FALSE'
-  # indicates that heterospecific competition will be calculated
-  #byRamet ## a logical argument with a default of 'FALSE'. 'FALSE' indicates
-  # that local neighborhood is calculated on a genet-scale, such that each row
-  # that represents a ramet of one genet will have the same value for local
-  # neighborhood. 'TRUE' indicates that the local neighborhood value is
-  # calculated for each ramet.
+  #focal ## an argument that indicates whether the focal indidvidual should be
+  # each ramet ('ramet') or each genet ('genet'). Defualt is 'genet'
+  #compType ## an argument that indicates whether you want to calculate only
+  # conspecific local neighborhood (only look at individuals of the same
+  # species -- 'oneSpp'), or heterospecific local neighborhood (look at
+  # individuals of all species -- 'allSpp'). Default is 'allSpp'.
   #trackID ## the name of the column that contains the 'trackID'
   # (unique genet identifier) data
 
@@ -38,26 +37,40 @@ dat <- checkedDat$dat
 ## check trackID arg.
 trackIDuserName <- paste0(trackID,"_USER")
 trackIDdefaultName <- "trackID"
-## change the name of the 'trackID
+## change the name of the 'trackID' column to have the default column name
+names(dat)[names(dat) == trackIDuserName] <- trackIDdefaultName
 
 # work --------------------------------------------------------------------
-## make an empty column in 'dat' to contain the output data
-dat$neighbors <- NA
 ## assign a unique index to each row to simplify the looping process
 dat$index <- 1:nrow(dat)
+
+
+## subset the 'dat' d.f so that it only has the required columns
+# (and dstore the rest)
+## data to 'store'
+datStore <- st_drop_geometry(dat[,!names(dat) %in% c("Species", "Site", "Quad", "Year",
+                                    "trackID", "geometry")])
+## trimmed 'dat' to use in the function
+dat <- dat[,names(dat) %in% c("Species", "Site", "Quad", "Year",
+                              "trackID", "geometry", "index")]
+
+
+## make an empty column in 'dat' to contain the output neighborhood data
+dat$neighbors <- NA
+
 for (i in unique(dat$Site)) { ## loop through each site
   for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
     # quadrat
     for (k in unique(dat[dat$Site == i & dat$Quad == j, "Year"]$Year)) { ## loop
       # through each year
-      if (bySpecies == TRUE) { ## calculating conspecific neighborhood (need to
+      if (compType == 'oneSpp') { ## calculating conspecific neighborhood (need to
         # subset by species)
         for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
                              "Species"]$Species)) {
           ## get the data for this site/quad/year/species combo
           datOneSp <- dat[dat$Site == i & dat$Quad == j &
                          dat$Year == k & dat$Species == l,]
-            if (byRamet == TRUE) { ## calculate the neighborhood for each
+            if (focal == 'ramet') { ## calculate the neighborhood for each
               # individual ramet
               for (n in 1:nrow(datOneSp)) { ## loop through each unique row
                 ## make a buffer around the focal individual of the specified
@@ -70,95 +83,230 @@ for (i in unique(dat$Site)) { ## loop through each site
                 ## compare 'rametNeigh' (without the focal ramet) to the rest of
                 # the ramets in this quad (of this spp.) (make sure to remove
                 # the overlap with the focal individual)
-                overlaps <- suppressWarnings(
-                  st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
-                    rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
-                    ,])
-
                 if ( method == 'count') {
+                  ## get the number of genets that overlap w/ the focal radius
+                  overlaps <- datOneSp[st_intersects(rametNeigh, datOneSp,
+                                                     sparse = FALSE),]
+                  ## remove focal individuals
+                  overlaps <- overlaps[!overlaps$trackID %in%
+                                         datOneSp[n,]$trackID,]
+
                   ## get the number of genets that are w/in the radius
-                  count <- length(unique(overlaps$trackID_USER.2))
+                  count <- length(unique(overlaps$trackID))
                   ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index == datOneSp[n,"index"]$index,
-                      "neighbors"]$neighbors <- count
+                  dat[dat$index %in%
+                        datOneSp[n,]$index,
+                      ]$neighbors <- count
                 } else if (method == 'area') {
+                  ## get the overlapping polygons
+                  overlapArea <- suppressWarnings(
+                    st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
+                      rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
+                      ,])
                   ## get the area of the ramets that are w/in the radius
-                  area <- st_area(overlaps)
-                  ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index == datOneSp[n,"index"]$index,
-                      "neighbors"]$neighbors <- area
+                  area <- sum(st_area(overlaps))
+                  ## put this value into 'dat' in the 'neighbors' column for
+                  # each ramet that belongs to the focal genet
+                  dat[dat$index %in% datOneSp[n,]$index,
+                      ]$neighbors <- area
                 }
               }
-            } else if (byRamet == FALSE) { ## calculate the neighborhood for
+            } else if (focal == 'genet') { ## calculate the neighborhood for
               # each genet
               ## loop through each unique trackID
-              for (m in unique(datOneSp$trackID_USER)) {
+              for (m in unique(datOneSp$trackID)) {
                 ## make a buffer around the focal individual of the specified
                 # 'radius'
                 rametBuff <- suppressWarnings(st_buffer(
-                  x = datOneSp[datOneSp$trackID_USER == m,],
+                  x = datOneSp[datOneSp$trackID == m,],
                   dist = radius))
                 ## make into one large polygon
                 rametBuff <- st_union(rametBuff)
                 ## subtract the focal ramet from the radius
                 rametNeigh <- suppressWarnings(
                   st_difference(x = rametBuff,
-                                y = st_union(datOneSp[datOneSp$trackID_USER == m,])))
+                          y = st_union(datOneSp[datOneSp$trackID == m,])))
                 ## compare 'rametNeigh' (without the focal ramet) to the rest of
                 # the ramets in this quad (of this spp.) (make sure to remove
                 # the overlap with the focal individual)
-                overlaps <- suppressWarnings(
-                  st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
-                    rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
-                  ,])
-
                 if ( method == 'count') {
+                  ## get the number of genets that overlap w/ the focal radius
+                  overlaps <- datOneSp[st_intersects(rametNeigh, datOneSp,
+                                                   sparse = FALSE),]
+                  ## remove focal individuals
+                  overlaps <- overlaps[!overlaps$trackID %in%
+                                         datOneSp[datOneSp$trackID == m,]$trackID,]
+
                   ## get the number of genets that are w/in the radius
-                  count <- length(unique(overlaps$trackID_USER.2))
+                  count <- length(unique(overlaps$trackID))
                   ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index == datOneSp[n,"index"]$index,
-                      "neighbors"]$neighbors <- count
+                  dat[dat$index %in%
+                        datOneSp[datOneSp$trackID == m,]$index,
+                      ]$neighbors <- count
                 } else if (method == 'area') {
+                  ## get the overlapping polygons
+                  overlapArea <- suppressWarnings(
+                    st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
+                      rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
+                      ,])
                   ## get the area of the ramets that are w/in the radius
-                  area <- st_area(overlaps)
-                  ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index == datOneSp[n,"index"]$index,
-                      "neighbors"]$neighbors <- area
+                  area <- sum(st_area(overlaps))
+                  ## put this value into 'dat' in the 'neighbors' column for
+                  # each ramet that belongs to the focal genet
+                  dat[dat$index %in% datOneSp[datOneSp$trackID == m,]$index,
+                      ]$neighbors <- area
                 }
               }
             }
         } ## end of loop to get data by species
-      } else if (bySpecies == FALSE) { ## calculating heterospecific
+      } else if (compType == 'allSpp') { ## calculating heterospecific
         # neighborhood (don't need to subset by species)
         ## get the data for this site/quad/year combo
         datSpp<- dat[dat$Site == i & dat$Quad == j &
                           dat$Year == k ,]
+        if (focal == 'ramet') { ## calculate the neighborhood for each
+          # individual ramet
+          for (n in 1:nrow(datSpp)) { ## loop through each unique row
+            ## make a buffer around the focal individual of the specified
+            # 'radius'
+            rametBuff <- suppressWarnings(st_buffer(x = datSpp[n,],
+                                                    dist = radius))
+            ## subtract the focal ramet from the radius
+            rametNeigh <- suppressWarnings(st_difference(x = rametBuff,
+                                                         y = datSpp[n,]))
+            ## compare 'rametNeigh' (without the focal ramet) to the rest of
+            # the ramets in this quad (of this spp.) (make sure to remove
+            # the overlap with the focal individual)
+            if ( method == 'count') {
+              ## get the number of genets that overlap w/ the focal radius
+              overlaps <- datSpp[st_intersects(rametNeigh, datSpp,
+                                               sparse = FALSE),]
+              ## remove focal individuals
+              overlaps <- overlaps[!overlaps$trackID %in%
+                                     datSpp[n,]$trackID,]
 
+              ## get the number of genets that are w/in the radius
+              count <- length(unique(overlaps$trackID))
+              ## put this value into 'dat' in the 'neighbors' column
+              dat[dat$index %in%
+                    datSpp[n,]$index,
+                  ]$neighbors <- count
+            } else if (method == 'area') {
+              ## get the overlapping polygons
+              overlapArea <- suppressWarnings(
+                st_intersection(rametNeigh, datSpp)[st_is(st_intersection(
+                  rametNeigh, datSpp), type = c("MULTIPOLYGON", "POLYGON"))
+                  ,])
+              ## get the area of the ramets that are w/in the radius
+              area <- sum(st_area(overlapArea))
+              ## put this value into 'dat' in the 'neighbors' column for
+              # each ramet that belongs to the focal genet
+              dat[dat$index %in% datSpp[n,]$index,
+                  ]$neighbors <- area
+            }
+          }
+        } else if (focal == 'genet') { ## calculate the neighborhood for
+          # each genet
+          ## loop through each unique trackID
+          for (m in unique(datSpp$trackID)) {
+            ## make a buffer around the focal individual of the specified
+            # 'radius'
+            rametBuff <- suppressWarnings(st_buffer(
+              x = datSpp[datSpp$trackID == m,],
+              dist = radius))
+            ## make into one large polygon
+            rametBuff <- st_union(rametBuff)
+            ## subtract the focal ramet from the radius
+            rametNeigh <- suppressWarnings(
+              st_difference(x = rametBuff,
+                            y = st_union(datSpp[datSpp$trackID == m,])))
+            ## compare 'rametNeigh' (without the focal ramet) to the rest of
+            # the ramets in this quad (of this spp.) (make sure to remove
+            # the overlap with the focal individual)
+
+            if ( method == 'count') {
+              ## get the number of genets that overlap w/ the focal radius
+              overlaps <- datSpp[st_intersects(rametNeigh, datSpp,
+                                               sparse = FALSE),]
+              ## remove focal individuals
+              overlaps <- overlaps[!overlaps$trackID %in%
+                                     datSpp[datSpp$trackID == m,]$trackID,]
+
+              ## get the number of genets that are w/in the radius
+              count <- length(unique(overlaps$trackID))
+              ## put this value into 'dat' in the 'neighbors' column
+              dat[dat$index %in%
+                    datSpp[datSpp$trackID == m,]$index,
+                  ]$neighbors <- count
+            } else if (method == 'area') {
+              ## get the overlapping polygons
+              overlapArea <- suppressWarnings(
+                st_intersection(rametNeigh, datSpp)[st_is(st_intersection(
+                  rametNeigh, datSpp), type = c("MULTIPOLYGON", "POLYGON"))
+                  ,])
+              ## get the area of the ramets that are w/in the radius
+              area <- sum(st_area(overlapArea))
+              ## put this value into 'dat' in the 'neighbors' column for
+              # each ramet that belongs to the focal genet
+              dat[dat$index %in% datSpp[datSpp$trackID == m,]$index,
+                  ]$neighbors <- area
+            }
+          }
+        }
       } ## end of loop to get heterospecific dataset (all species present)
     } ## end of loop to get data by year
     } ## end of loop to get data by quadrat
   } ## end of loop to get data by site
 
-
-    ## loop through each species OR don't loop through each species
-      ## loop through each genet OR ramet
-        ## count OR sum area of genets w/in the specified radius
-
 # output ------------------------------------------------------------------
+## change names of 'dat' back to the user-input values
+## get the user-provided column names
+userColNames <- checkedDat$userColNames
+
+## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
+dat <- merge(dat, datStore, by = "index")
+## remove the 'indexStore' value
+dat <- dat[,names(dat) != "index"]
+
+## re-name the appropriate columns in 'dat' data.frame with the
+# user-provided names of 'dat'
+## from above, user-provided names are stored in 'userColNames'
+## make a vector of default column names
+defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry", "trackID")
+
+## reset the names for the columns that we changed to 'default' values
+names(dat)[which(names(dat) %in% defaultNames)] <-
+  c(userColNames, trackIDuserName)
+
+## remove the '_USER' from the 'extra' column names
+names(dat) <- gsub(names(dat),
+                           pattern = "_USER", replacement = "")
+
 
 } ## end of 'getNeighbors()'
 
 
 # testing -----------------------------------------------------------------
-
-dat <- grasslandData[grasslandData$Site == "CO" &
-                    grasslandData$Quad == "ungz_5a",]
-datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
-                  buffGenet = 0.05,
-                  clonal = data.frame("Species" = c("Bouteloua gracilis",
-                                                    "Agropyron smithii",
-                                                    "Sphaeralcea coccinea"),
-                  "clonal" = c(1,1,0)))
+#
+# dat <- grasslandData[grasslandData$Site == "CO" &
+#                     grasslandData$Quad == "ungz_5a",]
+# datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
+#                   buffGenet = 0.005,
+#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
+#                                                     "Agropyron smithii",
+#                                                     "Sphaeralcea coccinea"),
+#                   "clonal" = c(1,1,0)))
+# names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
+#
+# getNeighbors(dat = datIDs, radius = .15, method = "area",
+#           compType = 'allSpp',
+#           focal = 'genet',
+#           trackID = 'uniqueID',
+#           species = "speciesName",
+#           quad = "Quad",
+#           year = "Year",
+#           site = "Site",
+#           geometry = "geometry")
 
 #### load packages ####
 #require(tidyverse) #v1.3.0

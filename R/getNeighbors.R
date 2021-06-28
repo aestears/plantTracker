@@ -1,3 +1,26 @@
+#' getNeighbors
+#' @description
+#'
+#'
+#' @param dat
+#' @param radius
+#' @param method
+#' @param compType
+#' @param focal
+#' @param trackID
+#' @param species
+#' @param quad
+#' @param year
+#' @param site
+#' @param geometry
+#' @param ... Other arguments passed on to methods. Not currently used.
+#'
+#' @details
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getNeighbors <- function (dat, radius, method,
                           compType = 'allSpp',
                           focal = 'genet',
@@ -259,9 +282,12 @@ for (i in unique(dat$Site)) { ## loop through each site
   } ## end of loop to get data by site
 
 # output ------------------------------------------------------------------
+## prepare the output
 ## change names of 'dat' back to the user-input values
 ## get the user-provided column names
-userColNames <- checkedDat$userColNames
+userColNames <- c(checkedDat$userColNames[c(1:4)],
+                  trackIDuserName,
+                  checkedDat$userColNames[c(5)])
 
 ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
 dat <- merge(dat, datStore, by = "index")
@@ -275,38 +301,38 @@ dat <- dat[,names(dat) != "index"]
 defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry", "trackID")
 
 ## reset the names for the columns that we changed to 'default' values
-names(dat)[which(names(dat) %in% defaultNames)] <-
-  c(userColNames, trackIDuserName)
+names(dat)[which(names(dat) %in% defaultNames)] <- userColNames
 
 ## remove the '_USER' from the 'extra' column names
 names(dat) <- gsub(names(dat),
                            pattern = "_USER", replacement = "")
 
-
+## return
+return(dat)
 } ## end of 'getNeighbors()'
 
 
 # testing -----------------------------------------------------------------
-#
-# dat <- grasslandData[grasslandData$Site == "CO" &
-#                     grasslandData$Quad == "ungz_5a",]
-# datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
-#                   buffGenet = 0.005,
-#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
-#                                                     "Agropyron smithii",
-#                                                     "Sphaeralcea coccinea"),
-#                   "clonal" = c(1,1,0)))
-# names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
-#
-# getNeighbors(dat = datIDs, radius = .15, method = "area",
-#           compType = 'allSpp',
-#           focal = 'genet',
-#           trackID = 'uniqueID',
-#           species = "speciesName",
-#           quad = "Quad",
-#           year = "Year",
-#           site = "Site",
-#           geometry = "geometry")
+
+dat <- grasslandData[grasslandData$Site == "CO" &
+                    grasslandData$Quad == "ungz_5a",]
+datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
+                  buffGenet = 0.005,
+                  clonal = data.frame("Species" = c("Bouteloua gracilis",
+                                                    "Agropyron smithii",
+                                                    "Sphaeralcea coccinea"),
+                  "clonal" = c(1,1,0)))
+names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
+
+getNeighbors(dat = datIDs, radius = .15, method = "area",
+          compType = 'allSpp',
+          focal = 'genet',
+          trackID = 'uniqueID',
+          species = "speciesName",
+          quad = "Quad",
+          year = "Year",
+          site = "Site",
+          geometry = "geometry")
 
 #### load packages ####
 #require(tidyverse) #v1.3.0

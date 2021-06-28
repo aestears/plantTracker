@@ -217,7 +217,7 @@ number greater than or equal to 0, OR a data.frame that has a 'Species' column
 with values for each species in 'dat', and a 'dorm' column with numeric,
 positive whole number values for each species.")
   }
-    }
+
 
   #buff ## either a single value (applied to all spp.) or a data.frame with the
   # same number of rows as the number of species in dat that indicates the

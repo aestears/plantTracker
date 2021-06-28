@@ -2,6 +2,7 @@
 
 export(adding)
 export(checkDat)
+export(getNeighbors)
 export(groupByGenet)
 export(trackSpp)
 import(Matrix)

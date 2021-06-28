@@ -22,6 +22,7 @@
 #'
 #' @examples
 #'
+#'@import sf
 getNeighbors <- function (dat, radius, method,
                           compType = 'allSpp',
                           focal = 'genet',

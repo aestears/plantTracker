@@ -6,7 +6,7 @@
 \usage{
 checkDat(
   dat,
-  inv,
+  inv = NULL,
   species = "Species",
   site = "Site",
   quad = "Quad",

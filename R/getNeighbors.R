@@ -372,22 +372,21 @@ return(dat)
 
 # testing -----------------------------------------------------------------
 #
-# dat <- grasslandData[grasslandData$Site == "CO" &
-#                     grasslandData$Quad == "ungz_5a",]
-# datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
-#                   buffGenet = 0.005,
-#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
-#                                                     "Agropyron smithii",
-#                                                     "Sphaeralcea coccinea"),
-#                   "clonal" = c(1,1,0)))
-# names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
-#
-# getNeighbors(dat = datIDs, radius = .15, method = "area",
-#           compType = 'allSpp',
-#           focal = 'genet',
-#           trackID = 'uniqueID',
-#           species = "speciesName",
-#           quad = "Quad",
-#           year = "Year",
-#           site = "Site",
-#           geometry = "geometry")
+dat <- grasslandData[grasslandData$Site == "CO" &
+                    grasslandData$Quad == "ungz_5a",]
+datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
+                  buffGenet = 0.005,
+                  clonal = data.frame("Species" = c("Bouteloua gracilis",
+                                                    "Agropyron smithii",
+                                                    "Sphaeralcea coccinea"),
+                  "clonal" = c(1,1,0)))
+names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
+
+datTestTest <- testOut[testOut$Site == "CO" &
+                         testOut$location == "ungz_5a",]
+
+dataTest <- getNeighbors(dat = datTestTest, radius = .15, method = "area",
+          compType = 'allSpp',
+          focal = 'genet',
+          species = "Species_Name",
+          quad = "location")

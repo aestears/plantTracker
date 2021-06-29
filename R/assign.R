@@ -705,24 +705,24 @@ return(assignOut)
 #
 # prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
-sampleDat <- grasslandData[grasslandData$Site == "KS"
-                           & grasslandData$Quad == "q33"
-                           & grasslandData$Species == "Ambrosia psilostachya",]
-# this should be a data.frame
-dat <- sampleDat
+# sampleDat <- grasslandData[grasslandData$Site == "KS"
+#                            & grasslandData$Quad == "q33"
+#                            & grasslandData$Species == "Ambrosia psilostachya",]
+# # this should be a data.frame
+# dat <- sampleDat
+# #
+# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # # to tell the 'assign' function when the quadrat was sampled
+# sampleInv<- grasslandInventory[["q33"]]
+# # this should be an integer vector
+# inv <- sampleInv
 #
-# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # to tell the 'assign' function when the quadrat was sampled
-sampleInv<- grasslandInventory[["q33"]]
-# this should be an integer vector
-inv <- sampleInv
-
-testOutput <- assign(dat = dat,
-                     inv = inv,
-                     dorm = 1,
-                     buff = .05,
-                     buffGenet = .001,
-                     clonal =  1)
+# testOutput <- assign(dat = dat,
+#                      inv = inv,
+#                      dorm = 1,
+#                      buff = .05,
+#                      buffGenet = .001,
+#                      clonal =  1)
 
 
 # # ggplot(testOutput) +

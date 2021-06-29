@@ -444,25 +444,23 @@ values of either 0 or 1 for each species with no NAs.")
         ## print the name of the species that was just finished
         if (k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]) {
           cat(paste0("---- Species: ",k))
+        } else if (k == tail(unique(dat[dat$Site==i & dat$Quad==j,]$Species),
+                             n = 1)) {
+          cat(paste0("; ",k, "\n"))
         } else {
           cat(paste0("; ",k))
         }
       }
       ## notify user of last year of sampling (or last year of sampling before a
       # gap)
-cat(paste0("Note: Individuals in year ", max(invQuad)," have a value of 'NA' in
-the 'survives_tplus1' and 'size_tplus1' columns because ",max(invQuad), " is the
-last year of sampling in this quadrat."))
+print(paste0("Note: Individuals in year ", max(invQuad)," have a value of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns because ",max(invQuad), " is the last year of sampling in this quadrat."))
       ## find years that exceed the 'dorm' gap
       invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
       invComp$diff <- invComp$invNext - invComp$inv
       gapYears <- invComp[invComp$diff>dorm &
                             is.na(invComp$diff) == FALSE,"inv"]
       if (length(gapYears) > 0) {
-cat(paste0("Note: Individuals in year(s) ", gapYears," have a value of 'NA' in
-the 'survives_tplus1' and 'size_tplus1' columns because ", gapYears," is the
-last year of sampling in this quadrat before a gap that exceeds the 'dorm'
-argument."))
+print(paste0("Also Note: Individuals in year(s) ", gapYears," have a value of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns because ", gapYears," is the last year of sampling in this quadrat before a gap that exceeds the 'dorm' argument."))
       }
     }
   }

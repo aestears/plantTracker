@@ -35,7 +35,7 @@
 #' year of data collection (default name is "Year") and an s.f 'geometry' column
 #' that contains a polygon or multipolygon data type for each
 #' individual observation.
-#' This function will add columns called "basalArea", "trackID",
+#' This function will add columns called "basalArea_ramet", "trackID",
 #' "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
 #' contain columns with these names.
 #' @param inv A named list. The name of each element of the list is a quadrat
@@ -111,8 +111,8 @@
 #' Values of NA indicate that an accurate age cannot be calculated because this
 #' individual was observed either in the first year of sampling or in a year
 #' following a gap in sampling, so the exact year of recruitment is not known.}
-#' \item{size_tplus1}{The  size of this genet in year *t+1*, in the same units
-#' as the 'area' column in 'dat'.}
+#' \item{size_tplus1}{The  size of this **genet** in year *t+1*, in the same
+#' units as the 'area' column in 'dat'.}
 #' \item{recruit}{A Boolean integer indicating whether this individual is a new
 #' recruit in year *t* (1), or existed in a previous year (0). Values of NA
 #' indicate that this individual was observed either in the first year of
@@ -152,6 +152,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                      quad = "Quad",
                      year = "Year",
                      geometry = "geometry",
+                     aggregateByGenet = TRUE,
                      ...) {
   # argument checks ---------------------------------------------------------
   ## arguments
@@ -318,7 +319,8 @@ for each species.")
   if(missing(clonal)) {
     stop("The 'clonal' argument must have a value.")
   } else {
-    if (is.numeric(clonal) & length(clonal == 1)) { ## is the value of clonal a single numeric?
+    if (is.numeric(clonal) & length(clonal == 1)) { ## is the value of clonal a
+      # single numeric vector?
       if (clonal != 1 & clonal != 0 | ## clonal must be either 0 or 1
         !is.numeric(clonal) | ## clonal must be numeric
         length(clonal)!=1){ ## clonal must be a vector of length = 1
@@ -328,7 +330,9 @@ numeric value that is either 0 or 1.")
     } else if (is.data.frame(clonal)) {
       if (sum(!names(clonal) %in% c("Species", "clonal")) == 0) {
       if(sum(!unique(dat$Species) %in% clonal$Species) > 0 | ## clonal
-         # must have data for all species
+         # must have data for all species present in 'dat'
+         length(unique(clonal$Species)) != nrow(clonal) |## clonal cannot have
+         # more than one value for each species
          sum(is.na(clonal$clonal)) > 0 | ## can't have NA values in clonal
          !is.numeric(clonal$clonal) | ## can't have non-numeric values for
          # clonal$clonal
@@ -338,7 +342,7 @@ numeric value that is either 0 or 1.")
 stop("If the 'clonal' argument is specified by species, it must be a data.frame
 that includes a 'Species' column with a row for every species in 'dat', and a
 'clonal' column that contains numeric values of either 0 or 1 for each species
-with no NAs.")
+with no NAs. There cannot be multiple rows for the same species.")
       }
       } else {
 stop("If the 'clonal' argument is specifed by species, the column names must be
@@ -350,6 +354,14 @@ greater than or equal to 0, OR a data.frame that has a 'Species' column with
 values for each species in 'dat', and a 'clonal' column that contains numeric
 values of either 0 or 1 for each species with no NAs.")
     }
+  }
+
+  #check aggregateByGenet
+  if (!is.logical(aggregateByGenet)) {
+stop("The 'aggregateByGenet' argument must be a logical value. TRUE means that
+every row in the output of trackSpp() represents a unique genetic individual
+(genet) in a given year. FALSE means that every row in the output of trackSpp()
+represents a unique stem (ramet) in a given year.")
   }
 
   # work --------------------------------------------------------------------
@@ -374,7 +386,7 @@ values of either 0 or 1 for each species with no NAs.")
   )
 
   ## get the basal area for each observation
-  dat$basalArea <- st_area(dat)
+  dat$basalArea_ramet <- st_area(dat)
 
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
@@ -470,28 +482,46 @@ print(paste0("Also Note: Individuals in year(s) ", gapYears," have a value of 'N
   ## remove the 'indexStore' value
   trackSppOut <- trackSppOut[,names(trackSppOut) != "indexStore"]
 
-  ## re-name the appropriate columns in 'trackSppOut' data.frame with the
-  # user-provided names of 'dat'
-  ## from above, user-provided names are stored in 'usrNames'
-  ## make a vector of default column names
-  defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry")
 
-  ## reset the names for the columns that we changed to 'default' values
-  names(trackSppOut)[which(names(trackSppOut) %in% defaultNames)] <-
-  usrNames
+  ###AES make a function that aggregates output of trackSpp by trackID --call w/in this fxn, and also w/in getNeighbors
+  ## aggregate the output by trackID (if aggregateByGenet == TRUE)
+  if (aggregateByGenet == TRUE) {
+    ## aggregate demographic data by trackID/Quad/Year/Site/Species
+    trackSppOut <- aggregate(x = trackSppOut[,c('basalArea_genet', 'age', 'recruit',
+                                         'survives_tplus1', 'size_tplus1')],
+              by = list("Site" = trackSppOut$Site,
+                        "Quad" = trackSppOut$Quad,
+                        "Species" = trackSppOut$Species,
+                        "trackID" = trackSppOut$trackID,
+                        "Year" = trackSppOut$Year),
+              do_union = TRUE,
+              FUN = mean)
 
-  ## remove the '_USER' from the 'extra' column names
-  names(trackSppOut) <- gsub(names(trackSppOut),
-                             pattern = "_USER", replacement = "")
+    print("Note: The output data.frame from this function is shorter than your input data.frame because demographic data has been aggregated by genet. Because of this, some columns that were present in your input data.frame may no longer be present. If you don't want the output to be aggregated by genet, include the argument 'aggregateByGenet == FALSE' in your call to trackSpp().")
+  }
+
+    ## re-name the appropriate columns in 'trackSppOut' data.frame with the
+    # user-provided names of 'dat'
+    ## from above, user-provided names are stored in 'usrNames'
+    ## make a vector of default column names
+    defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry")
+
+    ## reset the names for the columns that we changed to 'default' values
+    names(trackSppOut)[match(defaultNames, names(trackSppOut))] <-
+      usrNames
+
+    ## remove the '_USER' from the 'extra' column names
+    names(trackSppOut) <- gsub(names(trackSppOut),
+                               pattern = "_USER", replacement = "")
 
 # output ------------------------------------------------------------------
 return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData#[grasslandData$Site == "CO"
-#                      #& grasslandData$Quad %in% c("unun_11","ungz_5a")
-#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# dat <- grasslandData[grasslandData$Site == "CO"
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      & grasslandData$Species == "Bouteloua gracilis",]
 # names(dat)[1]<- "Species_Name"
 # names(dat)[8] <- "location"
 # #dat <- dat[dat$location != "ungz_5a",]
@@ -502,7 +532,7 @@ return(trackSppOut)
 # buff <- .05
 # buffGenet <- 0.005
 # clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1,1,0,0,0,0,1,1,1,0,1,1,0,0))
+#                      clonal = c(1))
 #
 # testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
 #                     clonal = clonal , species = "Species_Name",

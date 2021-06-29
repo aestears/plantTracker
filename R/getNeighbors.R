@@ -268,7 +268,7 @@ outputDat <- outputDat[,names(outputDat) != "index"]
 defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry", "trackID")
 
 ## reset the names for the columns that we changed to 'default' values
-names(outputDat)[which(names(outputDat) %in% defaultNames)] <- userColNames
+names(outputDat)[match(defaultNames, names(outputDat))] <- userColNames
 
 ## remove the '_USER' from the 'extra' column names
 names(outputDat) <- gsub(names(outputDat),

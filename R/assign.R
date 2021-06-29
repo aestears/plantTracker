@@ -14,7 +14,7 @@
 #' year of data collection (default name is "Year") and an s.f 'geometry' column
 #' that contains a polygon or multipolygon data type for each
 #' individual observation.
-#' This function will add columns called "basalArea", "trackID",
+#' This function will add columns called "basalArea_ramet", "trackID",
 #' "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
 #' contain columns with these names.
 #' @param inv An integer vector that contains all of years in which this quadrat (or other unique spatial area) was sampled. Years must be ordered sequentially.
@@ -65,17 +65,17 @@
     if(clonal==1) {
       cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
-      tempCloneDat <- stats::aggregate(basalArea ~ genetID, sum, data = cloneDat)
-      names(tempCloneDat) <- c("tempGenetID", "genetArea")
+      tempCloneDat <- stats::aggregate(basalArea_ramet ~ genetID, sum, data = cloneDat)
+      names(tempCloneDat) <- c("tempGenetID", "basalArea_genet")
       ## add aggregated size data to the cloneData df
-      cloneDat$genetArea <- tempCloneDat[match(cloneDat$genetID,
+      cloneDat$basalArea_genet <- tempCloneDat[match(cloneDat$genetID,
                                                tempCloneDat$tempGenetID),
-                                         "genetArea"]
+                                         "basalArea_genet"]
     }
     ## assign unique genetIDs for every polygon (if clonal = 0)
     else { #if(clonal==0) {
       cloneDat$genetID <- 1:nrow(cloneDat)
-      cloneDat$genetArea <- cloneDat$basalArea
+      cloneDat$basalArea_genet <- cloneDat$basalArea_ramet
     }
 
     return(cloneDat)
@@ -89,11 +89,11 @@
   dat$recruit <- NA
   dat$survives_tplus1 <- NA
   dat$ghost <- NA
-  dat$genetArea <- NA
+  dat$basalArea_genet <- NA
   dat$genetID <- NA
-  ## if not already present, create a column called 'basalArea' in 'dat'
-  if (sum(dat$basalArea) == 0) {
-    dat$basalArea <-  st_area(dat)
+  ## if not already present, create a column called 'basalArea_ramet' in 'dat'
+  if (sum(dat$basalArea_ramet) == 0) {
+    dat$basalArea_ramet <-  st_area(dat)
   }
 
   ## assign an arbitrary, unique index number to each row in the dataset
@@ -275,7 +275,7 @@
         tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
 
         ## MAKE SURE THERE IS DATA IN YEAR i (tempNextYear i
-          if (nrow(tempNextYear) < 1) { ## if the tempNextYear data does NOT
+        if (nrow(tempNextYear) < 1) { ## if the tempNextYear data does NOT
           # exist, then keep the tempCurrentYear data.frame for the next i
           ## if the gap between year of measurement (year inv[i-1]) and the next
           # i (year inv[i+1]) does not exceed the dormancy argument, then roll
@@ -545,7 +545,7 @@
             ## give children a 0 in the recruit column, since they have a parent
             # (as long as the parent doesn't have an NA--was recruited in a year
             # when we couldn't know when it was recruited)
-            if(inv[i] - inv[i-1] <= 1) {
+            if (inv[i] - inv[i-1] <= 1) {
               children$recruit <- 0
             } else {
               children$recruit <- NA
@@ -554,8 +554,7 @@
             # don't have an 'NA' for age) (parent's age + 1)
             ## get the trackID and age+1 of the parents in the 'tempParents' df
             ## get the two relevant columns and get rid of geometry column
-            tempParents <- sf::st_set_geometry(parents[,c("trackID", "age")],
-                                               NULL)
+            tempParents <- sf::st_drop_geometry(parents[,c("trackID", "age")])
             ## add 1 to the parent age (get an 'NA' if the parent age is NA)
             tempParents$age <- (tempParents$age + 1)
             names(tempParents) <- c("trackIDtemp", "age")
@@ -578,8 +577,8 @@
             parents[,"ghost"] <- 0
             ## assign size in the next year (From 'children' df) to the
             # appropriate rows in the parents data.frame
-            childSizeTemp <- unique(sf::st_set_geometry(children[,c("trackID",
-                                                           "genetArea")],NULL))
+            childSizeTemp <- unique(sf::st_drop_geometry(children[,c("trackID",
+                                                           "basalArea_genet")]))
             names(childSizeTemp) <- c("trackIDtemp", "size_tplus1")
             ## join size_tplus data to 'parents' data.frame
             parents$size_tplus1 <- childSizeTemp[match(parents$trackID,

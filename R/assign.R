@@ -91,13 +91,17 @@
   dat$ghost <- NA
   dat$genetArea <- NA
   dat$genetID <- NA
+  ## if not already present, create a column called 'basalArea' in 'dat'
+  if (sum(dat$basalArea) == 0) {
+    dat$basalArea <-  st_area(dat)
+  }
 
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
 
   ## find the first year in the dataset that was actually sampled
   firstDatYear <- min(dat$Year)
-  ## find the index of the first year in teh quadrat inventory
+  ## find the index of the first year in thh quadrat inventory
   firstYearIndex <- which(inv==firstDatYear)
 
   ## get the dataset for the first year of actually sampling
@@ -676,6 +680,17 @@
       } ## end of 'if' statement that determines if gap between inv[i-1] and
     # inv[i] is less than or equal to  dorm+1
     } ## end of loop i
+
+  ## populate the 'nearEdge' column
+  ## make an empty column
+  dat$nearEdge <- FALSE
+  ## make a boundary box that is within the 'buff' argument of the actual quad
+  buffEdgeOutside <- st_as_sfc(st_bbox(dat))
+  buffEdgeInside <- st_as_sfc(st_bbox(dat) + c(buff, buff, -buff, -buff))
+  buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
+  ## find out which quads intersect with the buffered quad
+  dat[st_intersects(dat, buffEdge, sparse = FALSE),"nearEdge"] <- TRUE
+
   ## clean up output data.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
                          !(names(assignOut) %in% c("ghost","genetID", "index",
@@ -688,26 +703,26 @@ return(assignOut)
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 #
-## prepares the dataset to feed into the 'assign' function (the 'Assign'
+# prepares the dataset to feed into the 'assign' function (the 'Assign'
 # function will do this ahead of time when the user calls it)
-# sampleDat <- grasslandData[grasslandData$Site == "KS"
-#                            & grasslandData$Quad == "q33"
-#                            & grasslandData$Species == "Ambrosia psilostachya",]
-# # this should be a data.frame
-# dat <- sampleDat
-# #
-# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # # to tell the 'assign' function when the quadrat was sampled
-# sampleInv<- grasslandInventory[["q33"]]
-# # this should be an integer vector
-# inv <- sampleInv
+sampleDat <- grasslandData[grasslandData$Site == "KS"
+                           & grasslandData$Quad == "q33"
+                           & grasslandData$Species == "Ambrosia psilostachya",]
+# this should be a data.frame
+dat <- sampleDat
 #
-# testOutput <- assign(dat = dat,
-#                      inv = inv,
-#                      dorm = 1,
-#                      buff = .05,
-#                      buffGenet = .001,
-#                      clonal =  1)
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+sampleInv<- grasslandInventory[["q33"]]
+# this should be an integer vector
+inv <- sampleInv
+
+testOutput <- assign(dat = dat,
+                     inv = inv,
+                     dorm = 1,
+                     buff = .05,
+                     buffGenet = .001,
+                     clonal =  1)
 
 
 # # ggplot(testOutput) +

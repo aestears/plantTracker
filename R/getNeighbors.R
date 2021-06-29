@@ -175,9 +175,8 @@ for (i in unique(dat$Site)) { ## loop through each site
                   ## get the number of genets that are w/in the radius
                   count <- length(unique(overlaps$trackID))
                   ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index %in%
-                        datOneSp[n,]$index,
-                      ]$neighbors <- count
+                  datOneSp[n,"neighbors"] <- count
+
                 } else if (method == 'area') {
                   ## get the overlapping polygons
                   overlapArea <- suppressWarnings(
@@ -188,8 +187,7 @@ for (i in unique(dat$Site)) { ## loop through each site
                   area <- sum(st_area(overlaps))
                   ## put this value into 'dat' in the 'neighbors' column for
                   # each ramet that belongs to the focal genet
-                  dat[dat$index %in% datOneSp[n,]$index,
-                      ]$neighbors <- area
+                  datOneSp[n,"neighbors"] <- area
                 }
               }
             } else if (focal == 'genet') { ## calculate the neighborhood for
@@ -221,9 +219,7 @@ for (i in unique(dat$Site)) { ## loop through each site
                   ## get the number of genets that are w/in the radius
                   count <- length(unique(overlaps$trackID))
                   ## put this value into 'dat' in the 'neighbors' column
-                  dat[dat$index %in%
-                        datOneSp[datOneSp$trackID == m,]$index,
-                      ]$neighbors <- count
+                  datOneSp[datOneSp$trackID == m,"neighbors"] <- count
                 } else if (method == 'area') {
                   ## get the overlapping polygons
                   overlapArea <- suppressWarnings(
@@ -234,11 +230,16 @@ for (i in unique(dat$Site)) { ## loop through each site
                   area <- sum(st_area(overlaps))
                   ## put this value into 'dat' in the 'neighbors' column for
                   # each ramet that belongs to the focal genet
-                  dat[dat$index %in% datOneSp[datOneSp$trackID == m,]$index,
-                      ]$neighbors <- area
+                  datOneSp[datOneSp$trackID == m,"neighbors"] <- area
                 }
               }
             }
+          ## append the 'datOneSp' d.f to the output d.f
+          if (exists("outputDat") == FALSE) {
+            outputDat <- datOneSp
+          } else if (nrow(outputDat) > 0) {
+            outputDat <- rbind(outputDat, datOneSp)
+          }
         } ## end of loop to get data by species
       } else if (compType == 'allSpp') { ## calculating heterospecific
         # neighborhood (don't need to subset by species)
@@ -269,9 +270,7 @@ for (i in unique(dat$Site)) { ## loop through each site
               ## get the number of genets that are w/in the radius
               count <- length(unique(overlaps$trackID))
               ## put this value into 'dat' in the 'neighbors' column
-              dat[dat$index %in%
-                    datSpp[n,]$index,
-                  ]$neighbors <- count
+              datSpp[n,"neighbors"] <- count
             } else if (method == 'area') {
               ## get the overlapping polygons
               overlapArea <- suppressWarnings(
@@ -282,8 +281,7 @@ for (i in unique(dat$Site)) { ## loop through each site
               area <- sum(st_area(overlapArea))
               ## put this value into 'dat' in the 'neighbors' column for
               # each ramet that belongs to the focal genet
-              dat[dat$index %in% datSpp[n,]$index,
-                  ]$neighbors <- area
+              datSpp[n,"neighbors"] <- area
             }
           }
         } else if (focal == 'genet') { ## calculate the neighborhood for
@@ -316,9 +314,7 @@ for (i in unique(dat$Site)) { ## loop through each site
               ## get the number of genets that are w/in the radius
               count <- length(unique(overlaps$trackID))
               ## put this value into 'dat' in the 'neighbors' column
-              dat[dat$index %in%
-                    datSpp[datSpp$trackID == m,]$index,
-                  ]$neighbors <- count
+              datSpp[datSpp$trackID == m, "neighbors"] <- count
             } else if (method == 'area') {
               ## get the overlapping polygons
               overlapArea <- suppressWarnings(
@@ -329,10 +325,15 @@ for (i in unique(dat$Site)) { ## loop through each site
               area <- sum(st_area(overlapArea))
               ## put this value into 'dat' in the 'neighbors' column for
               # each ramet that belongs to the focal genet
-              dat[dat$index %in% datSpp[datSpp$trackID == m,]$index,
-                  ]$neighbors <- area
+              datSpp[datSpp$trackID == m, "neighbors"] <- area
             }
           }
+        }
+        ## append results to the output d.f
+        if (exists("outputDat") == FALSE) {
+          outputDat <- datSpp
+        } else if (nrow(outputDat) > 0) {
+          outputDat <- rbind(outputDat, datSpp)
         }
       } ## end of loop to get heterospecific dataset (all species present)
     } ## end of loop to get data by year
@@ -348,9 +349,9 @@ userColNames <- c(checkedDat$userColNames[c(1:4)],
                   checkedDat$userColNames[c(5)])
 
 ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
-dat <- merge(dat, datStore, by = "index")
+outputDat <- merge(outputDat, datStore, by = "index")
 ## remove the 'indexStore' value
-dat <- dat[,names(dat) != "index"]
+outputDat <- outputDat[,names(outputDat) != "index"]
 
 ## re-name the appropriate columns in 'dat' data.frame with the
 # user-provided names of 'dat'
@@ -359,14 +360,14 @@ dat <- dat[,names(dat) != "index"]
 defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry", "trackID")
 
 ## reset the names for the columns that we changed to 'default' values
-names(dat)[which(names(dat) %in% defaultNames)] <- userColNames
+names(outputDat)[which(names(outputDat) %in% defaultNames)] <- userColNames
 
 ## remove the '_USER' from the 'extra' column names
-names(dat) <- gsub(names(dat),
+names(outputDat) <- gsub(names(outputDat),
                            pattern = "_USER", replacement = "")
 
 ## return
-return(dat)
+return(outputDat)
 } ## end of 'getNeighbors()'
 
 

@@ -682,15 +682,15 @@
 
   ## populate the 'nearEdge' column
   ## make an empty column
-  dat$nearEdge <- FALSE
+  assignOut$nearEdge <- FALSE
   ## make a boundary box that is within the 'buff' argument of the actual quad
-  buffEdgeOutside <- st_as_sfc(st_bbox(dat))
-  buffEdgeInside <- st_as_sfc(st_bbox(dat) + c(buff, buff, -buff, -buff))
+  buffEdgeOutside <- st_as_sfc(st_bbox(assignOut))
+  buffEdgeInside <- st_as_sfc(st_bbox(assignOut) + c(buff, buff, -buff, -buff))
   buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
   ## find out which quads intersect with the buffered quad
-  dat[st_intersects(dat, buffEdge, sparse = FALSE),"nearEdge"] <- TRUE
+  assignOut[st_intersects(assignOut, buffEdge, sparse = FALSE),"nearEdge"] <- TRUE
 
-  ## clean up output data.frame (remove NAs and unneeded columns)
+  ## clean up output assignOuta.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
                          !(names(assignOut) %in% c("ghost","genetID", "index",
                                                    "sp_code_6"))]

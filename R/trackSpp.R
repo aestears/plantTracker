@@ -36,8 +36,8 @@
 #' that contains a polygon or multipolygon data type for each
 #' individual observation.
 #' This function will add columns called "basalArea_ramet", "trackID",
-#' "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
-#' contain columns with these names.
+#' "age", "size_tplus1", "recruit," "nearEdge," and "survives_tplus1", so 'dat'
+#' should not contain columns with these names.
 #' @param inv A named list. The name of each element of the list is a quadrat
 #' name in 'dat', and the contents of that list element is a numeric vector of
 #' all of the years in which that quadrat (or other unique spatial area) was
@@ -98,7 +98,15 @@
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "geometry".
-#'
+#' @param aggregateByGenet A logical argument that determines whether the output
+#' of [trackSpp()] will be aggregated by genet. If the value is TRUE
+#' (the default), then each unique trackID in each year will be represented by
+#' only one row in the output data.frame (each genet gets only one row). This
+#' prepares the dataset for most demographic analyses. If the value is FALSE,
+#' then each unique trackID in each year may be represented by multiple rows in
+#' the data (each ramet gets a row). Note that if the value is TRUE, then some
+#' columns of the input data.frame 'dat' will be dropped. If you do not wish
+#' this to happen, then you can aggregate the data.frame to genet by hand.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return An sf data.frame with the same columns as 'dat,' but with the
@@ -123,11 +131,15 @@
 #' \item{genetArea}{The size of this entire genet in year *t*, in the same units
 #' as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
 #' will be identical to the 'area' column in 'dat'. }
+#' \item{nearEdge}{A logical value indicating whether this individual is within
+#' a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
 #'
 #' @seealso [assign()], which is used inside the [trackSpp()] function.
 #' [trackSpp()] applies the [assign()] function over multiple species and
-#' quadrats. The [assign()] function uses the [groupByGenet()] function to group
-#' ramets into genets (if 'clonal' argument = 1).
+#' quadrats, and uses the [aggregateByGenet()] function to aggregate the
+#' demographic results by genet (if 'aggregateByGenet' = TRUE). The [assign()]
+#' function uses the [groupByGenet()] function to group ramets into genets
+#' (if 'clonal' argument = 1).
 #'
 #' @examples
 #' dat <- grasslandData[grasslandData$Site %in% c("CO", "AZ"),]
@@ -141,6 +153,7 @@
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
 #'  "clonal" = c(1,1,0,0,1,1,0,0)),
 #'  species = "speciesName"
+#'  aggregateByGenet = TRUE
 #'  )
 #'
 #' @export
@@ -511,38 +524,25 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData[grasslandData$Site == "CO"
-#                      & grasslandData$Quad %in% c("unun_11","ungz_5a")
-#                      & grasslandData$Species == "Bouteloua gracilis",]
-# names(dat)[1]<- "Species_Name"
-# names(dat)[8] <- "location"
-# #dat <- dat[dat$location != "ungz_5a",]
-# #dat <- dat[,c(1:6,8:13)]
-# inv <- grasslandInventory
-# #inv <- inv[1:5]
-# dorm <- 1
-# buff <- .05
-# buffGenet <- 0.005
-# clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1))
-#
-# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-#                     clonal = clonal , species = "Species_Name",
-#                     quad = "location")
+dat <- grasslandData[grasslandData$Site == "CO"
+                     & grasslandData$Quad %in% c("unun_11","ungz_5a")
+                     & grasslandData$Species == "Bouteloua gracilis",]
+names(dat)[1]<- "Species_Name"
+names(dat)[8] <- "location"
+#dat <- dat[dat$location != "ungz_5a",]
+#dat <- dat[,c(1:6,8:13)]
+inv <- grasslandInventory
+#inv <- inv[1:5]
+dorm <- 1
+buff <- .05
+buffGenet <- 0.005
+clonal <- data.frame(Species = unique(dat$Species),
+                     clonal = c(1))
 
-#
-# testDat <- st_drop_geometry(dat)
-# testDat$test <- "old"
-# testOutputTest <- st_drop_geometry(testOut)
-# testOutputTest$test <- "new"
-#
-# testTest <- full_join(testDat,testOutputTest, by = c("Species", "Clone",
-#                             "Seedling", "Stems", "Basal", "Type", "Site",
-#                             "Quad", "Year", "sp_code_4", "sp_code_6", "Area"))
-# testBad <- testTest[is.na(testTest$test.y),]
-#
-# testBadSmall <- testTest[testTest$Site=="CO" & testTest$Quad == "unun_11" &
-#                            testTest$Species == "Bouteloua gracilis",]
+testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+                    clonal = clonal , species = "Species_Name",
+                    quad = "location")
+
 
 ### AES make an example in the documentation that specifies all args as numeric,
 # and another example where they specify all four arguments as data.frames

@@ -173,7 +173,7 @@ spelling errors, or make sure that you have included values for these arguments 
   )
 
   ## replace the user-provided names in 'dat' with the default names
-  names(dat)[which(names(dat) %in% usrNames)] <- defaultNames
+  names(dat)[match(usrNames, names(dat))] <- defaultNames
 
 
   ## proceed with remaining checks

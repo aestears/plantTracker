@@ -487,15 +487,7 @@ print(paste0("Also Note: Individuals in year(s) ", gapYears," have a value of 'N
   ## aggregate the output by trackID (if aggregateByGenet == TRUE)
   if (aggregateByGenet == TRUE) {
     ## aggregate demographic data by trackID/Quad/Year/Site/Species
-    trackSppOut <- aggregate(x = trackSppOut[,c('basalArea_genet', 'age', 'recruit',
-                                         'survives_tplus1', 'size_tplus1')],
-              by = list("Site" = trackSppOut$Site,
-                        "Quad" = trackSppOut$Quad,
-                        "Species" = trackSppOut$Species,
-                        "trackID" = trackSppOut$trackID,
-                        "Year" = trackSppOut$Year),
-              do_union = TRUE,
-              FUN = mean)
+    trackSppOut <- aggregateByGenet(dat = trackSppOut)
 
     print("Note: The output data.frame from this function is shorter than your input data.frame because demographic data has been aggregated by genet. Because of this, some columns that were present in your input data.frame may no longer be present. If you don't want the output to be aggregated by genet, include the argument 'aggregateByGenet == FALSE' in your call to trackSpp().")
   }

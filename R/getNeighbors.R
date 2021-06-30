@@ -3,7 +3,7 @@
 #'
 #'
 #' @param dat
-#' @param buffer
+#' @param buff
 #' @param method
 #' @param compType
 #' @param focal
@@ -23,7 +23,7 @@
 #' @examples
 #'
 #'@import sf
-getNeighbors <- function (dat, buffer, method,
+getNeighbors <- function (dat, buff, method,
                           compType = 'allSpp',
                           trackID = 'trackID',
                           species = "Species",
@@ -36,7 +36,7 @@ getNeighbors <- function (dat, buffer, method,
   #dat ## a df that has been assigned demographic data by the 'trackSpp'
   # function. If compType == 'allSpp', 'dat' must include ALL species present in
   # the quadrat
-  #buffer # a numeric value that has the desired buffer around each individual
+  #buff # a numeric value that has the desired buff around each individual
   # for which neighborhood area/count will be calculated.
   #method # must equal either 'count' or 'area'. If 'count', then the number of
   # genets within the specified buffer will be counted. If 'area', then the area
@@ -63,18 +63,18 @@ trackIDdefaultName <- "trackID"
 names(dat)[names(dat) == trackIDuserName] <- trackIDdefaultName
 
 ## check other args.
-#buffer
-if (missing(buffer)) {
-stop("The 'buffer' argument must have a value. This value idicates the buffer
+#buff
+if (missing(buff)) {
+stop("The 'buff' argument must have a value. This value idicates the buff
 of the 'local neighborhood' around the focal individual, and must be a single
 numeric value that is in the same units as the spatial attributes  of 'dat'.")
-} else if (!is.numeric(buffer) |  ## buffer must be a  numeric integer
-  buffer < 0 | ## buffer must be greater than or equal to 0
-  length(buffer)!=1 | ## buffer must be a vector of length 1
-  sum(buffer > st_bbox(dat)[3:4]) > 0 ) { ##  must not be larger than the
+} else if (!is.numeric(buff) |  ## buff must be a  numeric integer
+  buff < 0 | ## buff must be greater than or equal to 0
+  length(buff)!=1 | ## buff must be a vector of length 1
+  sum(buff > st_bbox(dat)[3:4]) > 0 ) { ##  must not be larger than the
   # largest values of the boundary box of 'dat' (an approximate way of checking
-  # whether 'buffer' and 'dat' have the same units)
-stop("'buffer' must be a single numeric value that is greater than zero, and in
+  # whether 'buff' and 'dat' have the same units)
+stop("'buff' must be a single numeric value that is greater than zero, and in
 the same units as the spatial attributes of 'dat' (i.e. in cm if the area of
 individuals in 'dat' is recorded in cm^2")
   }
@@ -126,7 +126,15 @@ dat <- dat[,names(dat) %in% c("Species", "Site", "Quad", "Year",
 ## make an empty column in 'dat' to contain the output neighborhood data
 dat$neighbors <- NA
 
-###AES buffer entire d.f outside the for loops
+## put a buffer around each of the trackIDs in the entire data.frame
+datBuffTemp <- st_buffer(x = dat, dist = buff)
+
+## subtract the focal individuals from the buffered dataset
+tempBuffGeometry <- mapply(FUN = st_difference, x = st_geometry(datBuffTemp),
+                           y = st_geometry(dat))
+
+## replace datBuffTemp geometry with the 'new' geometry ('tempBuffGeometry')
+datBuff <- st_set_geometry(x = datBuffTemp, value = st_as_sfc(tempBuffGeometry))
 
 for (i in unique(dat$Site)) { ## loop through each site
   for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
@@ -140,6 +148,8 @@ for (i in unique(dat$Site)) { ## loop through each site
           ## get the data for this site/quad/year/species combo
           datOneSp <- dat[dat$Site == i & dat$Quad == j &
                          dat$Year == k & dat$Species == l,]
+          datOneBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
+                              datBuff$Year == k & datBuff$Species == l,]
              ## calculate the neighborhood for each genet
               ## loop through each unique trackID
               for (m in unique(datOneSp$trackID)) {
@@ -147,7 +157,7 @@ for (i in unique(dat$Site)) { ## loop through each site
                 # 'buffer'
                 rametBuff <- suppressWarnings(st_buffer(
                   x = datOneSp[datOneSp$trackID == m,],
-                  dist = buffer))
+                  dist = buff))
                 ## make into one large polygon
                 rametBuff <- st_union(rametBuff)
                 ## subtract the focal ramet from the buffer
@@ -201,7 +211,7 @@ for (i in unique(dat$Site)) { ## loop through each site
             # 'buffer'
             rametBuff <- suppressWarnings(st_buffer(
               x = datSpp[datSpp$trackID == m,],
-              dist = buffer))
+              dist = buff))
             ## make into one large polygon
             rametBuff <- st_union(rametBuff)
             ## subtract the focal ramet from the buffer

@@ -495,8 +495,6 @@ print(paste0("Also Note: Individuals in year(s) ", gapYears," have a value of 'N
   ## remove the 'indexStore' value
   trackSppOut <- trackSppOut[,names(trackSppOut) != "indexStore"]
 
-
-  ###AES make a function that aggregates output of trackSpp by trackID --call w/in this fxn, and also w/in getNeighbors
   ## aggregate the output by trackID (if aggregateByGenet == TRUE)
   if (aggregateByGenet == TRUE) {
     ## aggregate demographic data by trackID/Quad/Year/Site/Species
@@ -524,24 +522,24 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData[grasslandData$Site == "CO"
-                     & grasslandData$Quad %in% c("unun_11","ungz_5a")
-                     & grasslandData$Species == "Bouteloua gracilis",]
-names(dat)[1]<- "Species_Name"
-names(dat)[8] <- "location"
-#dat <- dat[dat$location != "ungz_5a",]
-#dat <- dat[,c(1:6,8:13)]
-inv <- grasslandInventory
-#inv <- inv[1:5]
-dorm <- 1
-buff <- .05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(1))
-
-testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-                    clonal = clonal , species = "Species_Name",
-                    quad = "location")
+# dat <- grasslandData[grasslandData$Site == "CO"
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a")
+#                      & grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
+# inv <- grasslandInventory
+# #inv <- inv[1:5]
+# dorm <- 1
+# buff <- .05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(1))
+#
+# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+#                     clonal = clonal , species = "Species_Name",
+#                     quad = "location")
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

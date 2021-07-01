@@ -140,7 +140,7 @@ datBuff <- st_set_geometry(x = datBuffTemp, value = st_as_sfc(tempBuffGeometry))
 datBuff <- st_set_geometry(x = datBuff,
                       value = st_intersection(st_as_sfc(st_bbox(dat)), datBuff))
 
-if (method = 'count') {
+if (method == 'count') {
   for (i in unique(dat$Site)) { ## loop through each site
     for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
       # quadrat
@@ -215,7 +215,7 @@ if (method = 'count') {
       }
     }
   }
-} else if (method = "area") {
+} else if (method == "area") {
   ## get the overlapping polygon areas
   tempAreas <- suppressWarnings(
     st_intersection(x = datBuff, y = dat))
@@ -324,20 +324,28 @@ return(outputDat)
 #                                                     "Sphaeralcea coccinea"),
 #                   "clonal" = c(1,1,0)))
 #
-# names(datIDs)[c(1,6)] <- c("speciesName", "uniqueID")
+# names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
 #
-# dataTest <- getNeighbors(dat = datIDs, buffer = .15, method = "area",
+# dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
 #              compType = 'allSpp',
 #              focal = 'genet',
 #              species = "speciesName",
 #              trackID = "uniqueID")
 #
 #
-# datTestTest <- testOut[testOut$Site == "CO" &
-#                          testOut$location == "ungz_5a",]
 #
-# dataTest <- getNeighbors(dat = datTestTest, buffer = .15, method = "area",
-#           compType = 'allSpp',
-#           focal = 'genet',
-#           species = "Species_Name",
-#           quad = "location")
+# plot(st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &
+#                           dataTest$Quad == "ungz_5a" & dataTest$Year == 1997
+#                         ,]$geometry, .15), col = "pink")
+# plot(dat[dat$Quad == "ungz_5a" & dat$Year == 1997,]$geometry, add = TRUE)
+# plot(datIDs[datIDs$Quad == "ungz_5a" & datIDs$Year == 1997,]$geometry,
+#      add = TRUE, col = as.factor(datIDs$uniqueID))
+# plot(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" ,]$geometry, col = "red", add = TRUE)
+# labels <- datIDs[datIDs$Quad == "ungz_5a" & datIDs$Year == 1997,]
+# st_centroid(labels$geometry)
+# text(x = sapply(st_centroid(labels$geometry), FUN = function(x) x[1]),
+#      y = sapply(st_centroid(labels$geometry), FUN = function(x) x[2]),
+#      labels = labels$uniqueID)
+
+
+

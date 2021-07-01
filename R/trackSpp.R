@@ -523,8 +523,8 @@ return(trackSppOut)
 
 # Testing -----------------------------------------------------------------
 # dat <- grasslandData[grasslandData$Site == "CO"
-#                      & grasslandData$Quad %in% c("unun_11","ungz_5a")
-#                      & grasslandData$Species == "Bouteloua gracilis",]
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
 # names(dat)[1]<- "Species_Name"
 # names(dat)[8] <- "location"
 # #dat <- dat[dat$location != "ungz_5a",]

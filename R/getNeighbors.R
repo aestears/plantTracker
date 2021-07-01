@@ -49,16 +49,6 @@ getNeighbors <- function (dat, buff, method,
   #trackID ## the name of the column that contains the 'trackID'
   # (unique genet identifier) data
 
-# internal functions ------------------------------------------------------
-getOverlapArea <- function(bufferPoly, overlapData, bufferedData) {
-  temp <- st_intersection(bufferPoly, st_geometry(
-    overlapData[unlist(overlapData[
-      which(st_geometry(bufferedData) == x),
-      'overlaps']),]))
-  area <- sum(st_area(temp[st_is(temp, c("POLYGON", "MULTIPOLYGON"))]))
-  return(area)
-}
-
 # argument checks ---------------------------------------------------------
 ## use the checkDat function to check the 'dat' function
 checkedDat <- checkDat(dat = dat, species = species, site = site, quad = quad,
@@ -146,128 +136,151 @@ tempBuffGeometry <- mapply(FUN = st_difference, x = st_geometry(datBuffTemp),
 ## replace datBuffTemp geometry with the 'new' geometry ('tempBuffGeometry')
 datBuff <- st_set_geometry(x = datBuffTemp, value = st_as_sfc(tempBuffGeometry))
 
-for (i in unique(dat$Site)) { ## loop through each site
-  for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
-    # quadrat
-    for (k in unique(dat[dat$Site == i & dat$Quad == j, "Year"]$Year)) { ## loop
-      # through each year
-      if (compType == 'oneSpp') { ## calculating conspecific neighborhood (need to
-        # subset by species)
-        for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
-                             "Species"]$Species)) {
-          ## get the data for this site/quad/year/species combo
-          datOneSp <- dat[dat$Site == i & dat$Quad == j &
-                         dat$Year == k & dat$Species == l,]
-          ## get the buffered data for this site/quad/year/species combo
-          datOneBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
-                              datBuff$Year == k & datBuff$Species == l,]
+## trim the buffers by the boundaries of the quadrat
+datBuff <- st_set_geometry(x = datBuff,
+                      value = st_intersection(st_as_sfc(st_bbox(dat)), datBuff))
 
-          ## calculate the neighborhood for each genet
+if (method = 'count') {
+  for (i in unique(dat$Site)) { ## loop through each site
+    for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
+      # quadrat
+      for (k in unique(dat[dat$Site == i & dat$Quad == j, "Year"]$Year)) {
+        ## loop through each year
+        if (compType == 'oneSpp') { ## calculating conspecific neighborhood
+          # (need to subset by species)
+          for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
+                               "Species"]$Species)) {
+            ## get the data for this site/quad/year/species combo
+            datOneSp <- dat[dat$Site == i & dat$Quad == j &
+                              dat$Year == k & dat$Species == l,]
+            ## get the buffered data for this site/quad/year/species combo
+            datOneBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
+                                    datBuff$Year == k & datBuff$Species == l,]
+
+            ## calculate the neighborhood for each genet
+            ## get a matrix of which polygons overlap each other
+            overlapM <- st_intersects(datOneBuff, datOneSp, sparse= FALSE)
+            ## make the diagonal of the matrix FALSE, because a genet can't
+            # overlap with itself
+            diag(overlapM) <- FALSE
+            ## make a list such that the list element is the row index in
+            # datOneBuff of the focal indvidual, and the values in each element
+            # are the row indices of the polygons in datOneSp that overlap with
+            # the focal individual
+            overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
+              c(which(x==TRUE)))
+            if (length(overlapList) > 0) {
+              ## get the number of genets that overlap w/ the focal buffer
+              datOneSp$neighbors <-  unlist(lapply(overlapList, length))
+            } else {
+              datOneSp$neighbors <- 0
+            }
+            ## put the neighbor counts into the 'dat' data.frame
+            dat[match(datOneSp$index, dat$index),]$neighbors <-
+              datOneSp$neighbors
+          }
+        } else if (compType == 'allSpp') { ## calculating heterospecific
+          # neighborhood (don't need to subset by species)
+          ## get the data for this site/quad/year combo
+          datSpp<- dat[dat$Site == i & dat$Quad == j &
+                         dat$Year == k ,]
+          ## get the buffered data for this site/quad/year combo
+          datSppBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
+                              datBuff$Year == k ,]
+          ## calculate the number of neighbors for each genet
           ## get a matrix of which polygons overlap each other
-          overlapM <- st_intersects(datOneBuff, datOneSp, sparse= FALSE)
+          overlapM <- st_intersects(datSppBuff, datSpp, sparse= FALSE)
           ## make the diagonal of the matrix FALSE, because a genet can't
           # overlap with itself
           diag(overlapM) <- FALSE
           ## make a list such that the list element is the row index in
-          # datOneBuff of the focal indvidual, and the values in each element
-          # are the row indices of the polygons in datOneSp that overlap with
+          # datSppBuff of the focal indvidual, and the values in each element
+          # are the row indices of the polygons in datSpp that overlap with
           # the focal individual
           overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
             c(which(x==TRUE)))
 
-            if ( method == 'count') {
-                ## get the number of genets that overlap w/ the focal buffer
-                datOneSp$neighbors <-  unlist(lapply(overlapList, length))
-
-              } else if (method == 'area') {
-                ## add the indices of overlapping polygons to the datOneSpp d.f
-                datOneSp$overlaps <- overlapList
-
-                ###AES sort of stuck here...
-                ## get the overlapping polygons
-                mapply(FUN = st_intersection,
-                       x = st_geometry(datOneBuff),
-                       y = st_geometry(datOneSp[unlist(datOneSp$overlaps)]))
-                lapply(st_geometry(datOneBuff), FUN = getOverlapArea, overlapData = datOneSp,
-                         bufferedData = datOneBuff
-                  )
-
-
-                  overlapArea <- suppressWarnings(
-                    st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
-                      rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
-                      ,])
-                  ## get the area of the ramets that are w/in the buffer
-                  area <- sum(st_area(overlaps))
-                  ## put this value into 'dat' in the 'neighbors' column for
-                  # each ramet that belongs to the focal genet
-                  datOneSp[datOneSp$trackID == m,"neighbors"] <- area
-                }
-          ## append the 'datOneSp' d.f to the output d.f
-          if (exists("outputDat") == FALSE) {
-            outputDat <- datOneSp
-          } else if (nrow(outputDat) > 0) {
-            outputDat <- rbind(outputDat, datOneSp)
+          ## put the neighbor counts into the 'datSpp' data.frame
+          if (length(overlapList) > 0) {
+            ## get the number of genets that overlap w/ the focal buffer
+            datSpp$neighbors <-  unlist(lapply(overlapList, length))
+          } else {
+            datSpp$neighbors <- 0
           }
-        } ## end of loop to get data by species
-      } else if (compType == 'allSpp') { ## calculating heterospecific
-        # neighborhood (don't need to subset by species)
-        ## get the data for this site/quad/year combo
-        datSpp<- dat[dat$Site == i & dat$Quad == j &
-                          dat$Year == k ,]
-        ## calculate the neighborhood for each genet
-          ## loop through each unique trackID
-          for (m in unique(datSpp$trackID)) {
-            ## make a buffer around the focal individual of the specified
-            # 'buffer'
-            rametBuff <- suppressWarnings(st_buffer(
-              x = datSpp[datSpp$trackID == m,],
-              dist = buff))
-            ## make into one large polygon
-            rametBuff <- st_union(rametBuff)
-            ## subtract the focal ramet from the buffer
-            rametNeigh <- suppressWarnings(
-              st_difference(x = rametBuff,
-                            y = st_union(datSpp[datSpp$trackID == m,])))
-            ## compare 'rametNeigh' (without the focal ramet) to the rest of
-            # the ramets in this quad (of this spp.) (make sure to remove
-            # the overlap with the focal individual)
-###AES make the 'method' if/else into an internal function
-            if ( method == 'count') {
-              ## get the number of genets that overlap w/ the focal buffer
-              overlaps <- datSpp[st_intersects(rametNeigh, datSpp,
-                                               sparse = FALSE),]
-              ## remove focal individuals
-              overlaps <- overlaps[!overlaps$trackID %in%
-                                     datSpp[datSpp$trackID == m,]$trackID,]
 
-              ## get the number of genets that are w/in the buffer
-              count <- length(unique(overlaps$trackID))
-              ## put this value into 'dat' in the 'neighbors' column
-              datSpp[datSpp$trackID == m, "neighbors"] <- count
-            } else if (method == 'area') {
-              ## get the overlapping polygons
-              overlapArea <- suppressWarnings(
-                st_intersection(rametNeigh, datSpp)[st_is(st_intersection(
-                  rametNeigh, datSpp), type = c("MULTIPOLYGON", "POLYGON"))
-                  ,])
-              ## get the area of the ramets that are w/in the buffer
-              area <- sum(st_area(overlapArea))
-              ## put this value into 'dat' in the 'neighbors' column for
-              # each ramet that belongs to the focal genet
-              datSpp[datSpp$trackID == m, "neighbors"] <- area
-            }
+          ## put the neighbor counts into the 'dat' data.frame
+          dat[match(datSpp$index, dat$index),]$neighbors <-
+            datSpp$neighbors
           }
-        ## append results to the output d.f
-        if (exists("outputDat") == FALSE) {
-          outputDat <- datSpp
-        } else if (nrow(outputDat) > 0) {
-          outputDat <- rbind(outputDat, datSpp)
-        }
-      } ## end of loop to get heterospecific dataset (all species present)
-    } ## end of loop to get data by year
-    } ## end of loop to get data by quadrat
-  } ## end of loop to get data by site
+      }
+    }
+  }
+} else if (method = "area") {
+  ## get the overlapping polygon areas
+  tempAreas <- suppressWarnings(
+    st_intersection(x = datBuff, y = dat))
+  if (compType == 'oneSpp') {
+    ## match sites quads and years between buffered and raw data
+      tempAreas2 <- tempAreas[tempAreas$Site == tempAreas$Site.1 &
+                               tempAreas$Quad == tempAreas$Quad.1 &
+                               tempAreas$Year == tempAreas$Year.1 &
+                               tempAreas$Species == tempAreas$Species.1,]
+
+      ## now aggregate by focal genet (column name = 'trackID')
+      temp3 <- aggregate(tempAreas2$geometry,
+                         by = list("Site" = tempAreas2$Site,
+                                   "Quad" = tempAreas2$Quad,
+                                   "Species" = tempAreas2$Species,
+                                   "trackID" = tempAreas2$trackID,
+                                   "Year" = tempAreas2$Year,
+                                   "index" = tempAreas2$index),
+                         FUN = function (x) sum(st_area(x)))
+
+      ## proportionalize the area--divide the area of the 'neighbors' by the
+      # area of the buffer
+      ## make sure the do d.fs are in the same order (sort by index col.)
+      datBuff <- datBuff[order(datBuff$index),]
+      temp3 <- temp3[order(temp3$index),]
+      ## calculate area of neighbors as a proportion of buffered area
+      proportionalArea <- temp3$geometry/st_area(datBuff)
+      ## put the 'area' data in the correct rows in 'dat'
+      ## join by 'index' column
+      dat[match(temp3$index, dat$index),]$neighbors <-
+        proportionalArea
+
+  } else if (compType == 'allSpp') {
+    ## don't need to subset by species! (so use dat and datBuff)
+
+    ## match sites quads and years between buffered and raw data
+    tempAreas2 <- tempAreas[tempAreas$Site == tempAreas$Site.1 &
+                             tempAreas$Quad == tempAreas$Quad.1 &
+                             tempAreas$Year == tempAreas$Year.1,]
+
+    ## now aggregate by focal genet (column name = 'trackID')
+    temp3 <- aggregate(tempAreas2$geometry,
+                       by = list("Site" = tempAreas2$Site,
+                                 "Quad" = tempAreas2$Quad,
+                                 "Species" = tempAreas2$Species,
+                                 "trackID" = tempAreas2$trackID,
+                                 "Year" = tempAreas2$Year,
+                                 "index" = tempAreas2$index),
+                       FUN = function (x) sum(st_area(x)))
+
+    ## proportionalize the area--divide the area of the 'neighbors' by the
+    # area of the buffer
+    ## make sure the do d.fs are in the same order (sort by index col.)
+    datBuff <- datBuff[order(datBuff$index),]
+    temp3 <- temp3[order(temp3$index),]
+    ## calculate area of neighbors as a proportion of buffered area
+    proportionalArea <- temp3$geometry/st_area(datBuff)
+    ## put the 'area' data in the correct rows in 'dat'
+    ## join by 'index' column
+    dat[match(temp3$index, dat$index),]$neighbors <-
+      proportionalArea
+  }
+}
+
+outputDat <-  dat
 
 # output ------------------------------------------------------------------
 ## prepare the output
@@ -279,14 +292,14 @@ userColNames <- c(checkedDat$userColNames[c(1:4)],
 
 ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
 outputDat <- merge(outputDat, datStore, by = "index")
-## remove the 'indexStore' value
+## remove the 'index' value
 outputDat <- outputDat[,names(outputDat) != "index"]
 
 ## re-name the appropriate columns in 'dat' data.frame with the
 # user-provided names of 'dat'
 ## from above, user-provided names are stored in 'userColNames'
 ## make a vector of default column names
-defaultNames <- c("Species", "Site", "Quad", "Year",  "geometry", "trackID")
+defaultNames <- c("Species", "Site", "Quad", "Year", "trackID", "geometry")
 
 ## reset the names for the columns that we changed to 'default' values
 names(outputDat)[match(defaultNames, names(outputDat))] <- userColNames

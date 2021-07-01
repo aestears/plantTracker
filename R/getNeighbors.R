@@ -49,6 +49,16 @@ getNeighbors <- function (dat, buff, method,
   #trackID ## the name of the column that contains the 'trackID'
   # (unique genet identifier) data
 
+# internal functions ------------------------------------------------------
+getOverlapArea <- function(bufferPoly, overlapData, bufferedData) {
+  temp <- st_intersection(bufferPoly, st_geometry(
+    overlapData[unlist(overlapData[
+      which(st_geometry(bufferedData) == x),
+      'overlaps']),]))
+  area <- sum(st_area(temp[st_is(temp, c("POLYGON", "MULTIPOLYGON"))]))
+  return(area)
+}
+
 # argument checks ---------------------------------------------------------
 ## use the checkDat function to check the 'dat' function
 checkedDat <- checkDat(dat = dat, species = species, site = site, quad = quad,
@@ -148,39 +158,41 @@ for (i in unique(dat$Site)) { ## loop through each site
           ## get the data for this site/quad/year/species combo
           datOneSp <- dat[dat$Site == i & dat$Quad == j &
                          dat$Year == k & dat$Species == l,]
+          ## get the buffered data for this site/quad/year/species combo
           datOneBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
                               datBuff$Year == k & datBuff$Species == l,]
-             ## calculate the neighborhood for each genet
-              ## loop through each unique trackID
-              for (m in unique(datOneSp$trackID)) {
-                ## make a buffer around the focal individual of the specified
-                # 'buffer'
-                rametBuff <- suppressWarnings(st_buffer(
-                  x = datOneSp[datOneSp$trackID == m,],
-                  dist = buff))
-                ## make into one large polygon
-                rametBuff <- st_union(rametBuff)
-                ## subtract the focal ramet from the buffer
-                rametNeigh <- suppressWarnings(
-                  st_difference(x = rametBuff,
-                          y = st_union(datOneSp[datOneSp$trackID == m,])))
-                ## compare 'rametNeigh' (without the focal ramet) to the rest of
-                # the ramets in this quad (of this spp.) (make sure to remove
-                # the overlap with the focal individual)
-                if ( method == 'count') {
-                  ## get the number of genets that overlap w/ the focal buffer
-                  overlaps <- datOneSp[st_intersects(rametNeigh, datOneSp,
-                                                   sparse = FALSE),]
-                  ## remove focal individuals
-                  overlaps <- overlaps[!overlaps$trackID %in%
-                                         datOneSp[datOneSp$trackID == m,]$trackID,]
 
-                  ## get the number of genets that are w/in the buffer
-                  count <- length(unique(overlaps$trackID))
-                  ## put this value into 'dat' in the 'neighbors' column
-                  datOneSp[datOneSp$trackID == m,"neighbors"] <- count
-                } else if (method == 'area') {
-                  ## get the overlapping polygons
+          ## calculate the neighborhood for each genet
+          ## get a matrix of which polygons overlap each other
+          overlapM <- st_intersects(datOneBuff, datOneSp, sparse= FALSE)
+          ## make the diagonal of the matrix FALSE, because a genet can't
+          # overlap with itself
+          diag(overlapM) <- FALSE
+          ## make a list such that the list element is the row index in
+          # datOneBuff of the focal indvidual, and the values in each element
+          # are the row indices of the polygons in datOneSp that overlap with
+          # the focal individual
+          overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
+            c(which(x==TRUE)))
+
+            if ( method == 'count') {
+                ## get the number of genets that overlap w/ the focal buffer
+                datOneSp$neighbors <-  unlist(lapply(overlapList, length))
+
+              } else if (method == 'area') {
+                ## add the indices of overlapping polygons to the datOneSpp d.f
+                datOneSp$overlaps <- overlapList
+
+                ###AES sort of stuck here...
+                ## get the overlapping polygons
+                mapply(FUN = st_intersection,
+                       x = st_geometry(datOneBuff),
+                       y = st_geometry(datOneSp[unlist(datOneSp$overlaps)]))
+                lapply(st_geometry(datOneBuff), FUN = getOverlapArea, overlapData = datOneSp,
+                         bufferedData = datOneBuff
+                  )
+
+
                   overlapArea <- suppressWarnings(
                     st_intersection(rametNeigh, datOneSp)[st_is(st_intersection(
                       rametNeigh, datOneSp), type = c("MULTIPOLYGON", "POLYGON"))
@@ -191,7 +203,6 @@ for (i in unique(dat$Site)) { ## loop through each site
                   # each ramet that belongs to the focal genet
                   datOneSp[datOneSp$trackID == m,"neighbors"] <- area
                 }
-              }
           ## append the 'datOneSp' d.f to the output d.f
           if (exists("outputDat") == FALSE) {
             outputDat <- datOneSp

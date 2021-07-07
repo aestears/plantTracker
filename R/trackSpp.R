@@ -78,26 +78,26 @@
 #' unique species present in 'dat', with species name as a character string in
 #' the "Species" column, and a Boolean value in the 'clonal' column indicating
 #' whether that species is allowed to be clonal (1) or not (0).
-#' @param species An optional single character string argument that indicates
+#' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Species".
-#' @param site An optional single character string argument that indicates
+#' "Species" (default value is 'Species').
+#' @param site An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains site name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Site".
-#' @param quad An optional single character string argument that indicates
+#' "Site" (default value is 'Site').
+#' @param quad An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains quadrat name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Quad".
-#' @param year An optional single character string argument that indicates
+#' "Quad" (default is 'Quad').
+#' @param year An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains data for year of sampling. It
 #' is unnecessary to include a value for this argument if the column name is
-#' "Year".
-#' @param geometry An optional single character string argument that indicates
+#' "Year" (default is 'Year').
+#' @param geometry An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "geometry".
+#' "geometry" (default is 'geometry').
 #' @param aggregateByGenet A logical argument that determines whether the output
 #' of [trackSpp()] will be aggregated by genet. If the value is TRUE
 #' (the default), then each unique trackID in each year will be represented by

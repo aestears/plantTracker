@@ -1,23 +1,68 @@
 #' getNeighbors
-#' @description
+#' @description This function calculates an approximate metric of competition
+#' for each distinct individual in a mapped dataset. It is intended for use on
+#' a dataset that has been returned by the \code{\link{trackSpp}} function, but
+#' will work with any sf data.frame where each individual row represents a
+#' distinct individual (genet) in a unique year.
+#'
+#' @details This function draws a buffer around each individual genet of a
+#' distance specified by the user. Then it either counts the number of other
+#' genets within that buffer, or calculates the proportion of that buffer area
+#' that is occupied by other individuals. \code[getNeighbors] can calculate
+#' either heterospecific competition (between conspecific competition (between
+#' the focal individual and other individuals of the same species).
 #'
 #'
-#' @param dat
-#' @param buff
-#' @param method
-#' @param compType
-#' @param focal
-#' @param trackID
-#' @param species
-#' @param quad
-#' @param year
-#' @param site
-#' @param geometry
+#' @param dat An sf data.frame. Each row must represent a unique individual
+#' organism in a unique year. This argument can be a data.frame that is returned
+#' by the \code{\link{trackSpp}} function.
+#' @param buff A numeric value. This indicates the distance (in the same units
+#' as the spatial data in 'dat') around each focal individual within which you
+#' want to look for competitors.
+#' @param method A character string, either 'count' or 'area'. This argument
+#' determines which metric of competition will be calculated.
+#' If method = 'count', then the number of other individuals within the buffer
+#' will be returned in the 'neighbors' column. If method = 'area', then the
+#' proportion of the buffer area that is occupied by other individuals will be
+#' returned in the 'neighbors' column.
+#' @param compType A character string, either 'allSpp' or 'oneSpp'.
+#' If compType = 'allSpp', then a competition metric is calculated that
+#' considers all individuals around the focal individual, regardless of species
+#'  (heterospecific competition). If compType = 'oneSpp', then a competition
+#'  metric is calculated that considers only individuals in the buffer area
+#'  that are the same species as the focal individual (conspecific competition).
+#' @param trackID An optional character string argument. Indicates the name of
+#' the column in 'dat' that contains a value that uniquely identifies each
+#' individual/genet.It is unnecessary to include a value for this argument if
+#' the column name is 'trackID' (the default value is 'trackID').
+#' @param species An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains species name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Species" (default value is 'Species').
+#' @param site An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains site name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Site" (default value is 'Site').
+#' @param quad An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains quadrat name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Quad" (default is 'Quad').
+#' @param year An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains data for year of sampling. It
+#' is unnecessary to include a value for this argument if the column name is
+#' "Year" (default is 'Year').
+#' @param geometry An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains sf geometry data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "geometry" (default is 'geometry').
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
-#' @details
+#' @return This function returns a data.frame with the same number of rows as
+#' 'dat' and all of the same columns, but with an additional column called
+#' 'neighbors'. This column contains either a count of the number of individuals
+#' within each focal individual's buffer (method = 'count'), or a proportion of
+#'  the buffer area that is occupied by other individuals (method = 'area').
 #'
-#' @return
 #' @export
 #'
 #' @examples
@@ -71,7 +116,7 @@ numeric value that is in the same units as the spatial attributes  of 'dat'.")
 } else if (!is.numeric(buff) |  ## buff must be a  numeric integer
   buff < 0 | ## buff must be greater than or equal to 0
   length(buff)!=1 | ## buff must be a vector of length 1
-  sum(buff > st_bbox(dat)[3:4]) > 0 ) { ##  must not be larger than the
+  sum(buff > sf::st_bbox(dat)[3:4]) > 0 ) { ##  must not be larger than the
   # largest values of the boundary box of 'dat' (an approximate way of checking
   # whether 'buff' and 'dat' have the same units)
 stop("'buff' must be a single numeric value that is greater than zero, and in
@@ -107,6 +152,14 @@ if (is.character(compType) & length(compType) == 1) { ## must be a
   stop("'compType' must be a character vector of length one.")
 }
 
+## make sure that the 'dat' argument has been aggregated by genet!
+if (nrow(unique(dat[,c("Year","trackID")])) != nrow(dat)) {
+stop("In order to be used in this function, the 'dat' argument must have only
+one row for each unique individual (genet) in each year. You can use the
+'aggregateByGenet()' function to get a dataset with one row per genet
+per year.")
+}
+
 
 # work --------------------------------------------------------------------
 ## assign a unique index to each row to simplify the looping process
@@ -116,7 +169,7 @@ dat$index <- 1:nrow(dat)
 ## subset the 'dat' d.f so that it only has the required columns
 # (and dstore the rest)
 ## data to 'store'
-datStore <- st_drop_geometry(dat[,!names(dat) %in% c("Species", "Site", "Quad", "Year",
+datStore <- sf::st_drop_geometry(dat[,!names(dat) %in% c("Species", "Site", "Quad", "Year",
                                     "trackID", "geometry")])
 ## trimmed 'dat' to use in the function
 dat <- dat[,names(dat) %in% c("Species", "Site", "Quad", "Year",
@@ -127,18 +180,18 @@ dat <- dat[,names(dat) %in% c("Species", "Site", "Quad", "Year",
 dat$neighbors <- NA
 
 ## put a buffer around each of the trackIDs in the entire data.frame
-datBuffTemp <- st_buffer(x = dat, dist = buff)
+datBuffTemp <- sf::st_buffer(x = dat, dist = buff)
 
 ## subtract the focal individuals from the buffered dataset
-tempBuffGeometry <- mapply(FUN = st_difference, x = st_geometry(datBuffTemp),
-                           y = st_geometry(dat))
+tempBuffGeometry <- mapply(FUN = sf::st_difference, x = sf::st_geometry(datBuffTemp),
+                           y = sf::st_geometry(dat))
 
 ## replace datBuffTemp geometry with the 'new' geometry ('tempBuffGeometry')
-datBuff <- st_set_geometry(x = datBuffTemp, value = st_as_sfc(tempBuffGeometry))
+datBuff <- sf::st_set_geometry(x = datBuffTemp, value = sf::st_as_sfc(tempBuffGeometry))
 
 ## trim the buffers by the boundaries of the quadrat
-datBuff <- st_set_geometry(x = datBuff,
-                      value = st_intersection(st_as_sfc(st_bbox(dat)), datBuff))
+datBuff <- sf::st_set_geometry(x = datBuff,
+                      value = sf::st_intersection(sf::st_as_sfc(sf::st_bbox(dat)), datBuff))
 
 if (method == 'count') {
   for (i in unique(dat$Site)) { ## loop through each site
@@ -159,7 +212,7 @@ if (method == 'count') {
 
             ## calculate the neighborhood for each genet
             ## get a matrix of which polygons overlap each other
-            overlapM <- st_intersects(datOneBuff, datOneSp, sparse= FALSE)
+            overlapM <- sf::st_intersects(datOneBuff, datOneSp, sparse= FALSE)
             ## make the diagonal of the matrix FALSE, because a genet can't
             # overlap with itself
             diag(overlapM) <- FALSE
@@ -189,7 +242,7 @@ if (method == 'count') {
                               datBuff$Year == k ,]
           ## calculate the number of neighbors for each genet
           ## get a matrix of which polygons overlap each other
-          overlapM <- st_intersects(datSppBuff, datSpp, sparse= FALSE)
+          overlapM <- sf::st_intersects(datSppBuff, datSpp, sparse= FALSE)
           ## make the diagonal of the matrix FALSE, because a genet can't
           # overlap with itself
           diag(overlapM) <- FALSE
@@ -218,7 +271,7 @@ if (method == 'count') {
 } else if (method == "area") {
   ## get the overlapping polygon areas
   tempAreas <- suppressWarnings(
-    st_intersection(x = datBuff, y = dat))
+    sf::st_intersection(x = datBuff, y = dat))
   if (compType == 'oneSpp') {
     ## match sites quads and years between buffered and raw data
       tempAreas2 <- tempAreas[tempAreas$Site == tempAreas$Site.1 &
@@ -234,7 +287,7 @@ if (method == 'count') {
                                    "trackID" = tempAreas2$trackID,
                                    "Year" = tempAreas2$Year,
                                    "index" = tempAreas2$index),
-                         FUN = function (x) sum(st_area(x)))
+                         FUN = function (x) sum(sf::st_area(x)))
 
       ## proportionalize the area--divide the area of the 'neighbors' by the
       # area of the buffer
@@ -242,7 +295,7 @@ if (method == 'count') {
       datBuff <- datBuff[order(datBuff$index),]
       temp3 <- temp3[order(temp3$index),]
       ## calculate area of neighbors as a proportion of buffered area
-      proportionalArea <- temp3$geometry/st_area(datBuff)
+      proportionalArea <- temp3$geometry/sf::st_area(datBuff)
       ## put the 'area' data in the correct rows in 'dat'
       ## join by 'index' column
       dat[match(temp3$index, dat$index),]$neighbors <-
@@ -264,7 +317,7 @@ if (method == 'count') {
                                  "trackID" = tempAreas2$trackID,
                                  "Year" = tempAreas2$Year,
                                  "index" = tempAreas2$index),
-                       FUN = function (x) sum(st_area(x)))
+                       FUN = function (x) sum(sf::st_area(x)))
 
     ## proportionalize the area--divide the area of the 'neighbors' by the
     # area of the buffer
@@ -272,7 +325,7 @@ if (method == 'count') {
     datBuff <- datBuff[order(datBuff$index),]
     temp3 <- temp3[order(temp3$index),]
     ## calculate area of neighbors as a proportion of buffered area
-    proportionalArea <- temp3$geometry/st_area(datBuff)
+    proportionalArea <- temp3$geometry/sf::st_area(datBuff)
     ## put the 'area' data in the correct rows in 'dat'
     ## join by 'index' column
     dat[match(temp3$index, dat$index),]$neighbors <-
@@ -315,26 +368,26 @@ return(outputDat)
 
 # testing -----------------------------------------------------------------
 #
-# dat <- grasslandData[grasslandData$Site == "CO" &
-#                     grasslandData$Quad == "ungz_5a",]
-# datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
-#                   buffGenet = 0.005,
-#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
-#                                                     "Agropyron smithii",
-#                                                     "Sphaeralcea coccinea"),
-#                   "clonal" = c(1,1,0)))
+dat <- grasslandData[grasslandData$Site == "CO" &
+                    grasslandData$Quad == "ungz_5a",]
+datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
+                  buffGenet = 0.005,
+                  clonal = data.frame("Species" = c("Bouteloua gracilis",
+                                                    "Agropyron smithii",
+                                                    "Sphaeralcea coccinea"),
+                  "clonal" = c(1,1,0)))
+
+names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
+
+dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
+             compType = 'allSpp',
+             focal = 'genet',
+             species = "speciesName",
+             trackID = "uniqueID")
 #
-# names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
-#
-# dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
-#              compType = 'allSpp',
-#              focal = 'genet',
-#              species = "speciesName",
-#              trackID = "uniqueID")
 #
 #
-#
-# plot(st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &
+# plot(sf::st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &
 #                           dataTest$Quad == "ungz_5a" & dataTest$Year == 1997
 #                         ,]$geometry, .15), col = "pink")
 # plot(dat[dat$Quad == "ungz_5a" & dat$Year == 1997,]$geometry, add = TRUE)

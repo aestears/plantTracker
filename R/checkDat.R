@@ -19,26 +19,26 @@
 #' name in 'dat', and the contents of that list element is a numeric vector of
 #' all of the years in which that quadrat (or other unique spatial area) was
 #' sampled.
-#' @param species An optional single character string argument that indicates
+#' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Species".
-#' @param site An optional single character string argument that indicates
+#' "Species" (default value is 'Species').
+#' @param site An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains site name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Site".
-#' @param quad An optional single character string argument that indicates
+#' "Site" (default value is 'Site').
+#' @param quad An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains quadrat name data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "Quad".
-#' @param year An optional single character string argument that indicates
+#' "Quad" (default is 'Quad').
+#' @param year An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains data for year of sampling. It
 #' is unnecessary to include a value for this argument if the column name is
-#' "Year".
-#' @param geometry An optional single character string argument that indicates
+#' "Year" (default is 'Year').
+#' @param geometry An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
-#' "geometry".
+#' "geometry" (default is 'geometry').
 #'
 #' @param reformatDat A TRUE/FALSE argument. If 'FALSE', which is the default
 #' value, then [checkDat()] prints a message that says the 'dat' and 'inv'

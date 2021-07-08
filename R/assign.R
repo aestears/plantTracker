@@ -220,7 +220,7 @@
       ## need to get the sf data.frame of the 'next' year (year 'i')
       tempNextYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
 
-      if (nrow(tempNextYear)>0 & clonal == 1) { ## if there is data in the
+      if (nrow(tempNextYear)>0 ) { ## if there is data in the
         # tempNextYear d.f (and clonal arg. is true), then assign genetIDs
         tempNextYear <- ifClonal(cloneDat = tempNextYear,
                                          clonal = clonal,

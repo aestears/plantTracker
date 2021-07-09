@@ -2,7 +2,7 @@
 #' @description This function aggregates a data.frame by unique trackIDs so that
 #' each row represents a genet (unique genetic individual) in a given year.
 #'
-#' @details  This function is a [plantTracker]-specific, user-friendly wrapper
+#' @details  This function is a PlantTracker-specific, user-friendly wrapper
 #' for the 'aggregate' function. This function was designed for use within the
 #' \code{\link{trackSpp}} function, but can be also called independently by the
 #' user. The function is designed to take a data.frame of the same format that
@@ -51,7 +51,24 @@
 #' @export
 #'
 #' @examples
+#' dat <- grasslandData[grasslandData$Site == c("CO") &
+#'  grasslandData$Species %in% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+#' names(dat)[1] <- "speciesName"
+#' inv <- grasslandInventory[unique(dat$Quad)]
+#' outDat <- trackSpp(dat = dat,
+#'  inv = inv,
+#'  dorm = 1,
+#'  buff = .05,
+#'  buffGenet = 0.005,
+#'  clonal = data.frame("Species" = unique(dat$speciesName),
+#'  "clonal" = c(1,0)),
+#'  species = "speciesName",
+#'  aggregateByGenet = FALSE
+#'  )
 #'
+#' finalDat <- aggregateByGenet(dat = outDat,
+#' species = 'speciesName')
+
 aggregateByGenet <-  function(dat,
                               site = "Site",
                               quad = "Quad",

@@ -16,6 +16,7 @@ trackSpp(
   quad = "Quad",
   year = "Year",
   geometry = "geometry",
+  aggregateByGenet = TRUE,
   ...
 )
 }
@@ -27,9 +28,9 @@ identification for each research site (default name is "Site"), species name
 year of data collection (default name is "Year") and an s.f 'geometry' column
 that contains a polygon or multipolygon data type for each
 individual observation.
-This function will add columns called "basalArea", "trackID",
-"age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
-contain columns with these names.}
+This function will add columns called "basalArea_ramet", "trackID",
+"age", "size_tplus1", "recruit," "nearEdge," and "survives_tplus1", so 'dat'
+should not contain columns with these names.}
 
 \item{inv}{A named list. The name of each element of the list is a quadrat
 name in 'dat', and the contents of that list element is a numeric vector of
@@ -76,30 +77,40 @@ unique species present in 'dat', with species name as a character string in
 the "Species" column, and a Boolean value in the 'clonal' column indicating
 whether that species is allowed to be clonal (1) or not (0).}
 
-\item{species}{An optional single character string argument that indicates
+\item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
 unnecessary to include a value for this argument if the column name is
-"Species".}
+"Species" (default value is 'Species').}
 
-\item{site}{An optional single character string argument that indicates
+\item{site}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains site name data. It is
 unnecessary to include a value for this argument if the column name is
-"Site".}
+"Site" (default value is 'Site').}
 
-\item{quad}{An optional single character string argument that indicates
+\item{quad}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains quadrat name data. It is
 unnecessary to include a value for this argument if the column name is
-"Quad".}
+"Quad" (default is 'Quad').}
 
-\item{year}{An optional single character string argument that indicates
+\item{year}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains data for year of sampling. It
 is unnecessary to include a value for this argument if the column name is
-"Year".}
+"Year" (default is 'Year').}
 
-\item{geometry}{An optional single character string argument that indicates
+\item{geometry}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains sf geometry data. It is
 unnecessary to include a value for this argument if the column name is
-"geometry".}
+"geometry" (default is 'geometry').}
+
+\item{aggregateByGenet}{A logical argument that determines whether the output
+of \code{\link[=trackSpp]{trackSpp()}} will be aggregated by genet. If the value is TRUE
+(the default), then each unique trackID in each year will be represented by
+only one row in the output data.frame (each genet gets only one row). This
+prepares the dataset for most demographic analyses. If the value is FALSE,
+then each unique trackID in each year may be represented by multiple rows in
+the data (each ramet gets a row). Note that if the value is TRUE, then some
+columns of the input data.frame 'dat' will be dropped. If you do not wish
+this to happen, then you can aggregate the data.frame to genet by hand.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
@@ -114,8 +125,8 @@ unique index number, all separated by a "_".}
 Values of NA indicate that an accurate age cannot be calculated because this
 individual was observed either in the first year of sampling or in a year
 following a gap in sampling, so the exact year of recruitment is not known.}
-\item{size_tplus1}{The  size of this genet in year \emph{t+1}, in the same units
-as the 'area' column in 'dat'.}
+\item{size_tplus1}{The  size of this \strong{genet} in year \emph{t+1}, in the same
+units as the 'area' column in 'dat'.}
 \item{recruit}{A Boolean integer indicating whether this individual is a new
 recruit in year \emph{t} (1), or existed in a previous year (0). Values of NA
 indicate that this individual was observed either in the first year of
@@ -126,6 +137,8 @@ survived (1), or died (0) in year \emph{t+1}.}
 \item{genetArea}{The size of this entire genet in year \emph{t}, in the same units
 as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
 will be identical to the 'area' column in 'dat'. }
+\item{nearEdge}{A logical value indicating whether this individual is within
+a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
 }
 \description{
 This function tracks individual plants in a mapped quadrat
@@ -157,23 +170,27 @@ from year \emph{t+1+i} to find potential child polygons, where \emph{i}='dorm'
 argument.
 }
 \examples{
-dat <- grasslandData[grasslandData$Site \%in\% c("CO", "AZ"),]
+dat <- grasslandData[grasslandData$Site == c("CO") &
+ grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum"),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
-out_dat <- trackSpp(dat = dat,
+outDat <- trackSpp(dat = dat,
  inv = inv,
  dorm = 1,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,1,0,0,1,1,0,0)),
- species = "speciesName"
+ "clonal" = c(1,0)),
+ species = "speciesName",
+ aggregateByGenet = TRUE
  )
 
 }
 \seealso{
 \code{\link[=assign]{assign()}}, which is used inside the \code{\link[=trackSpp]{trackSpp()}} function.
 \code{\link[=trackSpp]{trackSpp()}} applies the \code{\link[=assign]{assign()}} function over multiple species and
-quadrats. The \code{\link[=assign]{assign()}} function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group
-ramets into genets (if 'clonal' argument = 1).
+quadrats, and uses the \code{\link[=aggregateByGenet]{aggregateByGenet()}} function to aggregate the
+demographic results by genet (if 'aggregateByGenet' = TRUE). The \code{\link[=assign]{assign()}}
+function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
+(if 'clonal' argument = 1).
 }

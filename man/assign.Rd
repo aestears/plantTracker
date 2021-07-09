@@ -15,7 +15,7 @@ identification for each research site (default name is "Site"), species name
 year of data collection (default name is "Year") and an s.f 'geometry' column
 that contains a polygon or multipolygon data type for each
 individual observation.
-This function will add columns called "basalArea", "trackID",
+This function will add columns called "basalArea_ramet", "trackID",
 "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
 contain columns with these names.}
 

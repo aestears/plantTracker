@@ -6,10 +6,9 @@
 \usage{
 getNeighbors(
   dat,
-  radius,
+  buff,
   method,
   compType = "allSpp",
-  focal = "genet",
   trackID = "trackID",
   species = "Species",
   quad = "Quad",
@@ -20,17 +19,110 @@ getNeighbors(
 )
 }
 \arguments{
+\item{dat}{An sf data.frame. Each row must represent a unique individual
+organism in a unique year. This argument can be a data.frame that is returned
+by the \code{\link{trackSpp}} function.}
+
+\item{buff}{A numeric value. This indicates the distance (in the same units
+as the spatial data in 'dat') around each focal individual within which you
+want to look for competitors.}
+
+\item{method}{A character string, either 'count' or 'area'. This argument
+determines which metric of competition will be calculated.
+If method = 'count', then the number of other individuals within the buffer
+will be returned in the 'neighbors' column. If method = 'area', then the
+proportion of the buffer area that is occupied by other individuals will be
+returned in the 'neighbors' column.}
+
+\item{compType}{A character string, either 'allSpp' or 'oneSpp'.
+If compType = 'allSpp', then a competition metric is calculated that
+considers all individuals around the focal individual, regardless of species
+(heterospecific competition). If compType = 'oneSpp', then a competition
+metric is calculated that considers only individuals in the buffer area
+that are the same species as the focal individual (conspecific competition).}
+
+\item{trackID}{An optional character string argument. Indicates the name of
+the column in 'dat' that contains a value that uniquely identifies each
+individual/genet.It is unnecessary to include a value for this argument if
+the column name is 'trackID' (the default value is 'trackID').}
+
+\item{species}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains species name data. It is
+unnecessary to include a value for this argument if the column name is
+"Species" (default value is 'Species').}
+
+\item{quad}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains quadrat name data. It is
+unnecessary to include a value for this argument if the column name is
+"Quad" (default is 'Quad').}
+
+\item{year}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains data for year of sampling. It
+is unnecessary to include a value for this argument if the column name is
+"Year" (default is 'Year').}
+
+\item{site}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains site name data. It is
+unnecessary to include a value for this argument if the column name is
+"Site" (default value is 'Site').}
+
+\item{geometry}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains sf geometry data. It is
+unnecessary to include a value for this argument if the column name is
+"geometry" (default is 'geometry').}
+
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
-
+This function returns a data.frame with the same number of rows as
+'dat' and all of the same columns, but with an additional column called
+'neighbors'. This column contains either a count of the number of individuals
+within each focal individual's buffer (method = 'count'), or a proportion of
+the buffer area that is occupied by other individuals (method = 'area').
 }
 \description{
-
+This function calculates an approximate metric of competition
+for each distinct individual in a mapped dataset. It is intended for use on
+a dataset that has been returned by the \code{\link{trackSpp}} function, but
+will work with any sf data.frame where each individual row represents a
+distinct individual (genet) in a unique year.
 }
 \details{
-
+This function draws a buffer around each individual genet of a
+distance specified by the user. Then it either counts the number of other
+genets within that buffer, or calculates the proportion of that buffer area
+that is occupied by other individuals. \link{getNeighbors} can calculate
+either heterospecific competition (between the focal individual and all other
+individuals within the buffer area) or conspecific competition (between
+the focal individual and other individuals of the same species).
 }
 \examples{
+dat <- grasslandData[grasslandData$Site == c("CO") &
+ grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+outDat <- trackSpp(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = data.frame("Species" = unique(dat$speciesName),
+ "clonal" = c(1,0)),
+ species = "speciesName",
+ aggregateByGenet = TRUE
+ )
 
+ finalDat <- getNeighbors(dat = outDat,
+ buff = .15,
+ method = 'area',
+ compType = 'allSpp',
+ species = "speciesName")
+
+}
+\seealso{
+The \code{\link[=trackSpp]{trackSpp()}} function returns a data.frame that can be input
+directly into this function. If a data.frame is not aggregated by genet such
+that each unique genet/year combination is represented by only one row, then
+passing it through the \code{\link[=aggregateByGenet]{aggregateByGenet()}} function will return a data.frame
+that can be input directly into this function.
 }

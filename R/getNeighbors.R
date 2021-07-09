@@ -8,8 +8,9 @@
 #' @details This function draws a buffer around each individual genet of a
 #' distance specified by the user. Then it either counts the number of other
 #' genets within that buffer, or calculates the proportion of that buffer area
-#' that is occupied by other individuals. \code[getNeighbors] can calculate
-#' either heterospecific competition (between conspecific competition (between
+#' that is occupied by other individuals. [getNeighbors] can calculate
+#' either heterospecific competition (between the focal individual and all other
+#' individuals within the buffer area) or conspecific competition (between
 #' the focal individual and other individuals of the same species).
 #'
 #'
@@ -63,11 +64,39 @@
 #' within each focal individual's buffer (method = 'count'), or a proportion of
 #'  the buffer area that is occupied by other individuals (method = 'area').
 #'
-#' @export
+#' @seealso The [trackSpp()] function returns a data.frame that can be input
+#' directly into this function. If a data.frame is not aggregated by genet such
+#' that each unique genet/year combination is represented by only one row, then
+#' passing it through the [aggregateByGenet()] function will return a data.frame
+#' that can be input directly into this function.
 #'
 #' @examples
+#' dat <- grasslandData[grasslandData$Site == c("CO") &
+#'  grasslandData$Species %in% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+#' names(dat)[1] <- "speciesName"
+#' inv <- grasslandInventory[unique(dat$Quad)]
+#' outDat <- trackSpp(dat = dat,
+#'  inv = inv,
+#'  dorm = 1,
+#'  buff = .05,
+#'  buffGenet = 0.005,
+#'  clonal = data.frame("Species" = unique(dat$speciesName),
+#'  "clonal" = c(1,0)),
+#'  species = "speciesName",
+#'  aggregateByGenet = TRUE
+#'  )
+#'
+#'  finalDat <- getNeighbors(dat = outDat,
+#'  buff = .15,
+#'  method = 'area',
+#'  compType = 'allSpp',
+#'  species = "speciesName")
 #'
 #'@import sf
+#'
+#'@export
+
+
 getNeighbors <- function (dat, buff, method,
                           compType = 'allSpp',
                           trackID = 'trackID',
@@ -368,23 +397,23 @@ return(outputDat)
 
 # testing -----------------------------------------------------------------
 #
-dat <- grasslandData[grasslandData$Site == "CO" &
-                    grasslandData$Quad == "ungz_5a",]
-datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
-                  buffGenet = 0.005,
-                  clonal = data.frame("Species" = c("Bouteloua gracilis",
-                                                    "Agropyron smithii",
-                                                    "Sphaeralcea coccinea"),
-                  "clonal" = c(1,1,0)))
-
-names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
-
-dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
-             compType = 'allSpp',
-             focal = 'genet',
-             species = "speciesName",
-             trackID = "uniqueID")
+# dat <- grasslandData[grasslandData$Site == "CO" &
+#                     grasslandData$Quad == "ungz_5a",]
+# datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
+#                   buffGenet = 0.005,
+#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
+#                                                     "Agropyron smithii",
+#                                                     "Sphaeralcea coccinea"),
+#                   "clonal" = c(1,1,0)))
 #
+# names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
+#
+# dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
+#              compType = 'allSpp',
+#              focal = 'genet',
+#              species = "speciesName",
+#              trackID = "uniqueID")
+# #
 #
 #
 # plot(sf::st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &

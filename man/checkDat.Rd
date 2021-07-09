@@ -30,30 +30,30 @@ name in 'dat', and the contents of that list element is a numeric vector of
 all of the years in which that quadrat (or other unique spatial area) was
 sampled.}
 
-\item{species}{An optional single character string argument that indicates
+\item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
 unnecessary to include a value for this argument if the column name is
-"Species".}
+"Species" (default value is 'Species').}
 
-\item{site}{An optional single character string argument that indicates
+\item{site}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains site name data. It is
 unnecessary to include a value for this argument if the column name is
-"Site".}
+"Site" (default value is 'Site').}
 
-\item{quad}{An optional single character string argument that indicates
+\item{quad}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains quadrat name data. It is
 unnecessary to include a value for this argument if the column name is
-"Quad".}
+"Quad" (default is 'Quad').}
 
-\item{year}{An optional single character string argument that indicates
+\item{year}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains data for year of sampling. It
 is unnecessary to include a value for this argument if the column name is
-"Year".}
+"Year" (default is 'Year').}
 
-\item{geometry}{An optional single character string argument that indicates
+\item{geometry}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains sf geometry data. It is
 unnecessary to include a value for this argument if the column name is
-"geometry".}
+"geometry" (default is 'geometry').}
 
 \item{reformatDat}{A TRUE/FALSE argument. If 'FALSE', which is the default
 value, then \code{\link[=checkDat]{checkDat()}} prints a message that says the 'dat' and 'inv'

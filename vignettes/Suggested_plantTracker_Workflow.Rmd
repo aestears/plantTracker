@@ -94,8 +94,8 @@ relatively meaningless for observations originally mapped as points.
 'size_tplus1', 'recruit', 'survives_tplus1', 'basalArea_ramet', or 
 'basalArea_genet', since these columns are added by PlantTracker functions. 
 
-*  Note: Additional columns can be included in the input data.frame, although it 
-might not be included in the output of PlantTracker functions. 
+*  Note: Additional columns can be included in the input data.frame, although 
+they might not be included in the output of PlantTracker functions. 
 
 Here are the first few rows of a possible 'dat' input data.frame: 
 ```{r  echo = FALSE}
@@ -103,7 +103,7 @@ dataShow <- head(grasslandData[, !names(grasslandData) %in%
                                   c("Clone", "Seedling", "Stems", "Basal",
                                     "sp_code_4", "Area")])
 rownames(dataShow) <- NULL
-knitr::kable(dataShow, caption = "**Table 1.1**: Example 'dat' data.frame", )
+knitr::kable(dataShow, caption = "**Table 1.1**: Example 'dat' data.frame" )
 ```
 
 Note that the required columns are 'Species', 'Site', 'Quad', 'Year', and
@@ -164,9 +164,115 @@ grasslandInventory[c("ungz_5a", "unun_11", "SG2", "SG4")]
 #### *1.3* Checking the 'inv' and 'dat' arguments  
 This step is optional, but can be useful if you're unsure whether your 'dat' and 
 'inv' arguments are in the correct format. The PlantTracker function 
-`checkDat()` takes 'dat' and 'inv' as arguments, and will return informative 
-error messages if either argument is not in the correct format. 
+`checkDat()` takes 'dat' and 'inv' as arguments for the arguments `dat` and `inv`, 
+and will return informative error messages if either argument is not in the 
+correct format. 
 
 Additional optional arguments to `checkDat()` are 'species', 'site', 'quad', 
 'year', 'geometry', and 'reformatDat'. 
 
+* `species/site/quad/year/geometry`: These arguments only need to be included if 
+the columns in 'dat' that contain the data that indicates the species, site, 
+quadrat, year and geometry of each observation are *different* from the names 
+"Species", "Site", "Quad", "Year, and "geometry".  For example, if the column in 
+your version of 'dat' that contains the character strings that identify the 
+species identity of each observation is called 'species_names', then the 
+argument `species = "species_names"` must be included in your call 
+to `checkDat()`. 
+
+* `reformatDat` is a TRUE/FALSE argument that determines whether you want the 
+`checkDat()` function to return a version of 'dat' that is ready to go into the 
+steps of this workflow. If `reformatDat` = TRUE then `checkDat()` will return a 
+list that contains the reformatted version of 'dat', the reformatted version of 
+'inv' and an additional element called 'userColNames', which contains the column 
+names in the input version of 'dat' that are different from the expected column 
+names of "Species", "Site", "Quad", "Year, and "geometry" (if there are any). If 
+`reformatDat` = TRUE, then `checkDat()` will return a message indicating that 
+your data is ready for the next step. The default value is FALSE.
+
+### *2.* Track Individuals Through Time
+Now it's time to transform your raw dataset into deomgraphic data! This is 
+accomplished using the `trackSpp()` function. This function follows individual 
+plants from year to year in the same quadrat to determine survival, size in the 
+next year, age, and some additional potentially-useful demographic data. It does 
+this by comparing quadrat maps from sequential years. If there is overlap of 
+individuals of the same species in consecutive years, then the rows in 'dat' 
+that contain data for those overlapping individuals are given the same 
+'trackID', or unique identifier. `checkDat()` takes the following arguments:  
+
+* `dat` This is the sf data.frame that we've been calling 'dat' so far. This 
+must be in the correct format (which you can check before-hand using 
+`checkDat()`), but informative error messages will be returned if it is 
+incorrect. It *must* have the columns outlined in Section 1.1, but they can have 
+different names as long as those names are included in this function call 
+(more on that later...).
+
+* `inv` This is the list of quadrat sampling years we've been calling 'inv'. If 
+it is not in the correct format or does not contain data for the correct 
+quadrats, then an informative error message will be returned. 
+
+* `dorm` This is a positive integer value that indicates how long you want the 
+function to allow an individual to be "dormant". In this case, dormancy can be 
+interpreted as the biological phenomenon where a plant has above-ground tissue 
+present in year 1, is alive underground but with no above-ground tissue in year 
+2, and then has above-ground tissue in a subsequent year. Dormancy can also be 
+interpreted here as data-collection error, whereby an individual is accidentally 
+not mapped inbetween years where it was recorded. 
+
+  *Consider the following example*: There is a polygon of species 'A' in year 1, 
+which is our "focal indivdiual". In year 2, there is not a polygon of species 
+'A' that overlaps with our focal individual. In year 3, there is a polygon of 
+species 'A' that is in the same location as our focal individual. If `dorm` = 0, 
+then our focal individual would get a 0 in the survival column, and the polygon 
+of species 'A' in year 3 would be considered a new recruit and get a new 
+trackID. If `dorm= 1`, because there is overlap between two polygons of the same 
+species with only a 1-year gap between when they occur, these two polygons will 
+be considered the same genetic individual, will have the same trackID, and our 
+focal individual will have a '1' in the survival column. In an alternative 
+scenario, in years 3 and 4 there are not polygons of species 'A' that are in the 
+same location as our focal individual, but there is a polygon in year 4 that 
+overlaps our focal individual. If `dorm = 1`, then our focal individual would 
+get a 0 for survival, but if `dorm = 2`, then it would get a 1 for survival. 
+```{r echo = FALSE, fig.width=6, fig.align = 'center', fig.cap = "**Figure 2.1**: A visualization of the 'dormancy' scenario described above. "}
+exampleSmall <- exampleDat[unique(c(30, 42, 44, 25,  2, 61, 59, 52, 45,  8, 42, 37, 60, 34, 45, 38, 26, 49, 52, 46)),]
+
+exampleSmall$FocalInd <- 'other individual'
+exampleSmall[10,'FocalInd'] <- 'focal individual'
+exampleSmall$Year <- "Year 1"
+exampleSmall_2 <- exampleSmall[c(1:9,11:nrow(exampleSmall)),]
+exampleSmall_2$Year <- "Year 2"
+exampleSmall_3 <- exampleSmall
+exampleSmall_3$Year <- "Year 3"
+
+exampleSmall <- rbind(exampleSmall, exampleSmall_2, exampleSmall_3)
+
+ggplot(data = exampleSmall) +
+  geom_sf(aes(color = FocalInd, fill = FocalInd)) +
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  xlab("quadrat horizontal edge (m)") +
+  ylab("quadrat vertical edge (m)") +
+  #labs(title = Year) +
+  facet_wrap( ~ Year) +
+  theme_classic() +
+  theme(axis.line = element_blank(), 
+        legend.text = element_text(face = "italic"),
+        plot.margin = margin(1,0,1,0),
+        legend.title = element_blank()) +
+  scale_fill_brewer(type = 'qual', palette = 2) +
+  scale_colour_brewer(type = 'qual', palette = 2)
+```
+  
+  If you'd like to be more specific and perhaps biologically accurate, you can also specify the `dorm` argument uniquely for each species. For example, it might be that you are confident that your data collectors did not accidentally 'miss' any individuals, and your 'dat' data.frame contains observations for shrubs or trees, which are very unlikely to go dormant, and small forbs, which are much more likely to go dormant for one or two years. In order to disallow dormancy for trees and shrubs, but to allow dormancy for forbs, you will provide a data.frame to the `dorm` argument instead of a single positive integer value. There will be two columns: 1) a "Species" column that has the species name for each species present in 'dat', and 2) a column called "dorm" that has positive integer values indicating the dormancy you'd like to allow for each species. Make sure that if you are following the data.frame approach, you must provide a dormancy argument for *every* species that has data in 'dat'. Make sure that the species names in the `dorm` data.frame are spelled exactly the same as they are in 'dat'. The data.frame should look something like this:
+```{r echo = FALSE}
+dormDF <- data.frame("Species" = c("tree A", "shrub B", "tree C", "forb D", "forb E", "forb F"),
+           "dorm" = c(0,0,0,1,2,1))
+knitr::kable(dormDF, caption = "**Table 2.1**: Example 'dorm' data.frame", )
+```
+  

@@ -26,5 +26,6 @@ Imports:
     igraph,
     sf,
     methods,
-    stats
+    stats,
+    ggplot2
 VignetteBuilder: knitr

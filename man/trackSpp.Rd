@@ -132,11 +132,15 @@ recruit in year \emph{t} (1), or existed in a previous year (0). Values of NA
 indicate that this individual was observed either in the first year of
 sampling or in a year following a gap in sampling, so it is not possible to
 accurately determine whether or not it is a new recruit in year \emph{t}.}
-\item{survives_plus1}{A Boolean integer indicating whether this individual
+\item{survives_tplus1}{A Boolean integer indicating whether this individual
 survived (1), or died (0) in year \emph{t+1}.}
-\item{genetArea}{The size of this entire genet in year \emph{t}, in the same units
-as the 'area' column in 'dat.' If the 'clonal' argument =0, then this number
-will be identical to the 'area' column in 'dat'. }
+\item{basalArea_genet}{The size of this entire genet in year \emph{t}, in the same
+units as the 'area' column in 'dat.' If the 'clonal' argument = 0, then this
+number will be identical to the 'basalArea_ramet' column. }
+\item{basalArea_ramet}{This is only included if 'aggregateByGenet' = FALSE.
+This is the size of this ramet in year \emph{t}, in the same units as the 'area'
+column in 'dat'. If the 'clonal' argument = 0 , then this number will be
+identical to the 'basalArea_genet' column.}
 \item{nearEdge}{A logical value indicating whether this individual is within
 a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
 }

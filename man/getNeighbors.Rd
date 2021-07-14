@@ -37,9 +37,9 @@ returned in the 'neighbors' column.}
 \item{compType}{A character string, either 'allSpp' or 'oneSpp'.
 If compType = 'allSpp', then a competition metric is calculated that
 considers all individuals around the focal individual, regardless of species
-(heterospecific competition). If compType = 'oneSpp', then a competition
+(interspecific competition). If compType = 'oneSpp', then a competition
 metric is calculated that considers only individuals in the buffer area
-that are the same species as the focal individual (conspecific competition).}
+that are the same species as the focal individual (intraspecific competition).}
 
 \item{trackID}{An optional character string argument. Indicates the name of
 the column in 'dat' that contains a value that uniquely identifies each
@@ -92,8 +92,8 @@ This function draws a buffer around each individual genet of a
 distance specified by the user. Then it either counts the number of other
 genets within that buffer, or calculates the proportion of that buffer area
 that is occupied by other individuals. \link{getNeighbors} can calculate
-either heterospecific competition (between the focal individual and all other
-individuals within the buffer area) or conspecific competition (between
+either interspecific competition (between the focal individual and all other
+individuals within the buffer area) or intraspecific competition (between
 the focal individual and other individuals of the same species).
 }
 \examples{

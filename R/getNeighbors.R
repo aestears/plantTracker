@@ -9,8 +9,8 @@
 #' distance specified by the user. Then it either counts the number of other
 #' genets within that buffer, or calculates the proportion of that buffer area
 #' that is occupied by other individuals. [getNeighbors] can calculate
-#' either heterospecific competition (between the focal individual and all other
-#' individuals within the buffer area) or conspecific competition (between
+#' either interspecific competition (between the focal individual and all other
+#' individuals within the buffer area) or intraspecific competition (between
 #' the focal individual and other individuals of the same species).
 #'
 #'
@@ -29,9 +29,9 @@
 #' @param compType A character string, either 'allSpp' or 'oneSpp'.
 #' If compType = 'allSpp', then a competition metric is calculated that
 #' considers all individuals around the focal individual, regardless of species
-#'  (heterospecific competition). If compType = 'oneSpp', then a competition
+#'  (interspecific competition). If compType = 'oneSpp', then a competition
 #'  metric is calculated that considers only individuals in the buffer area
-#'  that are the same species as the focal individual (conspecific competition).
+#'  that are the same species as the focal individual (intraspecific competition).
 #' @param trackID An optional character string argument. Indicates the name of
 #' the column in 'dat' that contains a value that uniquely identifies each
 #' individual/genet.It is unnecessary to include a value for this argument if
@@ -117,8 +117,8 @@ getNeighbors <- function (dat, buff, method,
   # within the specified buffer that is occupied will be calculated.
   ###AES question: for count method--should I use ramets or genets??
   #compType ## an argument that indicates whether you want to calculate only
-  # conspecific local neighborhood (only look at individuals of the same
-  # species -- 'oneSpp'), or heterospecific local neighborhood (look at
+  # intraspecific local neighborhood (only look at individuals of the same
+  # species -- 'oneSpp'), or interspecific local neighborhood (look at
   # individuals of all species -- 'allSpp'). Default is 'allSpp'.
   #trackID ## the name of the column that contains the 'trackID'
   # (unique genet identifier) data
@@ -228,7 +228,7 @@ if (method == 'count') {
       # quadrat
       for (k in unique(dat[dat$Site == i & dat$Quad == j, "Year"]$Year)) {
         ## loop through each year
-        if (compType == 'oneSpp') { ## calculating conspecific neighborhood
+        if (compType == 'oneSpp') { ## calculating intraspecific neighborhood
           # (need to subset by species)
           for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
                                "Species"]$Species)) {
@@ -261,7 +261,7 @@ if (method == 'count') {
             dat[match(datOneSp$index, dat$index),]$neighbors <-
               datOneSp$neighbors
           }
-        } else if (compType == 'allSpp') { ## calculating heterospecific
+        } else if (compType == 'allSpp') { ## calculating interspecific
           # neighborhood (don't need to subset by species)
           ## get the data for this site/quad/year combo
           datSpp<- dat[dat$Site == i & dat$Quad == j &

@@ -327,7 +327,6 @@ values for each species in 'dat', and a 'clonal' column that contains numeric
 values of either 0 or 1 for each species with no NAs.")
     }
   }
-  ###AES### make 'buffGenet' only be required if `clonal` = 1
 
   #buffGenet ## either a single value (applied to all spp.)or a data.frame with
   # the same number of rows as the number of species in dat that indicates how
@@ -437,6 +436,7 @@ represents a unique stem (ramet) in a given year.")
     }
   } else {
     buffGenet <- NA
+    aggregateByGenet <- FALSE
   }
 
 
@@ -555,6 +555,7 @@ print(paste0("Also Note: Individuals in year(s) ", gapYears," have a value of 'N
 
   ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
   trackSppOut <- merge(trackSppOut, datStore, by = "indexStore")
+
   ## remove the 'indexStore' value
   trackSppOut <- trackSppOut[,names(trackSppOut) != "indexStore"]
 
@@ -585,24 +586,24 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData[grasslandData$Site == "CO"
-                     & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-names(dat)[1]<- "Species_Name"
-names(dat)[8] <- "location"
-#dat <- dat[dat$location != "ungz_5a",]
-#dat <- dat[,c(1:6,8:13)]
-inv <- grasslandInventory
-#inv <- inv[1:5]
-dorm <- 1
-buff <- .05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(1))
-
-testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-                    clonal = clonal , species = "Species_Name",
-                    quad = "location")
+# dat <- grasslandData[grasslandData$Site == "CO"
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
+# inv <- grasslandInventory
+# #inv <- inv[1:5]
+# dorm <- 1
+# buff <- .05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(1))
+#
+# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+#                     clonal = clonal , species = "Species_Name",
+#                     quad = "location")
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

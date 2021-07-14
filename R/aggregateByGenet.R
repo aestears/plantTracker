@@ -48,6 +48,8 @@
 #'
 #' @seealso This function is called inside the [trackSpp()] function.
 #'
+#'#'@import sf
+#'
 #' @export
 #'
 #' @examples
@@ -81,7 +83,7 @@ aggregateByGenet <-  function(dat,
 
 #dat ## an sf d.f that contains data returned from the 'trackSpp' function.
   ## check that 'dat' is an s.f data.frame
-  if (sum(!st_is(dat, type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
+  if (sum(!sf::st_is(x = st_geometry(dat), type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
 stop("The 'dat' argument must be an sf data.frame with only 'POLYGON' or
 'MULTIPOLYGON' geometries.")
   } else {
@@ -104,7 +106,7 @@ stop("The 'basalArea_genet' column in 'dat' must be a numeric vector with
   }
   ## 'age'
   if (is.numeric(dat$age) == FALSE | ## age must be numeric
-      sum(dat$age < 0, na.rm = TRUE) != 0 ## age values must be positive
+      sum(dat$age < 0, na.rm = TRUE) != 0  ## age values must be positive
       ) {
 stop("The 'age' column in 'dat' must be a numeric vector with positive values.")
   }
@@ -126,6 +128,7 @@ stop("The 'recruit' column in 'dat' must be a numeric vector with values of only
 stop("The 'survives_tplus1' column in 'dat' must be a numeric vector with values
 of only 1, 0, or NA.")
   }
+
   ## 'size_tplus1'
   if (is.numeric(dat$size_tplus1)==FALSE |
       sum(!dat$size_tplus1 > 0, na.rm = TRUE) != 0
@@ -187,20 +190,34 @@ that give the name of the columns in 'dat' that contain these data types." ))
   defaultNames <- c("Species", "Site", "Quad", "Year",
                     "trackID")
 
-
   ## replace the user-provided names in 'dat' with the default names
   names(dat)[match(usrNames, names(dat))] <- defaultNames
 
-  ## aggregate the 'dat' argument by trackID
-  datOut <- aggregate(x = dat[,c('basalArea_genet', 'age', 'recruit',
-                               'survives_tplus1', 'size_tplus1', 'nearEdge')],
-            by = list("Site" = dat$Site,
-                      "Quad" = dat$Quad,
-                      "Species" = dat$Species,
-                      "trackID" = dat$trackID,
-                      "Year" = dat$Year),
-            do_union = TRUE,
-            FUN = mean)
+  ## if there *is* a 'type_USER' argument, then include this!
+  if (sum(names(dat) == "Type_USER") == 1) {
+    ## aggregate the 'dat' argument by trackID
+    datOut <- aggregate(x = dat[,c('basalArea_genet', 'age', 'recruit',
+                                   'survives_tplus1', 'size_tplus1', 'nearEdge')],
+                        by = list("Site" = dat$Site,
+                                  "Quad" = dat$Quad,
+                                  "Species" = dat$Species,
+                                  "trackID" = dat$trackID,
+                                  "Year" = dat$Year,
+                                  "type" = dat$Type_USER),
+                        do_union = TRUE,
+                        FUN = mean)
+  } else {
+    ## aggregate the 'dat' argument by trackID
+    datOut <- aggregate(x = dat[,c('basalArea_genet', 'age', 'recruit',
+                                   'survives_tplus1', 'size_tplus1', 'nearEdge')],
+                        by = list("Site" = dat$Site,
+                                  "Quad" = dat$Quad,
+                                  "Species" = dat$Species,
+                                  "trackID" = dat$trackID,
+                                  "Year" = dat$Year),
+                        do_union = TRUE,
+                        FUN = mean)
+  }
 
   ## fix the 'nearEdge' mean issue--is averaged to a numeric value, not logical
   # b/c some of the ramets might be w/in the buffer from the quadrat edge while
@@ -208,7 +225,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
   datOut[datOut$nearEdge > 0, 'nearEdge'] <- 1
   datOut$nearEdge <- as.logical(datOut$nearEdge)
 
-  ## change the column name sback to what were present in 'dat'
+  ## change the column names back to what were present in 'dat'
   ## reset the names for the columns that we changed to 'default' values
   names(datOut)[match(defaultNames, names(datOut))] <-
     usrNames

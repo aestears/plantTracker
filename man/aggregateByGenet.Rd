@@ -92,4 +92,6 @@ species = 'speciesName')
 }
 \seealso{
 This function is called inside the \code{\link[=trackSpp]{trackSpp()}} function.
+
+#'@import sf
 }

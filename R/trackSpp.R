@@ -282,52 +282,6 @@ species.")
     }
   }
 
-  #buffGenet ## either a single value (applied to all spp.)or a data.frame with
-  # the same number of rows as the number of species in dat that indicates how
-  # close together ramets must be to be considered the same genet (in the same
-  # units as distances in dat). If multiple values, is subset by spp. before
-  # being passed to assign() (and then passed to groupByGenet())
-  ## check buffGenet argument
-  if(missing(buffGenet)) {
-    stop("The 'buffGenet' argument must have a value.")
-  } else {
-    if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of
-      # buffGenet a single numeric?
-      if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
-          buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
-          # must not be larger than the dimensions of the quadrat
-          length(buffGenet)!=1) { ## buffGenet must be a vector of length 1
-stop("If 'buffGenet' is not specified for every species, it must be a single
-numeric value that is greater than or equal to 0")
-      }
-    } else if (is.data.frame(buffGenet)) {
-      if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
-      if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 | ## buffGenet
-         # must have data for all species
-         sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in buffGenet
-         !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric values for
-         # buffGenet$buffGenet
-         sum(buffGenet$buffGenet < 0) > 0 | ## can't be less than 0
-         round(buffGenet$buffGenet) != buffGenet$buffGenet ## must be whole
-         # numbers
-      ) {
-stop("If the 'buffGenet' argument is specified by species, it must be a
-data.frame that includes a 'Species' column with a row for every species in
-'dat', and a 'buffGenet' column that contains positive, numeric values for each
-species with no NAs.")
-      }
-      } else {
-stop("If the 'buffGenet' argument is specifed by species, the column names must
-be 'Species' and 'buffGenet'")
-      }
-    } else {
-stop("The 'buffGenet' argument must be either a single numeric value that is
-greater than or equal to 0, OR a data.frame that has a 'Species' column with
-values for each species in 'dat', and a 'buffGenet' column with numeric values
-for each species.")
-    }
-  }
-
   #clonal ## either a single value (applied to all spp.) or a data.frame with
   # the same number of rows as the number of species in dat that indicates
   # whether or not a species is allowed to be clonal. One column contains the
@@ -373,8 +327,105 @@ values for each species in 'dat', and a 'clonal' column that contains numeric
 values of either 0 or 1 for each species with no NAs.")
     }
   }
+  ###AES### make 'buffGenet' only be required if `clonal` = 1
 
-  #check aggregateByGenet
+  #buffGenet ## either a single value (applied to all spp.)or a data.frame with
+  # the same number of rows as the number of species in dat that indicates how
+  # close together ramets must be to be considered the same genet (in the same
+  # units as distances in dat). If multiple values, is subset by spp. before
+  # being passed to assign() (and then passed to groupByGenet())
+  ## check buffGenet argument
+  ## is the clonal argument 1? (or a data.frame?) If so, then you need a
+  # buffGenet argument.
+  if (is.data.frame(clonal) == TRUE) { ## if the clonal
+    # arg. is a d.f, does it have any arguments that are 1?
+    if (sum(clonal$clonal) > 0) {
+      if (missing(buffGenet)) {
+      stop("The 'buffGenet' argument must have a value.")
+    } else {
+      if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of
+        # buffGenet a single numeric?
+        if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
+            buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
+            # must not be larger than the dimensions of the quadrat
+            length(buffGenet)!=1) { ## buffGenet must be a vector of length 1
+          stop("If 'buffGenet' is not specified for every species, it must be a single
+numeric value that is greater than or equal to 0")
+        }
+      } else if (is.data.frame(buffGenet)) {
+        if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
+          if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 | ## buffGenet
+             # must have data for all species
+             sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in buffGenet
+             !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric values for
+             # buffGenet$buffGenet
+             sum(buffGenet$buffGenet < 0) > 0 | ## can't be less than 0
+             round(buffGenet$buffGenet) != buffGenet$buffGenet ## must be whole
+             # numbers
+          ) {
+            stop("If the 'buffGenet' argument is specified by species, it must be a
+data.frame that includes a 'Species' column with a row for every species in
+'dat', and a 'buffGenet' column that contains positive, numeric values for each
+species with no NAs.")
+          }
+        } else {
+          stop("If the 'buffGenet' argument is specifed by species, the column names must
+be 'Species' and 'buffGenet'")
+        }
+      } else {
+        stop("The 'buffGenet' argument must be either a single numeric value that is
+greater than or equal to 0, OR a data.frame that has a 'Species' column with
+values for each species in 'dat', and a 'buffGenet' column with numeric values
+for each species.")
+      }
+    }
+      }
+  } else if (is.numeric(clonal) & clonal == 1) {  ## if the clonal argument is
+    # one value, is it set to 1?
+    if (missing(buffGenet)) {
+      stop("The 'buffGenet' argument must have a value.")
+    } else {
+      if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of
+        # buffGenet a single numeric?
+        if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
+            buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
+            # must not be larger than the dimensions of the quadrat
+            length(buffGenet)!=1) { ## buffGenet must be a vector of length 1
+          stop("If 'buffGenet' is not specified for every species, it must be a single
+numeric value that is greater than or equal to 0")
+        }
+      } else if (is.data.frame(buffGenet)) {
+        if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
+          if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 | ## buffGenet
+             # must have data for all species
+             sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in buffGenet
+             !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric values for
+             # buffGenet$buffGenet
+             sum(buffGenet$buffGenet < 0) > 0 | ## can't be less than 0
+             round(buffGenet$buffGenet) != buffGenet$buffGenet ## must be whole
+             # numbers
+          ) {
+            stop("If the 'buffGenet' argument is specified by species, it must be a
+data.frame that includes a 'Species' column with a row for every species in
+'dat', and a 'buffGenet' column that contains positive, numeric values for each
+species with no NAs.")
+          }
+        } else {
+          stop("If the 'buffGenet' argument is specifed by species, the column names must
+be 'Species' and 'buffGenet'")
+        }
+      } else {
+        stop("The 'buffGenet' argument must be either a single numeric value that is
+greater than or equal to 0, OR a data.frame that has a 'Species' column with
+values for each species in 'dat', and a 'buffGenet' column with numeric values
+for each species.")
+      }
+    }
+  } else {
+    buffGenet <- NA
+  }
+
+#check aggregateByGenet
   if (!is.logical(aggregateByGenet)) {
 stop("The 'aggregateByGenet' argument must be a logical value. TRUE means that
 every row in the output of trackSpp() represents a unique genetic individual
@@ -527,24 +578,24 @@ return(trackSppOut)
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData[grasslandData$Site == "CO"
-#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
-#                      #& grasslandData$Species == "Bouteloua gracilis",]
-# names(dat)[1]<- "Species_Name"
-# names(dat)[8] <- "location"
-# #dat <- dat[dat$location != "ungz_5a",]
-# #dat <- dat[,c(1:6,8:13)]
-# inv <- grasslandInventory
-# #inv <- inv[1:5]
-# dorm <- 1
-# buff <- .05
-# buffGenet <- 0.005
-# clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1))
-#
-# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-#                     clonal = clonal , species = "Species_Name",
-#                     quad = "location")
+dat <- grasslandData[grasslandData$Site == "CO"
+                     & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+                     #& grasslandData$Species == "Bouteloua gracilis",]
+names(dat)[1]<- "Species_Name"
+names(dat)[8] <- "location"
+#dat <- dat[dat$location != "ungz_5a",]
+#dat <- dat[,c(1:6,8:13)]
+inv <- grasslandInventory
+#inv <- inv[1:5]
+dorm <- 1
+buff <- .05
+buffGenet <- 0.005
+clonal <- data.frame(Species = unique(dat$Species),
+                     clonal = c(1))
+
+testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
+                    clonal = clonal , species = "Species_Name",
+                    quad = "location")
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

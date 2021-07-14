@@ -379,6 +379,13 @@ values for each species in 'dat', and a 'buffGenet' column with numeric values
 for each species.")
       }
     }
+      #check aggregateByGenet
+      if (!is.logical(aggregateByGenet)) {
+        stop("The 'aggregateByGenet' argument must be a logical value. TRUE means that
+every row in the output of trackSpp() represents a unique genetic individual
+(genet) in a given year. FALSE means that every row in the output of trackSpp()
+represents a unique stem (ramet) in a given year.")
+      }
       }
   } else if (is.numeric(clonal) & clonal == 1) {  ## if the clonal argument is
     # one value, is it set to 1?
@@ -421,17 +428,17 @@ values for each species in 'dat', and a 'buffGenet' column with numeric values
 for each species.")
       }
     }
+    #check aggregateByGenet
+    if (!is.logical(aggregateByGenet)) {
+      stop("The 'aggregateByGenet' argument must be a logical value. TRUE means that
+every row in the output of trackSpp() represents a unique genetic individual
+(genet) in a given year. FALSE means that every row in the output of trackSpp()
+represents a unique stem (ramet) in a given year.")
+    }
   } else {
     buffGenet <- NA
   }
 
-#check aggregateByGenet
-  if (!is.logical(aggregateByGenet)) {
-stop("The 'aggregateByGenet' argument must be a logical value. TRUE means that
-every row in the output of trackSpp() represents a unique genetic individual
-(genet) in a given year. FALSE means that every row in the output of trackSpp()
-represents a unique stem (ramet) in a given year.")
-  }
 
   # work --------------------------------------------------------------------
   ## first, break the 'dat' d.f into two pieces, one with columns we need, and

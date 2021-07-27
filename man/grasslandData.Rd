@@ -9,29 +9,36 @@ An sf data frame with 10405 rows and 15 variables:
 \describe{
 \item{Species}{A character string indicating the specific epithet for this
 observation. }
-\item{Seedling}{An integer indicating whether this observation was a
+\item{Clone}{An integer vector. (1) indicates that this individual is a
+clone (genet). (0) indicates that this individual is not a clone. NA
+indicates that this data was not recorded. }
+\item{Seedling}{An integer vector indicating whether this observation was a
 seedling (1), or not (0). This data was not collected for many
 observations, which have an NA in this column. }
 \item{Stems}{An integer greater than 0 indicating how many stems were
 present for the observed plant. This data was not collected for many
 observations, which have an NA in this column.}
+\item{Basal}{An integer vector. (1) indicates that the basal area of
+this individual was mapped. (0) indicates that the basal area of this
+individual was not mapped (in which case it cannot be used in the
+\code{\link{assign}} function.) NA indicates that this data was not
+recorded.}
 \item{Type}{A factor with two levels: 'point' or 'poly', which indicates
 whether the observation was originally mapped as a 'point' or a 'polygon'.}
 \item{Site}{A character string indicating the sampling location of this
 observation. In this dataset, this value is either:
 \itemize{
-\item CO (Central Plains Experimental Range, Nunn, Colorado)
-\item KS (University Pasture, Hays, Kansas)
-\item AZ (Santa Rita Experimental Range, Tucson, AZ)
-\item MT (Fort Keogh Livestock and Range Research Laboratory, Miles City, MT)}
-}
-
+\item {CO} (Central Plains Experimental Range, Nunn, Colorado)
+\item {KS} (University Pasture, Hays, Kansas)
+\item {AZ} (Santa Rita Experimental Range, Tucson, AZ)
+\item {MT} (Fort Keogh Livestock and Range Research Laboratory,
+Miles City, MT)}}
 \item{Quad}{A character string indicating the name of the quadrat where
 this plant was mapped.}
 \item{Year}{An integer indicating the year when this plant was mapped.}
 \item{sp_code_4}{A character string of the 4-letter species code for this
 observation (The first two letters of the genus name, and first two letters
-of the species name, capitalized with no spaces). }
+of the species name, capitalized with no spaces).}
 \item{sp_code_6}{A character string of the 6-letter species code for this
 observation (The first three letters of the genus name, and first three
 letters of the species name, capitalized with no spaces).}

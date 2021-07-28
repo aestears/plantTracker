@@ -446,7 +446,7 @@ sure to pass your dataset through the `aggregateByGenet()` function (or
 aggregate to the genet scale using your preferred method) before 
 demographic analysis. 
 
-* `species/site/quad/year/geometry`: These arguments only need to be included if 
+* `species/site/quad/year/geometry` These arguments only need to be included if 
 the columns in 'dat' that contain the data for species, site, 
 quadrat, year and geometry of each observation are *different* from the names 
 "Species", "Site", "Quad", "Year, and "geometry".  For example, if the column in 
@@ -609,5 +609,64 @@ ggplot(datComp) +
 ## proportion of interspecific competitors 0.002981313 / 0.06455732 = 0.04618087
 ## proportion of intraspecific competitors 0.002932075 / 0.06455732 = 0.04541816
 ```
+Below are the arguments in the `getNeighbors()` function. 
 
-Here are the arguments 
+* `dat` An sf data.frame in which each row represents data for a unique 
+individual organism in a unique year. The sf geometry for each row must be 
+either 'MULTIPOLYGON' or 'POLYGON' geometry. In addition to a 'geometry' column, 
+this data.frame must have columns that contain data indicating the site, 
+quadrat, site, and year of each observation. There also must be a column that 
+contains a unique identifying value for each genet in each year. If 'dat' is 
+coming directly from trackSpp()`, this column will be called 'trackID'.  
+
+* `buff` This is a single numeric value that indicates the desired width of the 
+'buffer' around the focal individual in which the competitors are to be counted. 
+This value must be in the same units as the spatial information in 'dat'.  
+
+* `method` This is a character string that must equal either 'count' or 'area'. 
+If `method = "count"`, then the number of individuals in the buffer area will be 
+tallied. If `method = "area"`, then the proportion of the buffer area that is 
+occupied by other individuals will be calculated. 
+
+* `compType` This is a character string that must be either 'allSpp' or 
+'oneSpp'. If `compType = "allSpp"`, then a metric of interspecific 
+competition is calculated, meaning that every individual within the buffer 
+around the focal individual is considered, no matter the species. If 
+`compType = "oneSpp"`, then a metric of intraspecific competition is calculated, 
+meaning that only individuals of the same species as the focal individual will 
+be considered when calculating the competition metric. If no value is provided, 
+it will default to "allSpp". 
+
+* `trackID/species/quad/year/site/geometry` These arguments only need to be 
+included if the columns in 'dat' that contain the data for trackID, species, 
+site, quadrat, year and geometry of each observation are *different* from the
+names "trackID, "Species", "Site", "Quad", "Year, and "geometry".  For example, 
+if the column in your version of 'dat' that contains the species identity of 
+each observation is called 'species_names', then the argument 
+`species = "species_names"` must be included in your call to `getNeighbors()`. 
+
+#### *3.2.* Function Outputs 
+
+The output of `getNeighbors()` is an sf data.frame that is identical to the 
+input 'dat', but with an additional column called 'neighbors', which contains 
+either an integer value indicating the number of individuals within the buffer 
+area, or a decimal less that 1 that indicates the proportion of the buffer area
+that is occupied by competitors. 
+
+Here's an example of a `getNeighbors()` function call using the resulting data 
+from the example in section *2.2*, as well as the resulting data.frame:  
+```{r}
+datNeighbors <- getNeighbors(dat = datTrackSpp,
+             buff = .15,
+             method = "area",
+             compType = "allSpp")
+
+knitr::kable(head(datNeighbors))
+```
+
+### *3* Next Steps
+At this point, this dataset should be ready for you to use in any applications 
+wish! There are a few additional functions that may help you in your analyses, 
+and these are outlined in this section. 
+
+* recruitment by species-by-plot-by-year

@@ -233,7 +233,7 @@ if (method == 'count') {
           for (l in unique(dat[dat$Site == i & dat$Quad == j & dat$Year == k,
                                "Species"]$Species)) {
             ## get the data for this site/quad/year/species combo
-            datOneSp <- dat[dat$Site == i & dat$Quad == j &
+            datOneSpp <- dat[dat$Site == i & dat$Quad == j &
                               dat$Year == k & dat$Species == l,]
             ## get the buffered data for this site/quad/year/species combo
             datOneBuff <- datBuff[datBuff$Site == i & datBuff$Quad == j &
@@ -241,25 +241,25 @@ if (method == 'count') {
 
             ## calculate the neighborhood for each genet
             ## get a matrix of which polygons overlap each other
-            overlapM <- sf::st_intersects(datOneBuff, datOneSp, sparse= FALSE)
+            overlapM <- sf::st_intersects(datOneBuff, datOneSpp, sparse= FALSE)
             ## make the diagonal of the matrix FALSE, because a genet can't
             # overlap with itself
             diag(overlapM) <- FALSE
             ## make a list such that the list element is the row index in
             # datOneBuff of the focal indvidual, and the values in each element
-            # are the row indices of the polygons in datOneSp that overlap with
+            # are the row indices of the polygons in datOneSpp that overlap with
             # the focal individual
             overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
               c(which(x==TRUE)))
             if (length(overlapList) > 0) {
               ## get the number of genets that overlap w/ the focal buffer
-              datOneSp$neighbors <-  unlist(lapply(overlapList, length))
+              datOneSpp$neighbors <-  unlist(lapply(overlapList, length))
             } else {
-              datOneSp$neighbors <- 0
+              datOneSpp$neighbors <- 0
             }
             ## put the neighbor counts into the 'dat' data.frame
-            dat[match(datOneSp$index, dat$index),]$neighbors <-
-              datOneSp$neighbors
+            dat[match(datOneSpp$index, dat$index),]$neighbors <-
+              datOneSpp$neighbors
           }
         } else if (compType == 'allSpp') { ## calculating interspecific
           # neighborhood (don't need to subset by species)

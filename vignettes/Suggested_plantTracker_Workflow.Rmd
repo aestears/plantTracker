@@ -314,7 +314,7 @@ exampleDat <- grasslandData[grasslandData$Site == "AZ" &
 exampleDatIDsTemp <- exampleDat[exampleDat$Species == "Bouteloua rothrockii",]
 exampleDatIDsTemp <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area,7) %in% round(c( 0.0005471808, 0.0005321236),7),]
  
-exampleDatIDsTemp$ghost <- "observation from current year"
+exampleDatIDsTemp$ghost <- "polygon location in current year"
 exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .10)
 exampleBuffed$Year <- 1922
 exampleBuffed$ghost <- "10 cm buffer"
@@ -324,7 +324,9 @@ ghost <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) == 0.0005472,]
 ghost$Year <- 1923
 ghost$ghost <- "polygon location in previous year"
 exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNext )
-
+exampleDatIDs$labelsX <- c(0.8222548, 0.8988922, 0.8222548, 0.822329, 0.822329)
+exampleDatIDs$labelsY <- c(0.5771712, 0.6037035, 0.5771712, 0.5771496, 0.5771496)
+exampleDatIDs$label <- c("TrackID 1", "TrackID 1", "", "", "")
 
 ggplot(data = exampleDatIDs
        ) +
@@ -349,7 +351,8 @@ ggplot(data = exampleDatIDs
   scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
  scale_colour_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
   scale_alpha_discrete(range = c(0, 1, .5)) +
-  scale_linetype_manual(values=c("twodash", "solid", "dotted"))
+  scale_linetype_manual(values=c("twodash", "solid", "dotted")) +
+  geom_text(aes(x = labelsX+.04, y = labelsY + .025, label = label), size = 3)
 ```  
 
 ```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.3**: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
@@ -363,6 +366,10 @@ ghost <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,]
 ghost$Year <- 1923
 ghost$ghost <- "polygon location in previous year"
 exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNext )
+exampleDatIDs$labelsX <- c(0.8222548, 0.8988922, 0.8222548, 0.822329, 0.822329)
+exampleDatIDs$labelsY <- c(0.5771712, 0.6037035, 0.5771712, 0.5771496, 0.5771496)
+exampleDatIDs$label <- c("TrackID 1", "TrackID 2", "", "", "")
+
 
 
 ggplot(data = exampleDatIDs
@@ -388,7 +395,8 @@ ggplot(data = exampleDatIDs
   scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
  scale_colour_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
   scale_alpha_discrete(range = c(0, 1, .5)) +
-  scale_linetype_manual(values=c("twodash", "solid", "dotted"))
+  scale_linetype_manual(values=c("twodash", "solid", "dotted")) +
+  geom_text(aes(x = labelsX+.04, y = labelsY + .025, label = label), size = 3)
 ```  
 
 * `clonal` This is a Boolean argument (0 or 1) that indicates whether you want 
@@ -610,4 +618,45 @@ ggplot(datComp) +
 ## proportion of intraspecific competitors 0.002932075 / 0.06455732 = 0.04541816
 ```
 
-Here are the arguments 
+Here are the required arguments to `getNeighbors()`: 
+
+* `dat` This is an sf data.frame where each row is spatial data for a unique 
+genet in a given year. The function expects a data.frame that has been returned 
+from the `trackSpp()` function including the argument `aggregateByGenet = TRUE`. 
+However, any sf data.frame where each row represents a unique genet in a given 
+year can be used. If your data.frame is not aggregated by genet (some genets are
+represented by multiple rows of data in one year), then you can use the 
+`aggregateByGenet()` function to condense the data.frame so that each row is a 
+unique genet/year combo. The `dat` argument must contain a columns that have 
+data indicating the species, quadrat, year, site, and sf geometry of each 
+location (as described in section 1.1). It also must contain a column that has a 
+unique identifying value for each genet/year combo. This column is called 
+'trackID' in the return of `trackSpp()`. 
+
+* `buff` This is a numeric value that indicates the width of the buffer around 
+the focal individual within which you want to calculate the competition metric. 
+An example of this 'buffer' is shown in figure 3.1. Make sure this argument is 
+in the same units as the spatial data in `dat`. 
+
+* `method` This argument is a character value that equals either 'area' or 
+'count', and indicates which method you want to use to calculate the competition 
+metric. If `method = area`, then `getNeighbors()` populates the 'neighbors' 
+column of the output with the proportion of the neighborhood buffer that is 
+occupied by competitors. If `method = count`, then `getNeighbors()` populations 
+the 'neighbors' column with an integer indicating the number of competitors 
+inside the neighborhood buffer. 
+
+* `compType` This argument is a character value that equals either 'allSpp' or 
+'oneSpp'. If `compType = allSpp` then the function calculates an interspecific 
+competition metric. This is the default of this function. If 
+`compType = oneSpp`, then the function calculates an intraspecific competition 
+metric. 
+
+* `species/site/quad/year/geometry/trackID`: These arguments only need to be 
+included if the columns in 'dat' that contain the data for species, site, 
+quadrat, year, geometry, and 'trackID' of each observation are *different* from 
+the names "Species", "Site", "Quad", "Year, "geometry", and "trackID".  For 
+example, if the column in your version of 'dat' that contains the species 
+identity of each observation is called 'species_names', then the argument 
+`species = "species_names"` must be included in your call to `getNeighbors()`. 
+

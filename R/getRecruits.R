@@ -1,6 +1,6 @@
 #' Calculates the number of recruits of each species per year in each quadrat
 #'
-#' @param dat a data.frame that contains
+#' @param dat
 #' @param species
 #' @param quad
 #' @param site

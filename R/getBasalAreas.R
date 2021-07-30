@@ -1,31 +1,26 @@
-#' Calculates the number of recruits of each species per year in each quadrat
+#' Title
 #'
-#' @param dat a data.frame that contains
+#' @param dat
 #' @param species
 #' @param quad
 #' @param site
 #' @param year
-#' @param trackID
-#' @param recruit
-#' @param byGenet
+#' @param geometry
 #'
 #' @return
 #' @export
 #'
 #' @examples
-getRecruits <- function(dat,
-                        species = "Species",
-                        quad = "Quad",
-                        site = "Site",
-                        year = "Year",
-                        trackID = "trackID",
-                        recruit = "recruit",
-                        byGenet = TRUE
-) {
+getBasalAreas <- function(dat,
+                     species = "Species",
+                     quad = "Quad",
+                     site = "Site",
+                     year = "Year",
+                     geometry = "geometry") {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
   newNames <- list("species" = species, "site" = site, "quad" = quad,
-                   "year" = year, "trackID" = trackID)
+                   "year" = year, geometry = "geometry")
 
   ## check that each arg. is a character vector
   if (sum(sapply(newNames, is.character)) != 5) { ## if there is one or more
@@ -57,8 +52,7 @@ spelling errors, or make sure that you have included values for these arguments 
   ## make a vector of 'user names'
   usrNames <- unlist(newNames)
   ## make a vector of 'default names'
-  defaultNames <- c("Species", "Site", "Quad", "Year",
-                    "trackID")
+  defaultNames <- c( "Species", "Site", "Quad", "Year", "geometry")
 
   ## replace the user-provided names in 'dat' with the default names
   names(dat)[match(usrNames, names(dat))] <- defaultNames
@@ -67,8 +61,15 @@ spelling errors, or make sure that you have included values for these arguments 
   ## check the 'dat' argument (with default names)
 
   ## does 'dat' contain sf data?
-  if (sum(class(dat) %in% "sf") > 0) { ## if there IS sf data, then drop it
-    dat <- st_drop_geometry(dat)
+  if (sum(class(dat) %in% "sf") > 0) { ## if there IS sf data
+    if (sum(!st_is(x = dat, type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
+      ## if the sf data are not polygon or multipolygon ...
+      stop("The sf data in 'dat' must be of either class POLYGON
+           or MULTIPOLYGON")
+    }
+  } else { ## error if 'dat' does not have sf data
+    stop("The 'dat' data.frame must contain sf spatial data for each
+         observation.")
   }
 
   ## check the Species column
@@ -108,83 +109,51 @@ spelling errors, or make sure that you have included values for these arguments 
          'Quad'.")
   }
 
-  ## check the 'trackID' column
-  if (is.null(dat$trackID) == FALSE) {## does the 'trackID' column exist?
-    if (sum(is.na(dat$trackID)) != 0) {
-      stop("The 'trackID' column must not have any 'NA's.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'trackID'.")
-  }
-
-  ## check the 'recruit' column
-  if (is.null(dat$recruit) == FALSE) {## does the 'recruit' column exist?
-    if (nrow(dat[is.na(dat$recruit) |
-                 dat$recruit == 1 |
-                 dat$recruit == 0,]) != nrow(dat)
-    ) { ## the values must be either NA, 1, or 0
-      stop("The 'recruit' can only have values of NA, 1, or 0")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'recruit'.")
-  }
-
-  ## check the 'byGenet' argument
-  if (is.null(byGenet) == FALSE) { ## if the 'byGenet' arg exists
-    if (is.logical(byGenet) == FALSE) { ## if the arg isn't logical
-      stop("The 'byGenet' argument must be either TRUE or FALSE. TRUE means that
-      you want to count recruits so that each genet counts as one recruit.
-      FALSE means that you want to count recruits so that each ramet counts
-      as one recruit.")
-    }
-  } else { ## if the 'byGenet' arg doesn't exist
-    stop("The function call must include a 'byGenet' argument that is either
-         TRUE or FALSE.")
+  ## check the 'geometry' column
+  if (is.null(dat$geometry) == TRUE) { ## does the 'geometry' column exist?
+    stop("The 'dat' data.frame must contain values in the column
+         labeled 'geometry'")
   }
 
   # work --------------------------------------------------------------------
-  ## subset 'dat' to only get the individuals that are recruits
-  datRecs <- dat[dat$recruit == 1 & is.na(dat$recruit) == FALSE,]
 
   ## drop all of the columns except those that you'll need for this fxn
-  names(datRecs)
-  datRecs <- datRecs[,
-                     c("Site", "Quad", "Species", "trackID", "Year", "recruit")]
+  dat <- dat[,c("Site", "Quad", "Species", "Year", "geometry")]
 
-  if (byGenet == TRUE) {
-    if (nrow(unique(datRecs[,c("Year","trackID")])) != nrow(datRecs) ) { ## if
-      # the number of year/trackID combos is not the same as the number of rows
-      # in 'datRecs', then 'datRecs' needs to be aggregated by genet
-      ## make sure that each genet has only one row in each year
-      datRecs<- aggregate(x = datRecs[,c('recruit')],
-                          by = list("Site" = datRecs$Site,
-                                    "Quad" = datRecs$Quad,
-                                    "Species" = datRecs$Species,
-                                    "trackID" = datRecs$trackID,
-                                    "Year" = datRecs$Year),
-                          FUN = sum)
-      ## the output will make some values >1, so change them back to 1
-      names(datRecs)[6] <- "recruit"
-      datRecs[datRecs$recruits > 1,"recruit"] <- 1
-    }
-  }
-
-  ## count the number of recruits in each year/species/quad/site combo
-  datRecruits <- aggregate(x = datRecs[,c("recruit")], by = list(
-    Year = datRecs$Year,
-    Species = datRecs$Species,
-    Quad = datRecs$Quad,
-    Site = datRecs$Site
+  ## sum the area in each year/species/quad/site combo
+  datArea<- aggregate(x = st_area(dat), by = list(
+    Year = dat$Year,
+    Species = dat$Species,
+    Quad = dat$Quad,
+    Site = dat$Site
   ),
-  FUN = length)
+  FUN = sum)
 
-  names(datRecruits)[which(names(datRecruits) == "x")] <- "recruits"
+  ## rename the 'x' column to the correct value
+  names(datArea)[which(names(datArea) == "x")] <- "absolute_basal_area"
 
   ## reorder the names of columns
-  datRecruits <- datRecruits[,c("Site", "Quad", "Species", "Year", "recruits")]
+  datArea <- datArea[,c("Site", "Quad", "Species", "Year", "absolute_basal_area")]
 
+  ## calculate the percent of total basal area in that year
+  # (the basal area of species A / basal area of quadrat occupied by any plants)
+  ## get the total plant area by site/quad/year
+  quadBasalArea <- aggregate(x = datArea$absolute_basal_area,
+            by = list(
+              Year = datArea$Year,
+              Quad = datArea$Quad,
+              Site = datArea$Site
+            ),
+            FUN = sum)
+
+  names(quadBasalArea)[which(names(quadBasalArea) == 'x')] <- "percent_total_basal_area"
+
+  datArea<- merge(x = datArea, y = quadBasalArea,
+                  by = c("Site","Quad","Year"))
+
+  ## calculate percentBasalArea
+  datArea$percentBasalArea <- (datArea$absolute_basal_area /
+                                      datArea$quad_basal_area)*100
 
   ## revert the names of the output data.frame to the names that the user input
   ## re-name the appropriate columns in the output data.frame with the
@@ -192,9 +161,9 @@ spelling errors, or make sure that you have included values for these arguments 
   ## from above, user-provided names are stored in 'usrNames'
   defaultNames <- defaultNames[1:4]
   ## reset the names for the columns that we changed to 'default' values
-  names(datRecruits)[match(defaultNames, names(datRecruits))] <-
+  names(datArea)[match(defaultNames, names(datArea))] <-
     usrNames[1:4]
 
   # output ------------------------------------------------------------------
-  return(datRecruits)
+  return(datArea)
 }

@@ -1,13 +1,57 @@
-#' Title
+#' Calculates basal area for each species in a quadrat
 #'
-#' @param dat
-#' @param species
-#' @param quad
-#' @param site
-#' @param year
-#' @param geometry
+#' @description This function calculates the total basal area for each species
+#' present in a quadrat for each year of data collection. Both the absolute
+#' basal area (in the same units of area as the input data.frame) is returned,
+#' as well as the percentage of the total occupied basal area in the quadrat
+#' that is occupied by a given species ("percent total basal area").
 #'
-#' @return
+#' @param dat An sf data.frame in which each row represents a unique polygon
+#' (either a genet or a ramet) in a unique site/quadrat/year combination. A
+#' data.frame returned by \code{\link{trackSpp}} can be put into this function
+#' after being subset by quadrat. However, it is not necessary for 'dat' to have
+#' demographic data or unique identifiers (i.e. 'trackID's) assigned. dat' must
+#' have columns that contain a unique identification for each research site
+#' (default name is "Site"), species name (default name is "Species"), quadrat
+#' identifier (default name is "Quad"), year of data collection (default name is
+#' "Year"), and an s.f 'geometry' column that contains a polygon or multipolygon
+#' data type for each individual observation.
+#' @param species An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains species name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Species" (default value is 'Species').
+#' @param quad An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains quadrat name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Quad" (default is 'Quad').
+#' @param site An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains site name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Site" (default value is 'Site').
+#' @param year An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains data for year of sampling. It
+#' is unnecessary to include a value for this argument if the column name is
+#' "Year" (default is 'Year').
+#' @param geometry An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains sf geometry data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "geometry" (default is 'geometry').
+#'
+#' @import sf
+#' @return [getBasalAreas()] returns a data.frame with the colums "Site",
+#' "Quad", "Year" and "Species". No two rows will have the same values for all
+#' four of these columns. The column "absolute_basalArea" has the area of the
+#' quadrat that is occupied by a species in a given unique site/quadrat/year
+#' combination. This is in the same units as the area for area in 'dat'.
+#' "quad_basalArea" gives the combined basal area of all plants in a given
+#' site/quadrat/year. "percent_basalArea" gives the percentage of occupied basal
+#' area within a quadrat that is occupied by each species in a given
+#' site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
+#' quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
+#' quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44% of the
+#' occupied basal area in quadrat 1 in 2005 is occupied by species A
+#' ("percent_basalArea" = 44).
+#'
 #' @export
 #'
 #' @examples
@@ -62,7 +106,7 @@ spelling errors, or make sure that you have included values for these arguments 
 
   ## does 'dat' contain sf data?
   if (sum(class(dat) %in% "sf") > 0) { ## if there IS sf data
-    if (sum(!st_is(x = dat, type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
+    if (sum(!sf::st_is(x = dat, type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
       ## if the sf data are not polygon or multipolygon ...
       stop("The sf data in 'dat' must be of either class POLYGON
            or MULTIPOLYGON")
@@ -121,7 +165,7 @@ spelling errors, or make sure that you have included values for these arguments 
   dat <- dat[,c("Site", "Quad", "Species", "Year", "geometry")]
 
   ## sum the area in each year/species/quad/site combo
-  datArea<- aggregate(x = st_area(dat), by = list(
+  datArea <- aggregate(x = sf::st_area(dat), by = list(
     Year = dat$Year,
     Species = dat$Species,
     Quad = dat$Quad,
@@ -130,15 +174,15 @@ spelling errors, or make sure that you have included values for these arguments 
   FUN = sum)
 
   ## rename the 'x' column to the correct value
-  names(datArea)[which(names(datArea) == "x")] <- "absolute_basal_area"
+  names(datArea)[which(names(datArea) == "x")] <- "absolute_basalArea"
 
   ## reorder the names of columns
-  datArea <- datArea[,c("Site", "Quad", "Species", "Year", "absolute_basal_area")]
+  datArea <- datArea[,c("Site", "Quad", "Species", "Year", "absolute_basalArea")]
 
   ## calculate the percent of total basal area in that year
   # (the basal area of species A / basal area of quadrat occupied by any plants)
   ## get the total plant area by site/quad/year
-  quadBasalArea <- aggregate(x = datArea$absolute_basal_area,
+  quadBasalArea <- aggregate(x = datArea$absolute_basalArea,
             by = list(
               Year = datArea$Year,
               Quad = datArea$Quad,
@@ -146,14 +190,14 @@ spelling errors, or make sure that you have included values for these arguments 
             ),
             FUN = sum)
 
-  names(quadBasalArea)[which(names(quadBasalArea) == 'x')] <- "percent_total_basal_area"
+  names(quadBasalArea)[which(names(quadBasalArea) == 'x')] <- "quad_basalArea"
 
   datArea<- merge(x = datArea, y = quadBasalArea,
                   by = c("Site","Quad","Year"))
 
   ## calculate percentBasalArea
-  datArea$percentBasalArea <- (datArea$absolute_basal_area /
-                                      datArea$quad_basal_area)*100
+  datArea$percent_basalArea <- (datArea$absolute_basalArea /
+                                      datArea$quad_basalArea)*100
 
   ## revert the names of the output data.frame to the names that the user input
   ## re-name the appropriate columns in the output data.frame with the

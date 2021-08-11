@@ -1,7 +1,7 @@
 #' Create maps of a quadrat over time
 #'
 #' @description This function creates maps of a quadrat over time, color-coded
-#' by either species or by genet.
+#' by either species or by genet (trackID).
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. It is
@@ -55,7 +55,6 @@
 #' genet identfier).
 #' @export
 #'
-#' @examples
 
 drawQuadMap <- function (dat,
                          type = "bySpecies",
@@ -430,7 +429,3 @@ drawQuadMap <- function (dat,
     )
   }
 }
-# test --------------------------------------------------------------------
-
-# dat <- dat[dat$Site == "CO" &
-#            dat$Quad == "unun_11",]

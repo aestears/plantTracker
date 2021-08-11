@@ -1,26 +1,36 @@
 #' Calculates the number of recruits of each species per year in each quadrat
 #'
-#' @param dat
+#' @description
+#'
+#' @param dat An sf data.frame in which each row represents a unique polygon
+#' (either a genet or a ramet) in a unique site/quadrat/year combination. A
+#' data.frame returned by \code{\link{trackSpp}} can be put directly into this
+#' function. dat' must have columns that contain a unique identification for
+#' each research site (default name is "Site"), species name (default name is
+#' "Species"), quadrat identifier (default name is "Quad"), year of data
+#' collection (default name is "Year"), , a unique identifier for each genet
+#' (default name is 'trackID'), and an s.f 'geometry' column that contains a
+#' polygon or multipolygon data type for each individual observation.
+#' @param byGenet A logical argument. [TRUE] indicates that a new genet will be considered as only one recruit, even if it consists of multiple ramets. [FALSE] indicates that each new ramet will be considered as a new recruit.
 #' @param species
 #' @param quad
 #' @param site
 #' @param year
 #' @param trackID
 #' @param recruit
-#' @param byGenet
 #'
 #' @return
 #' @export
 #'
 #' @examples
 getRecruits <- function(dat,
+                        byGenet = TRUE,
                         species = "Species",
                         quad = "Quad",
                         site = "Site",
                         year = "Year",
                         trackID = "trackID",
-                        recruit = "recruit",
-                        byGenet = TRUE
+                        recruit = "recruit"
 ) {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)

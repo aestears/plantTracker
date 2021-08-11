@@ -196,8 +196,8 @@ that give the name of the columns in 'dat' that contain these data types." ))
   ## if there *is* a 'type_USER' argument, then include this!
   if (sum(names(dat) == "Type_USER") == 1) {
     ## aggregate the 'dat' argument by trackID
-    datOut <- aggregate(x = dat[,c('basalArea_genet', 'age', 'recruit',
-                                   'survives_tplus1', 'size_tplus1', 'nearEdge')],
+    ## sum the appropriate columns
+    datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
                         by = list("Site" = dat$Site,
                                   "Quad" = dat$Quad,
                                   "Species" = dat$Species,
@@ -205,18 +205,50 @@ that give the name of the columns in 'dat' that contain these data types." ))
                                   "Year" = dat$Year,
                                   "type" = dat$Type_USER),
                         do_union = TRUE,
-                        FUN = mean)
+                        FUN = sum)
+    ## rename the 'basalArea_ramet' column
+    names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
+    ## correct the 'age column'
+    dat <- st_drop_geometry(dat)
+    datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                      'size_tplus1', 'nearEdge')],
+                          by = list("Site" = dat$Site,
+                                    "Quad" = dat$Quad,
+                                    "Species" = dat$Species,
+                                    "trackID" = dat$trackID,
+                                    "Year" = dat$Year,
+                                    "type" = dat$Type_USER),
+                          FUN = mean
+                          )
+    ## join the data.frames together
+    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year", "type"))
+
   } else {
     ## aggregate the 'dat' argument by trackID
-    datOut <- aggregate(x = dat[,c('basalArea_genet', 'age', 'recruit',
-                                   'survives_tplus1', 'size_tplus1', 'nearEdge')],
-                        by = list("Site" = dat$Site,
-                                  "Quad" = dat$Quad,
-                                  "Species" = dat$Species,
-                                  "trackID" = dat$trackID,
-                                  "Year" = dat$Year),
-                        do_union = TRUE,
-                        FUN = mean)
+    ## sum the appropriate columns
+    datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
+                          by = list("Site" = dat$Site,
+                                    "Quad" = dat$Quad,
+                                    "Species" = dat$Species,
+                                    "trackID" = dat$trackID,
+                                    "Year" = dat$Year),
+                          do_union = TRUE,
+                          FUN = sum)
+    ## rename the 'basalArea_ramet' column
+    names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
+    ## correct the 'age column'
+    dat <- st_drop_geometry(dat)
+    datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                      'size_tplus1', 'nearEdge')],
+                          by = list("Site" = dat$Site,
+                                    "Quad" = dat$Quad,
+                                    "Species" = dat$Species,
+                                    "trackID" = dat$trackID,
+                                    "Year" = dat$Year),
+                          FUN = mean
+    )
+    ## join the data.frames together
+    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year", "type"))
   }
 
   ## fix the 'nearEdge' mean issue--is averaged to a numeric value, not logical
@@ -224,6 +256,8 @@ that give the name of the columns in 'dat' that contain these data types." ))
   # others aren't.
   datOut[datOut$nearEdge > 0, 'nearEdge'] <- 1
   datOut$nearEdge <- as.logical(datOut$nearEdge)
+
+  ## fix the 'recruit' column--can't have a value that
 
   ## change the column names back to what were present in 'dat'
   ## reset the names for the columns that we changed to 'default' values

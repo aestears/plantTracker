@@ -2,12 +2,12 @@
 % Please edit documentation in R/drawQuadMap.R
 \name{drawQuadMap}
 \alias{drawQuadMap}
-\title{Create maps of quadrats over time, color-coded either by species or
-by trackID}
+\title{Create maps of a quadrat over time}
 \usage{
 drawQuadMap(
   dat,
-  type = "Species",
+  type = "bySpecies",
+  addBuffer = FALSE,
   species = "Species",
   site = "Site",
   quad = "Quad",
@@ -17,12 +17,66 @@ drawQuadMap(
 )
 }
 \arguments{
-\item{trackID}{}
+\item{dat}{An sf data.frame in which each row represents a unique polygon
+(either a genet or a ramet) in a unique site/quadrat/year combination. It is
+recommended that you only input data for one quadrat at a time. A data.frame
+returned by \code{\link{trackSpp}} can be put into this function after being
+subset by quadrat. 'dat' must have columns that contain a unique
+identification for each research site (default name is "Site"), species name
+(default name is "Species"), quadrat identifier (default name is "Quad"),
+year of data collection (default name is "Year"), a unique identifier for
+each genet (default name is 'trackID') and an s.f 'geometry' column that
+contains a polygon or multipolygon data type for each individual observation.}
+
+\item{type}{A character argument indicating how the plots returned by
+\code{\link[=drawQuadMap]{drawQuadMap()}} will be color coded. If \link{type = "bySpecies"}, then each
+species is drawn with a unique color. If \link{type = "bytrackID"}, then each
+trackID is drawn with a unique color. The default value is "bySpecies".}
+
+\item{addBuffer}{A logical argument indicating whether the \code{\link[=drawQuadMap]{drawQuadMap()}}
+will draw a small buffer around each polygon in the returned maps to make the
+observations more visible. This is particularly useful for observations that
+were originally mapped as points, which are hard to see when plotted in their
+original dimensions. The buffer distance is 1/20th of the quadrat width. The
+default value is \link{FALSE}.}
+
+\item{species}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains species name data. It is
+unnecessary to include a value for this argument if the column name is
+"Species" (default value is 'Species').}
+
+\item{site}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains site name data. It is
+unnecessary to include a value for this argument if the column name is
+"Site" (default value is 'Site').}
+
+\item{quad}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains quadrat name data. It is
+unnecessary to include a value for this argument if the column name is
+"Quad" (default is 'Quad').}
+
+\item{year}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains data for year of sampling. It
+is unnecessary to include a value for this argument if the column name is
+"Year" (default is 'Year').}
+
+\item{geometry}{An optional character string argument. Indicates
+the name of the column in 'dat' that contains sf geometry data. It is
+unnecessary to include a value for this argument if the column name is
+"geometry" (default is 'geometry').}
+
+\item{trackID}{An optional character string argument. Indicates the name of
+the column in 'dat' that contains unique identfiers for each genet. It is
+unnecessary to include a value for this argument if the column name is
+"trackID" (default is 'trackID')}
 }
 \value{
-
+This funtion returns a multipanel plot where each panel shows a map
+of the quadrat in a unique year. Panels are arranged in chronological order,
+and plots are color-coded either by species or trackID (unique
+genet identfier).
 }
 \description{
-Create maps of quadrats over time, color-coded either by species or
-by trackID
+This function creates maps of a quadrat over time, color-coded
+by either species or by genet (trackID).
 }

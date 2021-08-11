@@ -8,14 +8,14 @@
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
-#' data.frame returned by \code{\link{trackSpp}} can be put into this function
-#' after being subset by quadrat. However, it is not necessary for 'dat' to have
-#' demographic data or unique identifiers (i.e. 'trackID's) assigned. dat' must
-#' have columns that contain a unique identification for each research site
-#' (default name is "Site"), species name (default name is "Species"), quadrat
-#' identifier (default name is "Quad"), year of data collection (default name is
-#' "Year"), and an s.f 'geometry' column that contains a polygon or multipolygon
-#' data type for each individual observation.
+#' data.frame returned by \code{\link{trackSpp}} can be put directly into this
+#' function. However, it is not necessary for 'dat' to have demographic data or
+#' unique identifiers (i.e. 'trackID's) assigned. 'dat' must have columns that
+#' contain a unique identification for each research site (default name is
+#' "Site"), species name (default name is "Species"), quadrat identifier
+#' (default name is "Quad"), year of data collection (default name is "Year"),
+#' and an s.f 'geometry' column that contains a polygon or multipolygon data
+#' type for each individual observation.
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is

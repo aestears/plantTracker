@@ -615,3 +615,31 @@ return(trackSppOut)
 # working correctly  (i.e. a random NA in a column, character for dorm, etc.)
 
 ###AES maybe also try to practice on larger subset of data.frame
+
+# ## testing using COBP data
+# load("/Users/Alice/Dropbox/Grad School/Research/Oenothera coloradensis project/Processed_Data/spatial_COBP.RData")
+#
+## add necessary columns
+butterfly$Species <- "Oenothera coloradensis"
+## make a quadrat inventory
+cobpInv <- list("C4" = c(2018:2020),
+                "C5" = c(2018:2020),
+                "C8" = c(2018:2020),
+                "D10" = c(2018:2020),
+                "D11" = c(2018:2020),
+                "D7" = c(2018:2020),
+                "S1" = c(2018:2020),
+                "S2" = c(2018:2020),
+                "S3" = c(2018:2020),
+                "S4" = c(2018:2020),
+                "S5" = c(2018:2020),
+                "S6" = c(2018:2020),
+                "S7" = c(2018:2020),
+                "S8" = c(2018:2020),
+                "S9" = c(2018:2020),
+                "U3" = c(2018:2020),
+                "U4" = c(2018:2020),
+                "U6" = c(2018:2020)
+              )
+
+test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .05, buffGenet = .05, clonal = 0, site = "Location", quad = "Plot_ID", aggregateByGenet = FALSE)

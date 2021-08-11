@@ -83,14 +83,14 @@
 
   ## work -------------------------------------------------------------------
   ## add columns to the 'dat' dataset needed for output from assign()
-  dat$trackID <- NA
-  dat$age <- NA
-  dat$size_tplus1 <- NA
-  dat$recruit <- NA
-  dat$survives_tplus1 <- NA
-  dat$ghost <- NA
-  dat$basalArea_genet <- NA
-  dat$genetID <- NA
+  dat$trackID <- as.character(NA)
+  dat$age <- as.integer(NA)
+  dat$size_tplus1 <- as.numeric(NA)
+  dat$recruit <- as.integer(NA)
+  dat$survives_tplus1 <- as.integer(NA)
+  dat$ghost <- as.integer(NA)
+  dat$basalArea_genet <- as.numeric(NA)
+  dat$genetID <- as.character(NA)
   ## if not already present, create a column called 'basalArea_ramet' in 'dat'
   if (sum(dat$basalArea_ramet) == 0) {
     dat$basalArea_ramet <-  st_area(dat)
@@ -562,9 +562,8 @@
             ## add the'age'column from the appropriate parents (+1), joined by
             # trackID
             children$age <- tempParents[match(children$trackID,
-                                              tempParents$trackIDtemp),"age"]
-
-          }
+                                              tempParents$trackIDtemp),]$age
+            }
 
           ## PARENTS
           ## ASSIGN DEMOGRAPHIC DATA FOR PARENTS
@@ -637,7 +636,7 @@
             # year 'i' is 'dead'
             deadGhosts <- tempCurrentYear[!(tempCurrentYear$trackID %in%
                                               tempNextYear$trackID),]
-            if(nrow(deadGhosts) > 0) { ## make sure there are deadGhosts
+            if (nrow(deadGhosts) > 0) { ## make sure there are deadGhosts
               ## give the dead ghosts a '0' for survival
               deadGhosts$survives_tplus1 <- 0
             }

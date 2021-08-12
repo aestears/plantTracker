@@ -220,7 +220,7 @@
       ## need to get the sf data.frame of the 'next' year (year 'i')
       tempNextYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
 
-      if (nrow(tempNextYear)>0 ) { ## if there is data in the
+      if (nrow(tempNextYear)>0) { ## if there is data in the
         # tempNextYear d.f (and clonal arg. is true), then assign genetIDs
         tempNextYear <- ifClonal(cloneDat = tempNextYear,
                                          clonal = clonal,
@@ -568,7 +568,7 @@
           ## PARENTS
           ## ASSIGN DEMOGRAPHIC DATA FOR PARENTS
           ## make sure that there is actually a parents data.frame
-          if (nrow(parents)>0) {
+          if (nrow(parents) > 0) {
             ## PARENTS ('parents' data.frame + 'deadGhosts' data.frame)
             ## give the 'parents' a '1' for survival
             parents[,"survives_tplus1"] <- 1
@@ -581,11 +581,11 @@
             names(childSizeTemp) <- c("trackIDtemp", "size_tplus1")
             ## join size_tplus data to 'parents' data.frame
             parents$size_tplus1 <- childSizeTemp[match(parents$trackID,
-                                      childSizeTemp$trackIDtemp),"size_tplus1"]
+                                      childSizeTemp$trackIDtemp),]$size_tplus1
           }
 
           ## ONLY ALLOW GHOSTS IF DORMANCY > 1
-          if (dorm>0) {
+          if (dorm > 0) {
             ## GHOSTS: parent polygons that don't have 'children' in year i. If
             # they were observed in a year that is more than dorm+1 years prior
             # to year i, then they don't get saved to the next year. If they

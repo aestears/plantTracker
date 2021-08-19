@@ -3,7 +3,8 @@
 #' This dataset indicates years in which sampling was conducted for each of the
 #' eight quadrats included in the \code{\link{grasslandData}} example dataset.
 #'
-#' @format A list with 8 items, each of which is a quadrat included in the grasslandData dataset.
+#' @format A list with 8 items, each of which is a quadrat included in the
+#' grasslandData dataset.
 #' \describe{
 #'   \item{ungz_5a}{An integer vector indicating the years in which quadrat
 #'   ungz_5a was mapped.}

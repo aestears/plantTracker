@@ -11,13 +11,34 @@
 #' collection (default name is "Year"), , a unique identifier for each genet
 #' (default name is 'trackID'), and an s.f 'geometry' column that contains a
 #' polygon or multipolygon data type for each individual observation.
-#' @param byGenet A logical argument. [TRUE] indicates that a new genet will be considered as only one recruit, even if it consists of multiple ramets. [FALSE] indicates that each new ramet will be considered as a new recruit.
-#' @param species
-#' @param quad
-#' @param site
-#' @param year
-#' @param trackID
-#' @param recruit
+#' @param byGenet A logical argument. `TRUE` indicates that a new genet will be
+#' considered as only one recruit, even if it consists of multiple ramets.
+#' `FALSE` indicates that each new ramet will be considered as a new recruit,
+#' even if other ramets of the same genet were present in previous years.
+#' @param species An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains species name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Species" (default value is 'Species').
+#' @param quad An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains quadrat name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Quad" (default is 'Quad').
+#' @param site An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains site name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Site" (default value is 'Site').
+#' @param year An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains data for year of sampling. It
+#' is unnecessary to include a value for this argument if the column name is
+#' "Year" (default is 'Year').
+#' @param trackID An optional character string argument. Indicates the name of
+#' the column in 'dat' that contains unique identfiers for each genet. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "trackID" (default is 'trackID')
+#' @param recruit An optional character string argument. Indicates the name of
+#' the column in 'dat' that contains information indicating whether or not this
+#' row represnets data for a recruit. It is unnecessary to include a value for
+#' this argument if the column name is "recruit" (default is "recruit").
 #'
 #' @return
 #' @export
@@ -44,9 +65,9 @@ getRecruits <- function(dat,
     badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
                      "'", collapse = ", and ")
 
-    stop(paste0("The argument(s) ", badArgs, " must each contain a single character
-string that gives the name(s) of the column(s) in 'dat' that contain the data
-for ", badArgs))
+    stop(paste0("The argument(s) ", badArgs, " must each contain a single
+    character string that gives the name(s) of the column(s) in 'dat' that
+    contain the data for ", badArgs))
 
   } else { ## if each of the elements of 'newNames' is a character vector
     ## make sure that each of the elements of newNames is present as a column
@@ -56,10 +77,12 @@ for ", badArgs))
       badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
                                                       names(dat))],"'",
                           collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column
-names in 'dat'. These arguments must be character vectors that give the name(s)
-of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for
-spelling errors, or make sure that you have included values for these arguments that give the name of the columns in 'dat' that contain these data types." ))
+      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
+      column names in 'dat'. These arguments must be character vectors that give
+      the name(s) of the column(s) in 'dat' that contain the data for ",
+      badBadArgs, ". Check for spelling errors, or make sure that you have
+      included values for these arguments that give the name of the columns in
+      'dat' that contain these data types." ))
     }
   }
 

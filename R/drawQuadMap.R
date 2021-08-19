@@ -14,15 +14,15 @@
 #' each genet (default name is 'trackID') and an s.f 'geometry' column that
 #' contains a polygon or multipolygon data type for each individual observation.
 #' @param type A character argument indicating how the plots returned by
-#' [drawQuadMap()] will be color coded. If [type = "bySpecies"], then each
-#' species is drawn with a unique color. If [type = "bytrackID"], then each
+#' `drawQuadMap()` will be color coded. If `type = "bySpecies"`, then each
+#' species is drawn with a unique color. If `type = "bytrackID"`, then each
 #' trackID is drawn with a unique color. The default value is "bySpecies".
-#' @param addBuffer A logical argument indicating whether the [drawQuadMap()]
+#' @param addBuffer A logical argument indicating whether the `drawQuadMap()`
 #' will draw a small buffer around each polygon in the returned maps to make the
 #' observations more visible. This is particularly useful for observations that
 #' were originally mapped as points, which are hard to see when plotted in their
 #' original dimensions. The buffer distance is 1/20th of the quadrat width. The
-#' default value is [FALSE].
+#' default value is `FALSE`.
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
@@ -66,7 +66,7 @@ drawQuadMap <- function (dat,
                          geometry = "geometry",
                          trackID = "trackID") {
 
-# argument checks ---------------------------------------------------------
+  # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
   newNames <- list("species" = species, "site" = site, "quad" = quad,
                    "year" = year, geometry = "geometry")
@@ -93,9 +93,9 @@ drawQuadMap <- function (dat,
       stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
       column names in 'dat'. These arguments must be character vectors that give
       the name(s) of the column(s) in 'dat' that contain the data for ",
-      badBadArgs, ". Check for spelling errors, or make sure that you have
-      included values for these arguments that give the name of the columns in
-      'dat' that contain these data types." ))
+                  badBadArgs, ". Check for spelling errors, or make sure that
+                  you have included values for these arguments that give the
+                  name of the columns in 'dat' that contain these data types."))
     }
   }
 
@@ -115,7 +115,7 @@ drawQuadMap <- function (dat,
       stop("'type' must have either the value 'bySpecies' or 'bytrackID'")
     }
   } else {
-  stop("'type' must be a single character argument with either the value
+    stop("'type' must be a single character argument with either the value
        'bySpecies' or 'bytrackID'.")
   }
 
@@ -209,7 +209,7 @@ drawQuadMap <- function (dat,
          independently on each quadrat's data.")
   }
 
-# work --------------------------------------------------------------------
+  # work --------------------------------------------------------------------
 
   ## get the boundary box dimensions
   quadBox <- sf::st_bbox(dat)
@@ -235,7 +235,8 @@ drawQuadMap <- function (dat,
                                             palette = "viridis"),
                            ## get color odes for alpha = .5 colors
                            colBuff = hcl.colors(n = length(unique(dat$Species)),
-                                            palette = "viridis", alpha = .5))
+                                                palette = "viridis",
+                                                alpha = .5))
     ## add to the 'dat' data.frame
     dat$col <-
       colorDat$col[match(x = dat$Species, table = unique(dat$Species))]
@@ -269,7 +270,8 @@ drawQuadMap <- function (dat,
         )
       }
     } else if (addBuffer == TRUE) {
-      ## calculate the buffer (based on the units of the data) -- 1/20th of the quadrat width
+      ## calculate the buffer (based on the units of the data) -- 1/20th of the
+      # quadrat width
       buffDist <- (quadBox$xmax)/20
       ## buffer the 'dat' data
       datBuff <- sf::st_buffer(x = dat, dist = buffDist)
@@ -283,7 +285,7 @@ drawQuadMap <- function (dat,
              main = paste(unique(datBuffTemp$Year)),
              xlim = c(quadBox$xmin, quadBox$xmax),
              ylim = c(quadBox$ymin, quadBox$ymax)
-             )
+        )
         plot(
           datTemp$geometry,
           col = datTemp$col,
@@ -335,14 +337,16 @@ drawQuadMap <- function (dat,
                                             palette = "viridis"),
                            ## get color odes for alpha = .5 colors
                            colBuff = hcl.colors(n = length(unique(dat$trackID)),
-                                                palette = "viridis", alpha = .5))
+                                                palette = "viridis",
+                                                alpha = .5))
     ## add to the 'dat' data.frame
     dat$col <-
       colorDat$col[match(x = dat$trackID, table = unique(dat$trackID))]
     dat$colBuff <-
       colorDat$colBuff[match(x = dat$trackID, table = unique(dat$trackID))]
     ## make the plots
-    if (addBuffer == TRUE) {## calculate the buffer (based on the units of the data) -- 1/20th of the quadrat width
+    if (addBuffer == TRUE) {## calculate the buffer (based on the units of the
+      # data) -- 1/20th of the quadrat width
       buffDist <- (quadBox$xmax)/20
       ## buffer the 'dat' data
       datBuff <- sf::st_buffer(x = dat, dist = buffDist)

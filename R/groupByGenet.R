@@ -49,23 +49,23 @@ groupByGenet <-  function(dat, buffGenet,...){
   ## argument checks ---------------------------------------------------
   ## check the 'dat' argument
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
-    # 'POLYGON' or 'MULTIPOLYGON'?)
-    if (sum(!st_is(dat, c("POLYGON", "MULTIPOLYGON"))) == 0) {
-      ## is the name of the sf column containing data called 'geometry'?
-      if (sum(names(dat) == "geometry") == 1) {
-        ## does the 'geometry' column contain sf data?
-        if (sum(!st_is(dat$geometry, c("POLYGON", "MULTIPOLYGON"))) != 0) {
-          stop("The 'dat' data.frame must contain the spatial data in the column
+  # 'POLYGON' or 'MULTIPOLYGON'?)
+  if (sum(!st_is(dat, c("POLYGON", "MULTIPOLYGON"))) == 0) {
+    ## is the name of the sf column containing data called 'geometry'?
+    if (sum(names(dat) == "geometry") == 1) {
+      ## does the 'geometry' column contain sf data?
+      if (sum(!st_is(dat$geometry, c("POLYGON", "MULTIPOLYGON"))) != 0) {
+        stop("The 'dat' data.frame must contain the spatial data in the column
                called 'geometry'")
-        }
-      } else {
-        stop("The 'dat' data.frame must have its 'sf' data in a column called
-             'geometry.'")
       }
-    } else { ## if 'dat' is not in the correct sf format
-      stop("'dat' is not in correct sf format.
-         sfc must be POLYGON or MULTIPOLYGON")
+    } else {
+      stop("The 'dat' data.frame must have its 'sf' data in a column called
+             'geometry.'")
     }
+  } else { ## if 'dat' is not in the correct sf format
+    stop("'dat' is not in correct sf format.
+         sfc must be POLYGON or MULTIPOLYGON")
+  }
 
   ## if there is a column for 'species,' it must contain data for only one
   # species
@@ -125,7 +125,7 @@ groupByGenet <-  function(dat, buffGenet,...){
   i <- rep(1:length(overlaps), lengths(overlaps))
   j <- factor(unlist(overlaps))
   tab <- Matrix::sparseMatrix(i = i, j = as.integer(j), x = TRUE,
-                             dimnames = list(NULL, levels(j)))
+                              dimnames = list(NULL, levels(j)))
 
   connects <- Matrix::tcrossprod(tab, boolArith = TRUE)
   group <- igraph::clusters(igraph::graph_from_adjacency_matrix(
@@ -150,6 +150,6 @@ groupByGenet <-  function(dat, buffGenet,...){
     }
   }
   ## output -----------------------------------------------------------
- return(groupID)
+  return(groupID)
 }
 

@@ -39,7 +39,8 @@ If compType = 'allSpp', then a competition metric is calculated that
 considers all individuals around the focal individual, regardless of species
 (interspecific competition). If compType = 'oneSpp', then a competition
 metric is calculated that considers only individuals in the buffer area
-that are the same species as the focal individual (intraspecific competition).}
+that are the same species as the focal individual (intraspecific
+competition).}
 
 \item{trackID}{An optional character string argument. Indicates the name of
 the column in 'dat' that contains a value that uniquely identifies each

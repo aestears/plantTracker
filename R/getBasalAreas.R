@@ -56,11 +56,11 @@
 #'
 #' @examples
 getBasalAreas <- function(dat,
-                     species = "Species",
-                     quad = "Quad",
-                     site = "Site",
-                     year = "Year",
-                     geometry = "geometry") {
+                          species = "Species",
+                          quad = "Quad",
+                          site = "Site",
+                          year = "Year",
+                          geometry = "geometry") {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
   newNames <- list("species" = species, "site" = site, "quad" = quad,
@@ -73,9 +73,9 @@ getBasalAreas <- function(dat,
     badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
                      "'", collapse = ", and ")
 
-    stop(paste0("The argument(s) ", badArgs, " must each contain a single character
-string that gives the name(s) of the column(s) in 'dat' that contain the data
-for ", badArgs))
+    stop(paste0("The argument(s) ", badArgs, " must each contain a single
+    character string that gives the name(s) of the column(s) in 'dat' that
+    contain the data for ", badArgs))
 
   } else { ## if each of the elements of 'newNames' is a character vector
     ## make sure that each of the elements of newNames is present as a column
@@ -85,10 +85,12 @@ for ", badArgs))
       badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
                                                       names(dat))],"'",
                           collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not column
-names in 'dat'. These arguments must be character vectors that give the name(s)
-of the column(s) in 'dat' that contain the data for ", badBadArgs, ". Check for
-spelling errors, or make sure that you have included values for these arguments that give the name of the columns in 'dat' that contain these data types." ))
+      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
+      column names in 'dat'. These arguments must be character vectors that give
+      the name(s) of the column(s) in 'dat' that contain the data for ",
+      badBadArgs, ". Check for spelling errors, or make sure that you have
+      included values for these arguments that give the name of the columns in
+      'dat' that contain these data types." ))
     }
   }
 
@@ -177,18 +179,19 @@ spelling errors, or make sure that you have included values for these arguments 
   names(datArea)[which(names(datArea) == "x")] <- "absolute_basalArea"
 
   ## reorder the names of columns
-  datArea <- datArea[,c("Site", "Quad", "Species", "Year", "absolute_basalArea")]
+  datArea <- datArea[,c("Site", "Quad", "Species", "Year",
+                        "absolute_basalArea")]
 
   ## calculate the percent of total basal area in that year
   # (the basal area of species A / basal area of quadrat occupied by any plants)
   ## get the total plant area by site/quad/year
   quadBasalArea <- aggregate(x = datArea$absolute_basalArea,
-            by = list(
-              Year = datArea$Year,
-              Quad = datArea$Quad,
-              Site = datArea$Site
-            ),
-            FUN = sum)
+                             by = list(
+                               Year = datArea$Year,
+                               Quad = datArea$Quad,
+                               Site = datArea$Site
+                             ),
+                             FUN = sum)
 
   names(quadBasalArea)[which(names(quadBasalArea) == 'x')] <- "quad_basalArea"
 
@@ -197,7 +200,7 @@ spelling errors, or make sure that you have included values for these arguments 
 
   ## calculate percentBasalArea
   datArea$percent_basalArea <- (datArea$absolute_basalArea /
-                                      datArea$quad_basalArea)*100
+                                  datArea$quad_basalArea)*100
 
   ## revert the names of the output data.frame to the names that the user input
   ## re-name the appropriate columns in the output data.frame with the

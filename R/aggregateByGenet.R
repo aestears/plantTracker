@@ -207,7 +207,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                         do_union = TRUE,
                         FUN = sum)
     ## rename the 'basalArea_ramet' column
-    names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
+    names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
     ## correct the 'age column'
     dat <- st_drop_geometry(dat)
     datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
@@ -235,7 +235,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                           do_union = TRUE,
                           FUN = sum)
     ## rename the 'basalArea_ramet' column
-    names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
+    names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
     ## correct the 'age column'
     dat <- st_drop_geometry(dat)
     datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
@@ -248,7 +248,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                           FUN = mean
     )
     ## join the data.frames together
-    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year", "type"))
+    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year"))
   }
 
   ## fix the 'nearEdge' mean issue--is averaged to a numeric value, not logical

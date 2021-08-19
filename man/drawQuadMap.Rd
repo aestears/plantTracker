@@ -29,16 +29,16 @@ each genet (default name is 'trackID') and an s.f 'geometry' column that
 contains a polygon or multipolygon data type for each individual observation.}
 
 \item{type}{A character argument indicating how the plots returned by
-\code{\link[=drawQuadMap]{drawQuadMap()}} will be color coded. If \link{type = "bySpecies"}, then each
-species is drawn with a unique color. If \link{type = "bytrackID"}, then each
+\code{drawQuadMap()} will be color coded. If \code{type = "bySpecies"}, then each
+species is drawn with a unique color. If \code{type = "bytrackID"}, then each
 trackID is drawn with a unique color. The default value is "bySpecies".}
 
-\item{addBuffer}{A logical argument indicating whether the \code{\link[=drawQuadMap]{drawQuadMap()}}
+\item{addBuffer}{A logical argument indicating whether the \code{drawQuadMap()}
 will draw a small buffer around each polygon in the returned maps to make the
 observations more visible. This is particularly useful for observations that
 were originally mapped as points, which are hard to see when plotted in their
 original dimensions. The buffer distance is 1/20th of the quadrat width. The
-default value is \link{FALSE}.}
+default value is \code{FALSE}.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is

@@ -44,18 +44,18 @@
 #' unnecessary to include a value for this argument if the column name is
 #' "geometry" (default is 'geometry').
 #' @param trackID An optional character string argument. Indicates the name of
-#' the column in 'dat' that contains unique identfiers for each genet. It is
+#' the column in 'dat' that contains unique identifiers for each genet. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "trackID" (default is 'trackID')
 #'
 #' @import sf
-#' @importFrom grDevices, hcl.colors
-#' @importFrom graphics, legend, lines, par
+#' @importFrom grDevices hcl.colors
+#' @importFrom graphics legend lines par
 #'
-#' @return This funtion returns a multipanel plot where each panel shows a map
+#' @return This function returns a multipanel plot where each panel shows a map
 #' of the quadrat in a unique year. Panels are arranged in chronological order,
 #' and plots are color-coded either by species or trackID (unique
-#' genet identfier).
+#' genet identifier).
 #' @export
 #' @examples
 #' dat <- grasslandData[grasslandData$Site == "CO" &

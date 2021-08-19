@@ -10,7 +10,7 @@
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
 #' data.frame returned by \code{\link{trackSpp}} can be put directly into this
 #' function. However, it is not necessary for 'dat' to have demographic data or
-#' unique identifiers (i.e. 'trackID's) assigned. 'dat' must have columns that
+#' unique identifiers (i.e. 'trackIDs') assigned. 'dat' must have columns that
 #' contain a unique identification for each research site (default name is
 #' "Site"), species name (default name is "Species"), quadrat identifier
 #' (default name is "Quad"), year of data collection (default name is "Year"),
@@ -38,7 +38,7 @@
 #' "geometry" (default is 'geometry').
 #'
 #' @import sf
-#' @return [getBasalAreas()] returns a data.frame with the colums "Site",
+#' @return [getBasalAreas()] returns a data.frame with the columns "Site",
 #' "Quad", "Year" and "Species". No two rows will have the same values for all
 #' four of these columns. The column "absolute_basalArea" has the area of the
 #' quadrat that is occupied by a species in a given unique site/quadrat/year

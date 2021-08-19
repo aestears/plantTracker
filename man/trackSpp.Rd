@@ -151,7 +151,7 @@ and growth.
 }
 \details{
 This function is a wrapper function that applies the \code{\link{assign}}
-function accross multiple species, quadrats, or sites. For each species and
+function across multiple species, quadrats, or sites. For each species and
 quadrat, \code{\link[=trackSpp]{trackSpp()}} loads a spatially referenced data.frame ('dat'), and
 then uses the \code{\link{groupByGenet}} function to assign genetIDs to
 polygons (if 'clonal' = 1) such that polygons that form the same genet have

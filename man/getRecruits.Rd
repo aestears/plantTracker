@@ -52,13 +52,13 @@ is unnecessary to include a value for this argument if the column name is
 "Year" (default is 'Year').}
 
 \item{trackID}{An optional character string argument. Indicates the name of
-the column in 'dat' that contains unique identfiers for each genet. It is
+the column in 'dat' that contains unique identifiers for each genet. It is
 unnecessary to include a value for this argument if the column name is
 "trackID" (default is 'trackID')}
 
 \item{recruit}{An optional character string argument. Indicates the name of
 the column in 'dat' that contains information indicating whether or not this
-row represnets data for a recruit. It is unnecessary to include a value for
+row represents data for a recruit. It is unnecessary to include a value for
 this argument if the column name is "recruit" (default is "recruit").}
 }
 \value{
@@ -72,7 +72,7 @@ contain a column indicating whether each observation is classified as a
 recruit or not. This recruit status can be generated from the
 \code{\link{trackSpp}} function in \code{PlantTracker}, or can be information that
 was collected in the field. This function includes an option that determines
-whether each ramet of a clonal species is considered an indivdiual recruit,
+whether each ramet of a clonal species is considered an individual recruit,
 or if the entire genet is considered a single recruit.
 }
 \examples{

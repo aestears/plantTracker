@@ -18,7 +18,7 @@ getBasalAreas(
 (either a genet or a ramet) in a unique site/quadrat/year combination. A
 data.frame returned by \code{\link{trackSpp}} can be put directly into this
 function. However, it is not necessary for 'dat' to have demographic data or
-unique identifiers (i.e. 'trackID's) assigned. 'dat' must have columns that
+unique identifiers (i.e. 'trackIDs') assigned. 'dat' must have columns that
 contain a unique identification for each research site (default name is
 "Site"), species name (default name is "Species"), quadrat identifier
 (default name is "Quad"), year of data collection (default name is "Year"),
@@ -51,7 +51,7 @@ unnecessary to include a value for this argument if the column name is
 "geometry" (default is 'geometry').}
 }
 \value{
-\code{\link[=getBasalAreas]{getBasalAreas()}} returns a data.frame with the colums "Site",
+\code{\link[=getBasalAreas]{getBasalAreas()}} returns a data.frame with the columns "Site",
 "Quad", "Year" and "Species". No two rows will have the same values for all
 four of these columns. The column "absolute_basalArea" has the area of the
 quadrat that is occupied by a species in a given unique site/quadrat/year
@@ -71,4 +71,22 @@ present in a quadrat for each year of data collection. Both the absolute
 basal area (in the same units of area as the input data.frame) is returned,
 as well as the percentage of the total occupied basal area in the quadrat
 that is occupied by a given species ("percent total basal area").
+}
+\examples{
+dat <- grasslandData[grasslandData$Site == "CO" &
+ grasslandData$Year \%in\% c(1998:2002),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+outDat <- trackSpp(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = data.frame("Species" = unique(dat$speciesName),
+ "clonal" = c(1,0)),
+ species = "speciesName",
+ aggregateByGenet = TRUE
+ )
+getBasalAreas(dat = outDat,
+species = "speciesName")
 }

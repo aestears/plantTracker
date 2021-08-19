@@ -80,3 +80,24 @@ genet identfier).
 This function creates maps of a quadrat over time, color-coded
 by either species or by genet (trackID).
 }
+\examples{
+dat <- grasslandData[grasslandData$Site == "CO" & grasslandData$Quad == "unun_11" &
+ grasslandData$Year \%in\% c(1998:2002),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+outDat <- trackSpp(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = data.frame("Species" = unique(dat$speciesName),
+ "clonal" = c(1,0)),
+ species = "speciesName",
+ aggregateByGenet = TRUE
+ )
+drawQuadMap(dat = outDat,
+type = "bySpecies",
+addBuffer = FALSE,
+species = "speciesName"
+)
+}

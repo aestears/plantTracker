@@ -1,6 +1,13 @@
 #' Calculates the number of recruits of each species per year in each quadrat
 #'
-#' @description
+#' @description This function calculates the number of new plant recruits of
+#' each species in each quadrat in each year. The input data must already
+#' contain a column indicating whether each observation is classified as a
+#' recruit or not. This recruit status can be generated from the
+#' \code{\link{trackSpp}} function in `PlantTracker`, or can be information that
+#' was collected in the field. This function includes an option that determines
+#' whether each ramet of a clonal species is considered an indivdiual recruit,
+#' or if the entire genet is considered a single recruit.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
@@ -40,10 +47,31 @@
 #' row represnets data for a recruit. It is unnecessary to include a value for
 #' this argument if the column name is "recruit" (default is "recruit").
 #'
-#' @return
+#' @return This function returns a table with columns for site, quadrat,
+#' species name, year, and number of recruits
+#'
 #' @export
 #'
 #' @examples
+#' dat <- grasslandData[grasslandData$Site == c("CO") &
+#'  grasslandData$Species %in% c("Bouteloua gracilis", "Lepidium densiflorum") &
+#'  grasslandData$Year %in% c(1998:2002),]
+#' names(dat)[1] <- "speciesName"
+#' inv <- grasslandInventory[unique(dat$Quad)]
+#' outDat <- trackSpp(dat = dat,
+#'  inv = inv,
+#'  dorm = 1,
+#'  buff = .05,
+#'  buffGenet = 0.005,
+#'  clonal = data.frame("Species" = unique(dat$speciesName),
+#'  "clonal" = c(1,0)),
+#'  species = "speciesName",
+#'  aggregateByGenet = TRUE
+#'  )
+#'  getRecruits(dat = outDat,
+#'  byGenet = TRUE,
+#'  species = "speciesName"
+#'  )
 getRecruits <- function(dat,
                         byGenet = TRUE,
                         species = "Species",
@@ -80,7 +108,8 @@ getRecruits <- function(dat,
       stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
       column names in 'dat'. These arguments must be character vectors that give
       the name(s) of the column(s) in 'dat' that contain the data for ",
-      badBadArgs, ". Check for spelling errors, or make sure that you have
+      badBadArgs, ".
+      Check for spelling errors, or make sure that you have
       included values for these arguments that give the name of the columns in
       'dat' that contain these data types." ))
     }

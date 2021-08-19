@@ -49,13 +49,35 @@
 #' "trackID" (default is 'trackID')
 #'
 #' @import sf
+#' @importFrom grDevices, hcl.colors
+#' @importFrom graphics, legend, lines, par
+#'
 #' @return This funtion returns a multipanel plot where each panel shows a map
 #' of the quadrat in a unique year. Panels are arranged in chronological order,
 #' and plots are color-coded either by species or trackID (unique
 #' genet identfier).
 #' @export
-#'
-
+#' @examples
+#' dat <- grasslandData[grasslandData$Site == "CO" &
+#'  grasslandData$Quad == "unun_11" &
+#'  grasslandData$Year %in% c(1998:2002),]
+#' names(dat)[1] <- "speciesName"
+#' inv <- grasslandInventory[unique(dat$Quad)]
+#' outDat <- trackSpp(dat = dat,
+#'  inv = inv,
+#'  dorm = 1,
+#'  buff = .05,
+#'  buffGenet = 0.005,
+#'  clonal = data.frame("Species" = unique(dat$speciesName),
+#'  "clonal" = c(1,0)),
+#'  species = "speciesName",
+#'  aggregateByGenet = TRUE
+#'  )
+#' drawQuadMap(dat = outDat,
+#' type = "bySpecies",
+#' addBuffer = FALSE,
+#' species = "speciesName"
+#' )
 drawQuadMap <- function (dat,
                          type = "bySpecies",
                          addBuffer = FALSE,
@@ -220,9 +242,9 @@ drawQuadMap <- function (dat,
   numRows <- ceiling(numYears/4)
 
   ## change the margins of the plots
-  par(mar = c(1,1,1,1))
+  graphics::par(mar = c(1,1,1,1))
   ## change the size of the plotting area
-  par(mfrow = c(4, numRows))
+  graphics::par(mfrow = c(numRows, 4))
 
   ## plot the quadrat maps
   ## (for 'Species' method)
@@ -231,10 +253,10 @@ drawQuadMap <- function (dat,
     ## make a data.frame with unique spp and colour data
     colorDat <- data.frame(Species = unique(dat$Species),
                            ## get color codes for full alpha colors
-                           col = hcl.colors(n = length(unique(dat$Species)),
+                           col = grDevices::hcl.colors(n = length(unique(dat$Species)),
                                             palette = "viridis"),
                            ## get color odes for alpha = .5 colors
-                           colBuff = hcl.colors(n = length(unique(dat$Species)),
+                           colBuff = grDevices::hcl.colors(n = length(unique(dat$Species)),
                                                 palette = "viridis",
                                                 alpha = .5))
     ## add to the 'dat' data.frame
@@ -252,19 +274,19 @@ drawQuadMap <- function (dat,
           xlim = c(quadBox$xmin, quadBox$xmax),
           ylim = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmin),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmax, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymin)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymax, quadBox$ymax)
         )
@@ -293,19 +315,19 @@ drawQuadMap <- function (dat,
           ylim = c(quadBox$ymin, quadBox$ymax),
           add = TRUE
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmin),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmax, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymin)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymax, quadBox$ymax)
         )
@@ -319,7 +341,7 @@ drawQuadMap <- function (dat,
       ylim = c(quadBox$ymin, quadBox$ymax),
       axes = FALSE
     )
-    legend(
+    graphics::legend(
       x = quadBox$xmin,
       y = quadBox$ymax,
       legend = unique(datTemp$Species),
@@ -333,10 +355,10 @@ drawQuadMap <- function (dat,
     ## make a data.frame with unique trackID and colour data
     colorDat <- data.frame(trackID = unique(dat$trackID),
                            ## get color codes for full alpha colors
-                           col = hcl.colors(n = length(unique(dat$trackID)),
+                           col = grDevices::hcl.colors(n = length(unique(dat$trackID)),
                                             palette = "viridis"),
                            ## get color odes for alpha = .5 colors
-                           colBuff = hcl.colors(n = length(unique(dat$trackID)),
+                           colBuff = grDevices::hcl.colors(n = length(unique(dat$trackID)),
                                                 palette = "viridis",
                                                 alpha = .5))
     ## add to the 'dat' data.frame
@@ -368,19 +390,19 @@ drawQuadMap <- function (dat,
           ylim = c(quadBox$ymin, quadBox$ymax),
           add = TRUE
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmin),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmax, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymin)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymax, quadBox$ymax)
         )
@@ -395,19 +417,19 @@ drawQuadMap <- function (dat,
           xlim = c(quadBox$xmin, quadBox$xmax),
           ylim = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmin),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmax, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymax)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymin, quadBox$ymin)
         )
-        lines(
+        graphics::lines(
           x = c(quadBox$xmin, quadBox$xmax),
           y = c(quadBox$ymax, quadBox$ymax)
         )
@@ -422,7 +444,7 @@ drawQuadMap <- function (dat,
       ylim = c(quadBox$ymin, quadBox$ymax),
       axes = FALSE
     )
-    legend(
+    graphics::legend(
       x = quadBox$xmin,
       y = quadBox$ymax,
       legend = unique(datTemp$trackID),

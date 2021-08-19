@@ -62,8 +62,37 @@ row represnets data for a recruit. It is unnecessary to include a value for
 this argument if the column name is "recruit" (default is "recruit").}
 }
 \value{
-
+This function returns a table with columns for site, quadrat,
+species name, year, and number of recruits
 }
 \description{
-
+This function calculates the number of new plant recruits of
+each species in each quadrat in each year. The input data must already
+contain a column indicating whether each observation is classified as a
+recruit or not. This recruit status can be generated from the
+\code{\link{trackSpp}} function in \code{PlantTracker}, or can be information that
+was collected in the field. This function includes an option that determines
+whether each ramet of a clonal species is considered an indivdiual recruit,
+or if the entire genet is considered a single recruit.
+}
+\examples{
+dat <- grasslandData[grasslandData$Site == c("CO") &
+ grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum") &
+ grasslandData$Year \%in\% c(1998:2002),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+outDat <- trackSpp(dat = dat,
+ inv = inv,
+ dorm = 1,
+ buff = .05,
+ buffGenet = 0.005,
+ clonal = data.frame("Species" = unique(dat$speciesName),
+ "clonal" = c(1,0)),
+ species = "speciesName",
+ aggregateByGenet = TRUE
+ )
+ getRecruits(dat = outDat,
+ byGenet = TRUE,
+ species = "speciesName"
+ )
 }

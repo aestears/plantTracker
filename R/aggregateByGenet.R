@@ -83,7 +83,8 @@ aggregateByGenet <-  function(dat,
 
 #dat ## an sf d.f that contains data returned from the 'trackSpp' function.
   ## check that 'dat' is an s.f data.frame
-  if (sum(!sf::st_is(x = st_geometry(dat), type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
+  if (sum(!sf::st_is(x = st_geometry(dat), type = c("POLYGON",
+                                                    "MULTIPOLYGON"))) != 0) {
 stop("The 'dat' argument must be an sf data.frame with only 'POLYGON' or
 'MULTIPOLYGON' geometries.")
   } else {
@@ -120,8 +121,10 @@ stop("The 'recruit' column in 'dat' must be a numeric vector with values of only
 1, 0, or NA.")
   }
   ## 'survives_tplus1'
-  if (is.numeric(dat$survives_tplus1) == FALSE | ## survives_tplus1 must be numeric
-      sum((dat$survives_tplus1 == 0 | dat$survives_tplus1 == 1 | is.na(dat$survives_tplus1))) !=
+  if (is.numeric(dat$survives_tplus1) == FALSE | ## survives_tplus1 must be
+      # numeric
+      sum((dat$survives_tplus1 == 0 | dat$survives_tplus1 == 1 |
+           is.na(dat$survives_tplus1))) !=
       nrow(dat)
       ## survives_tplus1 values must be 1/0/NA
   ) {
@@ -221,7 +224,8 @@ that give the name of the columns in 'dat' that contain these data types." ))
                           FUN = mean
                           )
     ## join the data.frames together
-    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year", "type"))
+    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                               "trackID", "Year", "type"))
 
   } else {
     ## aggregate the 'dat' argument by trackID
@@ -248,7 +252,8 @@ that give the name of the columns in 'dat' that contain these data types." ))
                           FUN = mean
     )
     ## join the data.frames together
-    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species", "trackID", "Year"))
+    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                               "trackID", "Year"))
   }
 
   ## fix the 'nearEdge' mean issue--is averaged to a numeric value, not logical

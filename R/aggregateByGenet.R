@@ -68,7 +68,7 @@
 #'  aggregateByGenet = FALSE
 #'  )
 #'
-#' finalDat <- aggregateByGenet(dat = outDat,
+#' aggregateByGenet(dat = outDat,
 #' species = 'speciesName')
 
 aggregateByGenet <-  function(dat,
@@ -262,13 +262,12 @@ that give the name of the columns in 'dat' that contain these data types." ))
   datOut[datOut$nearEdge > 0, 'nearEdge'] <- 1
   datOut$nearEdge <- as.logical(datOut$nearEdge)
 
-  ## fix the 'recruit' column--can't have a value that
-
+  datFinal <- datOut
   ## change the column names back to what were present in 'dat'
   ## reset the names for the columns that we changed to 'default' values
-  names(datOut)[match(defaultNames, names(datOut))] <-
+  names(datFinal)[match(defaultNames, names(datFinal))] <-
     usrNames
 # output ------------------------------------------------------------------
-return(datOut)
+return(datFinal)
   }
 

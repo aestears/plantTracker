@@ -557,7 +557,7 @@ values of either 0 or 1 for each species with no NAs.")
         print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
                      "value of 'NA' in the 'survives_tplus1' and 'size_tplus1'",
                      "columns because ", gapYears," is the last year of",
-                     "sampling in this quadrat before a gap that exceeds the",
+                     " sampling in this quadrat before a gap that exceeds the",
                      "'dorm' argument."))
       }
     }

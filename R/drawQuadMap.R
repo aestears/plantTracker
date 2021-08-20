@@ -47,6 +47,7 @@
 #' the column in 'dat' that contains unique identifiers for each genet. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "trackID" (default is 'trackID')
+#' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @import sf
 #' @importFrom grDevices hcl.colors
@@ -86,7 +87,8 @@ drawQuadMap <- function (dat,
                          quad = "Quad",
                          year = "Year",
                          geometry = "geometry",
-                         trackID = "trackID") {
+                         trackID = "trackID",
+                         ...) {
 
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)

@@ -36,6 +36,7 @@
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "geometry" (default is 'geometry').
+#' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @import sf
 #' @return [getBasalAreas()] returns a data.frame with the columns "Site",
@@ -76,7 +77,8 @@ getBasalAreas <- function(dat,
                           quad = "Quad",
                           site = "Site",
                           year = "Year",
-                          geometry = "geometry") {
+                          geometry = "geometry",
+                          ...) {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
   newNames <- list("species" = species, "site" = site, "quad" = quad,

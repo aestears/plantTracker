@@ -46,6 +46,7 @@
 #' the column in 'dat' that contains information indicating whether or not this
 #' row represents data for a recruit. It is unnecessary to include a value for
 #' this argument if the column name is "recruit" (default is "recruit").
+#' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return This function returns a table with columns for site, quadrat,
 #' species name, year, and number of recruits
@@ -79,7 +80,8 @@ getRecruits <- function(dat,
                         site = "Site",
                         year = "Year",
                         trackID = "trackID",
-                        recruit = "recruit"
+                        recruit = "recruit",
+                        ...
 ) {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)

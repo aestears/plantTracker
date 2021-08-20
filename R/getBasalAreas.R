@@ -16,6 +16,10 @@
 #' (default name is "Quad"), year of data collection (default name is "Year"),
 #' and an s.f 'geometry' column that contains a polygon or multipolygon data
 #' type for each individual observation.
+#' @param inv A named list. The name of each element of the list is a quadrat
+#' name in 'dat', and the contents of that list element is a numeric vector of
+#' all of the years in which that quadrat (or other unique spatial area) was
+#' sampled.
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
@@ -73,6 +77,7 @@
 #' getBasalAreas(dat = outDat,
 #' species = "speciesName")
 getBasalAreas <- function(dat,
+                          inv,
                           species = "Species",
                           quad = "Quad",
                           site = "Site",
@@ -81,108 +86,48 @@ getBasalAreas <- function(dat,
                           ...) {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
-  newNames <- list("species" = species, "site" = site, "quad" = quad,
-                   "year" = year, geometry = "geometry")
-
-  ## check that each arg. is a character vector
-  if (sum(sapply(newNames, is.character)) != 5) { ## if there is one or more
-    # elements of the newNames list that is not a character vector
-    ## find which elements are not character vectors
-    badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
-                     "'", collapse = ", and ")
-
-    stop(paste0("The argument(s) ", badArgs, " must each contain a single
-    character string that gives the name(s) of the column(s) in 'dat' that
-    contain the data for ", badArgs))
-
-  } else { ## if each of the elements of 'newNames' is a character vector
-    ## make sure that each of the elements of newNames is present as a column
-    # name in 'dat'
-    if (sum(unlist(newNames) %in% names(dat)) != 5) { ## if the column names of
-      # 'dat' do NOT match the values provided in 'newNames'
-      badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
-                                                      names(dat))],"'",
-                          collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
-      column names in 'dat'. These arguments must be character vectors that give
-      the name(s) of the column(s) in 'dat' that contain the data for ",
-      badBadArgs, ". Check for spelling errors, or make sure that you have
-      included values for these arguments that give the name of the columns in
-      'dat' that contain these data types." ))
-    }
-  }
-
-  ## re-assign the names of dat to the default column names
-  ## make a vector of 'user names'
-  usrNames <- unlist(newNames)
-  ## make a vector of 'default names'
-  defaultNames <- c( "Species", "Site", "Quad", "Year", "geometry")
-
-  ## replace the user-provided names in 'dat' with the default names
-  names(dat)[match(usrNames, names(dat))] <- defaultNames
-
-  ## proceed with remaining checks
-  ## check the 'dat' argument (with default names)
-
-  ## does 'dat' contain sf data?
-  if (sum(class(dat) %in% "sf") > 0) { ## if there IS sf data
-    if (sum(!sf::st_is(x = dat, type = c("POLYGON", "MULTIPOLYGON"))) != 0) {
-      ## if the sf data are not polygon or multipolygon ...
-      stop("The sf data in 'dat' must be of either class POLYGON
-           or MULTIPOLYGON")
-    }
-  } else { ## error if 'dat' does not have sf data
-    stop("The 'dat' data.frame must contain sf spatial data for each
-         observation.")
-  }
-
-  ## check the Species column
-  if (is.null(dat$Species) == FALSE) {
-    if (sum(is.na(dat$Species)) != 0 | ## cannot have 'NA' values for species
-        !is.character(dat$Species)  ## must be a character vector
-    ) {
-      stop("The 'Species' column must be a character column with no 'NA's.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'Species'."
-    )
-  }
-
-  ## check the 'Year' column
-  if (is.null(dat$Year) == FALSE) { ## does the 'Year' column exist?
-    if (sum(is.na(dat$Year)) != 0 | ## cannot have 'NA' values for Year
-        !is.integer(dat$Year) ## must be an integer vector
-    ) {
-      stop("The 'Year' column must be an integer column with no 'NA's.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-          'Year'.")
-  }
-
-  ## check the 'Quad' column
-  if (is.null(dat$Quad) == FALSE) { ## does the 'Quad' column exist?
-    if (sum(is.na(dat$Quad)) != 0 | ## cannot have 'NA' values for Quad
-        !is.character(dat$Quad) ## must be a character vector
-    ) {
-      stop("The 'Quad' column must be an character column with no 'NA's.")
-    }
-  } else {
-    stop("The 'dat' data.frame must contain values in the column labeled
-         'Quad'.")
-  }
-
-  ## check the 'geometry' column
-  if (is.null(dat$geometry) == TRUE) { ## does the 'geometry' column exist?
-    stop("The 'dat' data.frame must contain values in the column
-         labeled 'geometry'")
-  }
+  checked <- checkDat(dat = dat,
+           inv = inv,
+           species = species,
+           quad = quad,
+           site = site,
+           year = year,
+           geometry = geometry,
+           reformatDat = TRUE)
+  ## put the checked data into 'dat'
+  dat <- checked$dat
+  ## put the new names into 'usrNames'
+  usrNames <- checked$userColNames
+  ## put the checked inv into 'inv'
+  inv <- checked$inv
 
   # work --------------------------------------------------------------------
 
   ## drop all of the columns except those that you'll need for this fxn
   dat <- dat[,c("Site", "Quad", "Species", "Year", "geometry")]
+
+  ## compare the years of quadrat data against the years the quadrat was sampled
+  # so we make sure to assign 0 cover values when appropriate
+  ## get only the invs that we need for the quadrats present in 'datArea'
+  needInvs <- inv[unique(dat$Quad)]
+  ## reformat into a long format data.frame
+  needInvsDF <- data.frame(NULL)
+  for (i in names(needInvs)) {
+    temp <- data.frame("quadInv" = names(needInvs[i]),
+                       "yearInv" = needInvs[i])
+    names(temp) <- c("quadInv", "yearInv")
+    if (nrow(needInvsDF) == 0) {
+      needInvsDF <- temp
+    } else {
+      needInvsDF <- rbind(needInvsDF, temp)
+    }
+  }
+
+  ## add columns for Site and Species (get from 'dat')
+  tempInvDF <- merge(x = unique(
+    sf::st_drop_geometry(dat[,c("Site", "Quad", "Species")])),
+                y = needInvsDF, by.x = c("Quad"),
+                by.y = c("quadInv"), all = TRUE)
 
   ## sum the area in each year/species/quad/site combo
   datArea <- aggregate(x = sf::st_area(dat), by = list(
@@ -199,6 +144,18 @@ getBasalAreas <- function(dat,
   ## reorder the names of columns
   datArea <- datArea[,c("Site", "Quad", "Species", "Year",
                         "absolute_basalArea")]
+
+
+  ## join to the datArea data.frame to see if there are any years from the
+  # inventory that aren't present in datAreas
+  tempArea <- merge(x = datArea, y = tempInvDF,
+                by.x = c("Site", "Quad", "Species", "Year"),
+                by.y = c("Site","Quad","Species", "yearInv"),
+                all = TRUE)
+  ## put 0s where they are appropriate (i.e. in years when quad was sampled but
+  # no plants of that species were present)
+  tempArea[is.na(tempArea$absolute_basalArea),"absolute_basalArea"] <- 0
+  datArea <- tempArea
 
   ## calculate the percent of total basal area in that year
   # (the basal area of species A / basal area of quadrat occupied by any plants)
@@ -224,7 +181,7 @@ getBasalAreas <- function(dat,
   ## re-name the appropriate columns in the output data.frame with the
   # user-provided names of 'dat'
   ## from above, user-provided names are stored in 'usrNames'
-  defaultNames <- defaultNames[1:4]
+  defaultNames <- c("Species", "Site", "Quad", "Year")
   ## reset the names for the columns that we changed to 'default' values
   names(datArea)[match(defaultNames, names(datArea))] <-
     usrNames[1:4]

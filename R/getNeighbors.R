@@ -228,7 +228,21 @@ per year.")
                                  value = sf::st_intersection(
                                    sf::st_as_sfc(sf::st_bbox(dat)), datBuff))
 
+  ## set up the progress bar
+  progress_bar = txtProgressBar(min = 0,
+                                max = nrow(unique(
+                                  sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                                              "Year",
+                                                              "Species")]))),
+                                style = 1, char="=")
+
+  temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                             "Year", "Species")]))
+
+
   if (method == 'count') {
+    ## initiate the progress bar
+    print("Progress:")
     for (i in unique(dat$Site)) { ## loop through each site
       for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
         # quadrat
@@ -267,7 +281,15 @@ per year.")
               ## put the neighbor counts into the 'dat' data.frame
               dat[match(datOneSpp$index, dat$index),]$neighbors <-
                 datOneSpp$neighbors
+
+              ## get the counter value for the progress bar
+              m <- which(temp$Site == i & temp$Quad == j & temp$Species == l
+                         & temp$Year == k)
+              ## add to the progress bar
+              setTxtProgressBar(progress_bar, value = m)
             }
+            ## close the progress bar
+            close(progress_bar)
           } else if (compType == 'allSpp') { ## calculating interspecific
             # neighborhood (don't need to subset by species)
             ## get the data for this site/quad/year combo

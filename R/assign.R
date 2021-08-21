@@ -29,18 +29,20 @@
 #' @param buffGenet A numeric vector of length 1 that is greater than or equal
 #' to zero, indicating how close (in the same units as spatial values in 'dat')
 #' polygons must be to one another in the same year to be grouped as a genet
-#' (if 'clonal' argument = 1). This argument is passed to
+#' (if 'clonal' argument = TRUE). This argument is passed to
 #' the \code{\link{groupByGenet}} function, which is used inside the
 #' \code{\link{assign}} function.
-#' @param clonal A numeric Boolean vector of length 1, indicating whether this
+#' @param clonal A logical argument of length 1, indicating whether this
 #' species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
-#' can be grouped as one individual (genet)).
+#' can be grouped as one individual (genet)). If clonal = TRUE, the species is
+#' allowed to be clonal, and if clonal = FALSE, the species is not allowed to
+#' be clonal.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @seealso [trackSpp()], which is a wrapper for the [assign()] function that
 #' applies it over many species and quadrats. The [assign()] function uses the
 #' [groupByGenet()] function to group ramets into genets
-#' (if 'clonal' argument = 1).
+#' (if 'clonal' argument = TRUE).
 #'
 #' @import sf
 #' @importFrom stats aggregate reshape
@@ -62,7 +64,7 @@
     ## clonal = inherits from the 'clonal' argument in the 'assign()' fxn
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
     # is input into the PlantTracker::groupByGenet() fxn
-    if(clonal==1) {
+    if(clonal == TRUE) {
       cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
       tempCloneDat <- stats::aggregate(basalArea_ramet ~ genetID, sum, data = cloneDat)
@@ -72,8 +74,8 @@
                                                tempCloneDat$tempGenetID),
                                          "basalArea_genet"]
     }
-    ## assign unique genetIDs for every polygon (if clonal = 0)
-    else { #if(clonal==0) {
+    ## assign unique genetIDs for every polygon (if clonal = FALSE)
+    else { #if(clonal==FALSE) {
       cloneDat$genetID <- 1:nrow(cloneDat)
       cloneDat$basalArea_genet <- cloneDat$basalArea_ramet
     }
@@ -359,7 +361,7 @@
           ## end of 'else' that has steps if tempNextYear is empty
           } else { ## if the tempNextYear data DOES exist,
             # ((nrow(tempNextYear)>0)) proceed with the loop
-          ## AGGREGATE BY GENET for year i (if clonal = 1)
+          ## AGGREGATE BY GENET for year i (if clonal = TRUE)
           tempNextYear <- ifClonal(cloneDat = tempNextYear, clonal = clonal,
                                    buffGenet = buffGenet)
 

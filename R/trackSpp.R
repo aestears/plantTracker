@@ -109,6 +109,13 @@
 #' the data (each ramet gets a row). Note that if the value is TRUE, then some
 #' columns of the input data.frame 'dat' will be dropped. If you do not wish
 #' this to happen, then you can aggregate the data.frame to genet by hand.
+#' @param printMessages A logical argument that determines whether the this
+#' function returns messages about genet aggregation, as well as messages
+#' indicating which year is the last year of sampling in each quadrat and which
+#' year(s) come before a gap in sampling that exceeds the 'dorm' argument (and
+#' thus which years of data have an 'NA' for "survives_tplus1" and
+#' "size_tplus1"). If printMessages = TRUE (the default), then messages are
+#' printed. If printMessages = FALSE, then messages are not printed.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return An sf data.frame with the same columns as 'dat,' but with the
@@ -173,6 +180,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                      year = "Year",
                      geometry = "geometry",
                      aggregateByGenet = TRUE,
+                     printMessages = TRUE,
                      ...) {
   # argument checks ---------------------------------------------------------
   ## arguments
@@ -423,6 +431,11 @@ values of either FALSE or TRUE for each species with no NAs.")
     aggregateByGenet <- FALSE
   }
 
+  #check printMessages
+  if (!is.logical(printMessages)) {
+    stop("The 'printMessages' argument must be a logical value.")
+  }
+
 
   # work --------------------------------------------------------------------
   ## first, break the 'dat' d.f into two pieces, one with columns we need, and
@@ -450,10 +463,10 @@ values of either FALSE or TRUE for each species with no NAs.")
 
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
-    print(paste0("Site: ",i))
+    cat(paste0("Site: ",i, "\n"))
     ## get the quadrats w/in that site
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
-      print(paste0("-- Quadrat: ",j))
+      cat(paste0("-- Quadrat: ",j, "\n"))
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
         invQuad <- inv[[j]]
@@ -525,21 +538,23 @@ values of either FALSE or TRUE for each species with no NAs.")
       }
       ## notify user of last year of sampling (or last year of sampling before a
       # gap)
-      print(paste0("Note: Individuals in year ", max(invQuad)," have a value",
-                   "of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns",
-                   "because ",max(invQuad), " is the last year of sampling in",
-                   "this quadrat."))
-      ## find years that exceed the 'dorm' gap
-      invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
-      invComp$diff <- invComp$invNext - invComp$inv
-      gapYears <- invComp[invComp$diff>dorm &
-                            is.na(invComp$diff) == FALSE,"inv"]
-      if (length(gapYears) > 0) {
-        print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
-                     "value of 'NA' in the 'survives_tplus1' and 'size_tplus1'",
-                     "columns because ", gapYears," is the last year of",
-                     " sampling in this quadrat before a gap that exceeds the",
-                     "'dorm' argument."))
+      if (printMessages == TRUE) {
+        print(paste0("Note: Individuals in year ", max(invQuad)," have a value ",
+                     "of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns ",
+                     "because ",max(invQuad), " is the last year of sampling in ",
+                     "this quadrat."))
+        ## find years that exceed the 'dorm' gap
+        invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
+        invComp$diff <- invComp$invNext - invComp$inv
+        gapYears <- invComp[invComp$diff>dorm &
+                              is.na(invComp$diff) == FALSE,"inv"]
+        if (length(gapYears) > 0) {
+          print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
+                       "value of 'NA' in the 'survives_tplus1' and 'size_tplus1'",
+                       "columns because ", gapYears," is the last year of",
+                       " sampling in this quadrat before a gap that exceeds the",
+                       " 'dorm' argument."))
+        }
       }
     }
   }
@@ -555,12 +570,14 @@ values of either FALSE or TRUE for each species with no NAs.")
     ## aggregate demographic data by trackID/Quad/Year/Site/Species
     trackSppOut <- aggregateByGenet(dat = trackSppOut)
 
-    print(paste0("Note: The output data.frame from this function is shorter",
-    "than your input data.frame because demographic data has been aggregated",
-    "by genet. Because of this, some columns that were present in your",
-        "input data.frame may no longer be present. If you don't want the",
-          "output to be aggregated by genet, include the argument",
-          "'aggregateByGenet == FALSE' in your call to trackSpp()."))
+    if (printMessages == TRUE) {
+      print(paste0("Note: The output data.frame from this function is shorter",
+    " than your input data.frame because demographic data has been aggregated",
+    " by genet. Because of this, some columns that were present in your",
+    " input data.frame may no longer be present. If you don't want the",
+    " output to be aggregated by genet, include the argument",
+    " 'aggregateByGenet == FALSE' in your call to trackSpp()."))
+    }
   }
 
   ## re-name the appropriate columns in 'trackSppOut' data.frame with the
@@ -595,11 +612,11 @@ values of either FALSE or TRUE for each species with no NAs.")
 # buff <- .05
 # buffGenet <- 0.005
 # clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(1))
+#                      clonal = c(TRUE))
 #
 # testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
 #                     clonal = clonal , species = "Species_Name",
-#                     quad = "location")
+#                     quad = "location", printMessages = FALSE)
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

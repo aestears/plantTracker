@@ -4,7 +4,11 @@
 #' present in a quadrat for each year of data collection. Both the absolute
 #' basal area (in the same units of area as the input data.frame) is returned,
 #' as well as the percentage of the total occupied basal area in the quadrat
-#' that is occupied by a given species ("percent total basal area").
+#' that is occupied by a given species ("percent total basal area"). If you'd
+#' like to ultimately calculate the population growth rate (lambda) for each
+#' species, you can use the \code{\link{getLambda}} function directly, which
+#' takes raw species occurence data (like in 'dat' here) and returns lambda
+#' values for each species and quadrat.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
@@ -56,6 +60,10 @@
 #' quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44% of the
 #' occupied basal area in quadrat 1 in 2005 is occupied by species A
 #' ("percent_basalArea" = 44).
+#'
+#' @seealso [getLambda()], which uses this function to calculate basal areas and
+#' ultimately return population growth rates (lambdas) for each species in
+#' each quadrat.
 #'
 #' @export
 #'

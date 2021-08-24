@@ -279,7 +279,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
   if(missing(clonal)) {
     stop("The 'clonal' argument must have a value.")
   } else {
-    if (is.numeric(clonal) & length(clonal == 1)) { ## is the value of clonal a
+    if (is.logical(clonal) & length(clonal == 1)) { ## is the value of clonal a
       # single numeric vector?
       if (clonal != TRUE & clonal != FALSE | ## clonal must be either 0 or 1
           !is.logical(clonal) | ## clonal must be logical

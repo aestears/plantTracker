@@ -124,7 +124,7 @@ getNeighbors <- function (dat, buff, method,
   #trackID ## the name of the column that contains the 'trackID'
   # (unique genet identifier) data
 
-  # argument checks ---------------------------------------------------------
+   # argument checks ---------------------------------------------------------
   ## use the checkDat function to check the 'dat' function
   checkedDat <- checkDat(dat = dat, species = species, site = site, quad = quad,
                          year = year, geometry = geometry, reformatDat = TRUE)
@@ -229,16 +229,31 @@ per year.")
                                    sf::st_as_sfc(sf::st_bbox(dat)), datBuff))
 
   ## set up the progress bar
-  progress_bar = txtProgressBar(min = 0,
-                                max = nrow(unique(
-                                  sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                                              "Year",
-                                                              "Species")]))),
-                                style = 1, char="=")
+  if (method == 'count' & compType == 'oneSpp') {
+    progress_bar = txtProgressBar(min = 0,
+                                  max = nrow(unique(
+                                    sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                                                "Year",
+                                                                "Species")]))),
+                                  style = 1, char="=")
 
-  temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                             "Year", "Species")]))
+    temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                               "Year", "Species")]))
+    temp <- temp[order(temp$Site, temp$Quad, temp$Year),]
+    rownames(temp) <- 1:nrow(temp)
+  }
+  if (method == 'count' & compType == 'allSpp') {
+    progress_bar = txtProgressBar(min = 0,
+                                  max = nrow(unique(
+                                    sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                                                "Year")]))),
+                                  style = 1, char="=")
 
+    temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
+                                               "Year")]))
+    temp <- temp[order(temp$Site, temp$Quad, temp$Year),]
+    rownames(temp) <- 1:nrow(temp)
+  }
 
   if (method == 'count') {
     ## initiate the progress bar
@@ -288,8 +303,7 @@ per year.")
               ## add to the progress bar
               setTxtProgressBar(progress_bar, value = m)
             }
-            ## close the progress bar
-            close(progress_bar)
+
           } else if (compType == 'allSpp') { ## calculating interspecific
             # neighborhood (don't need to subset by species)
             ## get the data for this site/quad/year combo
@@ -322,10 +336,18 @@ per year.")
             ## put the neighbor counts into the 'dat' data.frame
             dat[match(datSpp$index, dat$index),]$neighbors <-
               datSpp$neighbors
+
+            ## get the counter value for the progress bar
+            m <- which(temp$Site == i & temp$Quad == j
+                       & temp$Year == k)
+            ## add to the progress bar
+            setTxtProgressBar(progress_bar, value = m)
           }
         }
       }
-    }
+      ## close the progress bar
+      close(progress_bar)
+      }
   } else if (method == "area") {
     ## get the overlapping polygon areas
     tempAreas <- suppressWarnings(
@@ -367,7 +389,7 @@ per year.")
                                 tempAreas$Year == tempAreas$Year.1,]
 
       ## now aggregate by focal genet (column name = 'trackID')
-      temp3 <- aggregate(tempAreas2$geometry,
+      temp3 <- aggregate_pb(x = tempAreas2$geometry,
                          by = list("Site" = tempAreas2$Site,
                                    "Quad" = tempAreas2$Quad,
                                    "Species" = tempAreas2$Species,
@@ -424,7 +446,7 @@ per year.")
 
 
 # testing -----------------------------------------------------------------
-#
+
 # dat <- grasslandData[grasslandData$Site == "CO" &
 #                     grasslandData$Quad == "ungz_5a",]
 # datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
@@ -432,7 +454,7 @@ per year.")
 #                   clonal = data.frame("Species" = c("Bouteloua gracilis",
 #                                                     "Agropyron smithii",
 #                                                     "Sphaeralcea coccinea"),
-#                   "clonal" = c(1,1,0)))
+#                   "clonal" = c(TRUE,TRUE,FALSE)))
 #
 # names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
 #

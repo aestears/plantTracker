@@ -693,23 +693,6 @@
       } ## end of 'if' statement that determines if gap between inv[i-1] and
       # inv[i] is less than or equal to  dorm+1
     } ## end of loop i
-
-    ## populate the 'nearEdge' column
-    ## make an empty column
-    assignOut$nearEdge <- FALSE
-    ## make a boundary box that is within the 'buff' argument of the actual quad
-    buffEdgeOutside <- st_as_sfc(st_bbox(assignOut))
-    buffEdgeInside <- st_as_sfc(st_bbox(assignOut) + c(buff, buff, -buff,
-                                                       -buff))
-    buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
-    ## find out which quads intersect with the buffered quad
-    assignOut[st_intersects(assignOut, buffEdge, sparse = FALSE),
-              "nearEdge"] <- TRUE
-
-    ## clean up output assignOuta.frame (remove NAs and unneeded columns)
-    assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
-                           !(names(assignOut) %in% c("ghost","genetID", "index",
-                                                     "sp_code_6"))]
   } else {
     ## if there are only observations in the last year of 'inv', then there
     # cannot be any demographic data assigned.
@@ -717,6 +700,22 @@
     tempCurrentYear[, c('size_tplus1', 'survives_tplus1')] <- NA
     assignOut <- tempCurrentYear
   }
+  ## populate the 'nearEdge' column
+  ## make an empty column
+  assignOut$nearEdge <- FALSE
+  ## make a boundary box that is within the 'buff' argument of the actual quad
+  buffEdgeOutside <- st_as_sfc(st_bbox(assignOut))
+  buffEdgeInside <- st_as_sfc(st_bbox(assignOut) + c(buff, buff, -buff,
+                                                     -buff))
+  buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
+  ## find out which quads intersect with the buffered quad
+  assignOut[st_intersects(assignOut, buffEdge, sparse = FALSE),
+            "nearEdge"] <- TRUE
+
+  ## clean up output assignOuta.frame (remove NAs and unneeded columns)
+  assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
+                         !(names(assignOut) %in% c("ghost","genetID", "index",
+                                                   "sp_code_6"))]
   ## output ---------------------------------------------------------------
 return(assignOut)
   }

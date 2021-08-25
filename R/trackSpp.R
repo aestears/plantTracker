@@ -546,12 +546,12 @@ values of either FALSE or TRUE for each species with no NAs.")
         ## find years that exceed the 'dorm' gap
         invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
         invComp$diff <- invComp$invNext - invComp$inv
-        gapYears <- invComp[invComp$diff>dorm &
+        gapYears <- invComp[invComp$diff > (dorm + 1) &
                               is.na(invComp$diff) == FALSE,"inv"]
         if (length(gapYears) > 0) {
           print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
-                       "value of 'NA' in the 'survives_tplus1' and 'size_tplus1'",
-                       "columns because ", gapYears," is the last year of",
+                       " value of 'NA' in the 'survives_tplus1' and",
+                       " 'size_tplus1'columns because ", gapYears," is the last year of",
                        " sampling in this quadrat before a gap that exceeds the",
                        " 'dorm' argument."))
         }

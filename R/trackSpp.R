@@ -453,10 +453,26 @@ values of either FALSE or TRUE for each species with no NAs.")
 
   ## get the 6-letter species code for each observation
   ## make a column in the d.f with the 6-letter species code for each row
-  dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
-    paste0(substr(toupper(x[1]), 1, 3), ## species name
-           substr(toupper(x[2]), 1, 3)) ## genus name
-  )
+  ## if the species column contains species name with a space
+  if (sum(grepl(pattern = "[[:space:]]",x = dat$Species)) > 0  ## does the
+      # species column contain a space? (is the length of the rows that contain
+      # a space greater than 0?)
+      ) {
+    dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
+      paste0(substr(toupper(x[1]), 1, 3), ## species name
+             substr(toupper(x[2]), 1, 3)) ## genus name
+    )
+  } else ## if the species column contains species name with an underscore
+    if (sum(grepl(pattern = "_",x = dat$Species)) > 0) {
+      dat$sp_code_6  <- sapply(strsplit(dat$Species, "_"), function(x)
+        paste0(substr(toupper(x[1]), 1, 3), ## species name
+               substr(toupper(x[2]), 1, 3)) ## genus name
+      )
+      } else {  ## if the species column contains some sort of code (i.e.
+        # uppercase letters), or something else...
+          # name alone in the sp_code_6 column
+          dat$sp_code_6 <- dat$Species
+        }
 
   ## get the basal area for each observation
   dat$basalArea_ramet <- st_area(dat)

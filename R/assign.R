@@ -708,7 +708,7 @@
   buffEdgeInside <- st_as_sfc(st_bbox(assignOut) + c(buff, buff, -buff,
                                                      -buff))
   buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
-  ## find out which quads intersect with the buffered quad
+  ## find out which polys intersect with the buffered quad
   assignOut[st_intersects(assignOut, buffEdge, sparse = FALSE),
             "nearEdge"] <- TRUE
 

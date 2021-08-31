@@ -73,6 +73,12 @@
 #'  byGenet = TRUE,
 #'  species = "speciesName"
 #'  )
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
 getRecruits <- function(dat,
                         byGenet = TRUE,
                         species = "Species",
@@ -82,7 +88,7 @@ getRecruits <- function(dat,
                         trackID = "trackID",
                         recruit = "recruit",
                         ...
-) {
+                       ) {
   # argument checks ---------------------------------------------------------
   ## check the 'dat' data.frame and the column names (change if needed)
   newNames <- list("species" = species, "site" = site, "quad" = quad,
@@ -94,7 +100,7 @@ getRecruits <- function(dat,
     ## find which elements are not character vectors
     badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
                      "'", collapse = ", and ")
-
+    
     stop(paste0("The argument(s) ", badArgs, " must each contain a single
     character string that gives the name(s) of the column(s) in 'dat' that
     contain the data for ", badArgs))
@@ -107,6 +113,7 @@ getRecruits <- function(dat,
       badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
                                                       names(dat))],"'",
                           collapse = ", and ")
+      
       stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
       column names in 'dat'. These arguments must be character vectors that give
       the name(s) of the column(s) in 'dat' that contain the data for ",
@@ -114,6 +121,7 @@ getRecruits <- function(dat,
       Check for spelling errors, or make sure that you have
       included values for these arguments that give the name of the columns in
       'dat' that contain these data types." ))
+
     }
   }
 

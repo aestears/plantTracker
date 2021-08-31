@@ -1,4 +1,5 @@
 # library(tidyverse)
+# library(sf)
 # ## CARBONO example ("doi_10.5061_dryad.51c59zw8n__v2")
 # ## get parent file name
 # tempWd <- "/Users/Alice/Downloads/doi_10.5061_dryad.51c59zw8n__v2"
@@ -71,14 +72,15 @@
 # #   theme_classic()
 #
 # ## get survival information
-# ## assing an arbitrary index to each row in 'butterfly'
+# ## assing an arbitrary index to each row in 'trees'
 # trees_sf$index <- 1:nrow(trees_sf)
+# trees_no_sf <- st_drop_geometry(trees_sf)
 # ## put an NA for survival
-# trees_sf$survs_tplus1_ACTUAL <- NA
+# trees_no_sf$survs_tplus1_ACTUAL <- NA
 # rm("datOut")
-# for (i in unique(trees_sf$plot)) {
+# for (i in unique(trees_no_sf$plot)) {
 #   ## get data just for one quad
-#   temp <- trees_sf[trees_sf$plot == i,]
+#   temp <- trees_no_sf[trees_no_sf$plot == i,]
 #   for (j in unique(temp$tree)) {
 #     ## get data just for one individual
 #     temp_1 <- temp[temp$tree == j, ]
@@ -99,7 +101,12 @@
 #     }
 #   }
 # }
+# ## fix survival for 2018 (is an 'NA' instead of a 0)
+# datOut[datOut$dia_year == 2018, 'survs_tplus1_ACTUAL'] <- NA
+# ## put the geometry data back into the 'trees_no_sf' data.frame
+# trees_sf <- left_join(x = trees_sf, y = datOut)
 #
+# ## get the correct inventory list
 # for (i in 1:length(plots$plot)) {
 #   if (i == 1) {
 #     inv <- list(1997:2018)
@@ -110,11 +117,27 @@
 # }
 #
 # ## try running the dataset through trackSpp
-# test <- trackSpp(dat = trees_sf, inv = inv, dorm = 0, buff = .1, clonal = FALSE,
-#                  species = "genspcode", quad = "plot", year = "dia_year")
+# test <- trackSpp(dat = trees_sf, inv = inv, dorm = 0, buff = .01, clonal = FALSE,
+#                  species = "genspcode", quad =
+#                    "plot", year = "dia_year")
 #
 # ## compare the actual to trackSpp data
 #
 # ## same number of individual trackIDs as unique plot_treeids?
-# length(unique(test$trackID))
+# ## make trackIDs include plot info
+# test$uniqueID <- paste0(test$plot,"_",test$trackID)
+# length(unique(test$uniqueID))
 # length(unique(test$plot_treeid))
+#
+# test$survDiff <- test$survives_tplus1 - test$survs_tplus1_ACTUAL
+#
+# testTest <- test[is.na(test$survDiff) == TRUE |
+#                    test$survDiff == 1 |
+#                    test$survDiff == (-1)
+#                    ,]
+#
+# testBad <- testTest[is.na(testTest$survs_tplus1_ACTUAL) == TRUE &
+#                        is.na(testTest$survives_tplus1) == TRUE
+#                        ,]
+# testTest <- testTest[!(testTest$index %in% testBad$index),]
+#

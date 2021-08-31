@@ -462,8 +462,7 @@ values of either FALSE or TRUE for each species with no NAs.")
       paste0(substr(toupper(x[1]), 1, 3), ## species name
              substr(toupper(x[2]), 1, 3)) ## genus name
     )
-  } else ## if the species column contains species name with an underscore
-    if (sum(grepl(pattern = "_",x = dat$Species)) > 0) {
+  } else if (sum(grepl(pattern = "_",x = dat$Species)) > 0) {
       dat$sp_code_6  <- sapply(strsplit(dat$Species, "_"), function(x)
         paste0(substr(toupper(x[1]), 1, 3), ## species name
                substr(toupper(x[2]), 1, 3)) ## genus name
@@ -537,9 +536,8 @@ values of either FALSE or TRUE for each species with no NAs.")
         ## if it does exist, then add datOut for the current spp. to the output
         if (exists("trackSppOut")==TRUE) {
           trackSppOut <- rbind(trackSppOut, datOut)
-        }
-        ## if not, then put datOut into trackSppOut b/c it is the first spp.
-        if (exists("trackSppOut")==FALSE) {
+        } else if (exists("trackSppOut")==FALSE) {
+          ## if not, then put datOut into trackSppOut b/c it is the first spp.
           trackSppOut <- datOut
         }
         ## print the name of the species that was just finished

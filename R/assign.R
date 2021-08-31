@@ -161,7 +161,7 @@
 
   ##  i = year in inventory
   if (inv[firstYearIndex] < max(inv)) {
-    for (i in (firstYearIndex+1):22) { #length(inv)) {
+    for (i in (firstYearIndex+1):length(inv)) {
       ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
       # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed
       # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
@@ -693,7 +693,7 @@
       } ## end of 'if' statement that determines if gap between inv[i-1] and
       # inv[i] is less than or equal to  dorm+1
     } ## end of loop i
-  } else {
+  } else if (inv[firstYearIndex] == max(inv)) {
     ## if there are only observations in the last year of 'inv', then there
     # cannot be any demographic data assigned.
     ## make sure there are 'NA's' in the appropriate columns

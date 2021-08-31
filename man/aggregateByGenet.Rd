@@ -87,7 +87,7 @@ outDat <- trackSpp(dat = dat,
  aggregateByGenet = FALSE
  )
 
-finalDat <- aggregateByGenet(dat = outDat,
+aggregateByGenet(dat = outDat,
 species = 'speciesName')
 }
 \seealso{

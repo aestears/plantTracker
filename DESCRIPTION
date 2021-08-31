@@ -19,7 +19,8 @@ Depends:
 Suggests: 
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    spelling
 Config/testthat/edition: 3
 Imports: 
     Matrix,
@@ -27,5 +28,8 @@ Imports:
     sf,
     methods,
     stats,
-    ggplot2
+    ggplot2,
+    graphics,
+    grDevices
 VignetteBuilder: knitr
+Language: en-US

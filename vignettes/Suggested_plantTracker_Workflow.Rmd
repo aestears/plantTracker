@@ -270,7 +270,7 @@ ggplot(data = exampleSmall) +
         plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c("#E69F00", "#A6A6A6", "#009E73"))  +
-  scale_colour_discrete(type = c("#E69F00", "#A6A6A6", "#009E73"))
+  scale_color_discrete(type = c("#E69F00", "#A6A6A6", "#009E73"))
 ```
   
   If you'd like to be more specific and perhaps biologically accurate, you can 
@@ -347,7 +347,7 @@ ggplot(data = exampleDatIDs
         #plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
- scale_colour_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
+ scale_color_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
   scale_alpha_discrete(range = c(0, 1, .5)) +
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
@@ -386,7 +386,7 @@ ggplot(data = exampleDatIDs
         #plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
- scale_colour_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
+ scale_color_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
   scale_alpha_discrete(range = c(0, 1, .5)) +
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
@@ -544,7 +544,7 @@ ggplot(datComp) +
         plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_colour_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
+ scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
 
 ```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.2**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.  "}
@@ -575,7 +575,7 @@ ggplot(datComp) +
         plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_colour_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
+ scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
 
 ```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.3**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.  "}
@@ -600,7 +600,7 @@ ggplot(datComp) +
         plot.margin = margin(1,0,1,0),
         legend.title = element_blank()) +
   scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_colour_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
+ scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 
 ## basal area of focal individual = 0.004981431 
 ## area of buffer 0.06953875 - 0.004981431 =  0.06455732

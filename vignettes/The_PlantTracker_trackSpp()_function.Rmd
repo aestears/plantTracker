@@ -1,0 +1,41 @@
+---
+title: "The PlantTracker 'trackSpp()' function"
+author: "Alice Stears"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Suggested_PlantTracker_Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  rmarkdown.html_vignette.check_title = FALSE
+)
+```
+
+```{r setup, include = FALSE}
+library(PlantTracker)
+library(ggplot2)
+library(sf)
+```
+
+## Introduction
+This vignette dives into the `trackSpp` function, the main 'workhorse' function
+in the PlantTracker R package. `trackSpp` transforms a dataset of annual 
+maps of plant occurence into a demographic dataset. To accomplish this, the 
+function compares maps accross sampling years and assigns unique identifiers to 
+plants that overlap from year to year. These unique identifiers are then used to 
+assign survival, growth, recruit status, and age to each individual plant in 
+each year. 
+
+This process is complex and requires certain assumptions, so the following pages 
+will explain and illustrate the logic of each of these steps. We recommend you 
+read through this vignette before using trackSpp() in order to fully understand 
+the assumptions inherent to the function, and to make sure that you are 
+adjusting the user-specificed arguments correctly. 
+
+## *1.* Prepare data

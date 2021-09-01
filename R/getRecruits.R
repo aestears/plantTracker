@@ -1,674 +1,272 @@
----
-title: "Suggested PlantTracker Workflow"
-author: Alice Stears
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Suggested_PlantTracker_Workflow}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  rmarkdown.html_vignette.check_title = FALSE
-)
-```
-
-```{r setup, include = FALSE}
-library(PlantTracker)
-library(ggplot2)
-library(sf)
-```
-
-
-## Introduction
-Welcome to PlantTracker! This package was designed to transform long-term 
-quadrat maps that show plant occurrence and size into demographic data that can 
-be used to answer questions about population and community ecology. 
-This vignette is designed to help you use PlantTracker functions to move from a 
-spatially referenced dataset containing plant cover data, to an output dataset 
-that contains growth and survival data for each observed individual. 
-
-This vignette will walk you through the steps to get from maps of plant cover 
-to a demographic dataset that you can use for analysis!
-
-## *1.* Prepare data
-The functions in PlantTracker require data in a specific format. PlantTracker
-includes an example dataset that consists of two pieces: 'grasslandData' and 
-'grasslandInventory'. You can load these example datasets into your global 
-environment by calling `data(grasslandData)` and `data(grasslandInventory)`. You 
-can view the documentation for these datasets by calling 
-`?grasslandData` and `?grasslandInventory`. 
-
-Most PlantTracker functions require two data objects. The first is a data.frame 
-that contains the location and metadata for each mapped individual, which we 
-from now on will call 'dat'. The second is a list that contains a vector of 
-years in which each quadrat was sampled, which we from now on will cal 'inv'. 
-Below are the basic requirements for these data objects.
-
-#### *1.1* The 'dat' data.frame must . . .
-
-*  ... be an sf data.frame. More on this below...
-
-*  ... contain a row for each individual observation in each year. 
-
-*  ... have a column that contains character strings indicating the specific
-epithet for each observation. This column must be a character data type. The 
-function expects this column to be called 'Species', but a different name can be 
-specified in function calls. 
-
-*  ... have a column that contains character strings indicating the site at 
-which each observation was collected. This is a level of classification 'above' 
-the quadrat (i.e. all quadrats measured at the Central Plains Experimental Range 
-in Nunn, CO might have the value "CO" in this column). This column must be a 
-character data type. The function expects this column to be called 'Site', but a 
-different name can be specified in function calls. 
-
-*  ... have a column that contains character strings indicating the quadrat at 
-which each observation was collected. This column must be a character data type.
-The function expects this column to be called 'Quad', but a different name can 
-be specified in function calls. 
-
-*  ... have a column that contains a value indicating the year when this
-individual observation was collected. This must be a numeric data type, and must 
-be either a four or two digit year number. The function expects this column to 
-be called 'Year', but a different name can be specified in function calls. 
-
-*  ... have a column (almost always called 'geometry' in the `sf` package data 
-format) that contains a polygon representing the location of each observation.
-Each observation must be a `POLYGON` or `MULTIPOLYGON`. Data cannot be stored as 
-`POINTS`.
-    +   If the data was collected such that forbs or small grasses were mapped 
-as points and digitized as such, then these observations must be converted to 
-polygons. We recommend that you convert them to small circular polygons with an 
-identical radius. If you do this transformation, we also recommend that you
-include a column that indicates whether each row was originally mapped as a 
-polygon or a point, since the demographic data that deals with size will be
-relatively meaningless for observations originally mapped as points. 
-    +   'dat' does not need to have a coordinate reference system (i.e. CRS can 
-    be 'NA'), but it can have one if you'd like. 
-
-*  ... *not* have columns called 'neighbors', 'nearEdge',  'trackID', 'age', 
-'size_tplus1', 'recruit', 'survives_tplus1', 'basalArea_ramet', or 
-'basalArea_genet', since these columns are added by PlantTracker functions. 
-
-*  Note: Additional columns can be included in the input data.frame, although 
-they might not be included in the output of PlantTracker functions. 
-
-Here are the first few rows of a possible 'dat' input data.frame: 
-```{r  echo = FALSE}
-dataShow <- head(grasslandData[, !names(grasslandData) %in%
-                                  c("Clone", "Seedling", "Stems", "Basal",
-                                    "sp_code_4", "Area")])
-rownames(dataShow) <- NULL
-knitr::kable(dataShow, caption = "**Table 1.1**: Example 'dat' data.frame" )
-```
-
-Note that the required columns are 'Species', 'Site', 'Quad', 'Year', and
-'geometry'. The additional columns 'Type' and 'sp_code_6' are just "along for 
-the ride" in any analysis using PlantTracker functions. 
-
-
-Here's what some of the example 'dat' data (from the 'SG2' quadrat at the 
-'AZ' site in 1922) look like when plotted spatially:    
-```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "**Figure 1.1**: Spatial map of a subset of example 'dat' dataset"}
-exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
-                              grasslandData$Quad == "SG2" & 
-                              grasslandData$Year == 1922, ]
-dat <- grasslandData[grasslandData$Site == "AZ" & 
-                              grasslandData$Quad == "SG2",]
-ggplot(data = exampleDat) +
-  geom_sf(aes(color = Species, fill = Species)) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  theme_classic() +
-  theme(axis.line = element_blank(), 
-        legend.text = element_text(face = "italic"),
-        plot.margin = margin(1,0,1,0)) 
-```
-
-#### *1.2* The 'inv' list must . . .
-
-* ... be a named list
-
-* ... have element names that are each a character string identical to the name 
-of a quadrat in 'dat'. There cannot be two elements with the same name, and 
-there cannot be an element with more than one quadrat in its name. There must be 
-an element for each quadrat with data in 'dat'. 
-
-* ... have list elements that are each a numeric vector of years in which 
-each quadrat was sampled. If a quadrat was 'skipped' in a year, then that year 
-must be excluded from this vector. The format of the years must be the same as 
-the format of years in 'dat' (i.e. if year is a four-digit number in 'dat', then 
-it must be a four-digit number in 'inv'). 
-
-Here is an example of an 'inv' argument that corresponds to the example 'dat' 
-argument above. The quadrats that have data in 'dat' are "ungz_5a", "unun_11", 
-"SG2", and "SG4",  so there are elements in 'inv' that 
-correspond to each of these quadrats. 
-```{r echo=FALSE, fig.align='center'}
-(inv <- grasslandInventory[c("ungz_5a", "unun_11", "SG2", "SG4")])
-```
-**Figure 1.2**: An example of the 'inv' argument
-
-
-#### *1.3* Checking the 'inv' and 'dat' arguments  
-This step is optional, but can be useful if you're unsure whether your 'dat' and 
-'inv' arguments are in the correct format. The PlantTracker function 
-`checkDat()` takes 'dat' and 'inv' as arguments for the arguments `dat` and
-`inv`, and will return informative error messages if either argument is not in 
-the correct format. 
-
-Additional optional arguments to `checkDat()` are 'species', 'site', 'quad', 
-'year', 'geometry', and 'reformatDat'. 
-
-* `species/site/quad/year/geometry`: These arguments only need to be included if 
-the columns in 'dat' that contain the data for species, site, 
-quadrat, year and geometry of each observation are *different* from the names 
-"Species", "Site", "Quad", "Year, and "geometry".  For example, if the column in 
-your version of 'dat' that contains the species identity of each observation is 
-called 'species_names', then the argument `species = "species_names"` must be 
-included in your call to `checkDat()`. 
-
-* `reformatDat` is a TRUE/FALSE argument that determines whether you want the 
-`checkDat()` function to return a version of 'dat' that is ready to go into the 
-steps of this workflow. If `reformatDat` = TRUE then `checkDat()` will return a 
-list that contains the reformatted version of 'dat', the reformatted version of 
-'inv' and an additional element called 'userColNames', which contains the column 
-names in the input version of 'dat' that are different from the expected column 
-names of "Species", "Site", "Quad", "Year, and "geometry" (if there are any). If 
-`reformatDat` = TRUE, then `checkDat()` will return a message indicating that 
-your data is ready for the next step. The default value is FALSE.
-
-### *2.* Track Individuals Through Time
-Now it's time to transform your raw dataset into demographic data! This is 
-accomplished using the `trackSpp()` function. This function follows individual 
-plants from year to year in the same quadrat to determine survival, size in the 
-next year, age, and some additional potentially-useful demographic data. It does 
-this by comparing quadrat maps from sequential years. If there is overlap of 
-individuals of the same species in consecutive years, then the rows in 'dat' 
-that contain data for those overlapping individuals are given the same 
-'trackID', or unique identifier. 
-
-#### *2.1.* Function Arguments
-`trackSpp()` takes the following arguments:  
-
-* `dat` This is the sf data.frame that we've been calling 'dat' so far. This 
-must be in the correct format (which you can check before-hand using 
-`checkDat()`), but informative error messages will be returned if it is 
-incorrect. It *must* have the columns outlined in Section 1.1, but they can have 
-different names as long as those names are included in this function call 
-(more on that later...).
-
-* `inv` This is the list of quadrat sampling years we've been calling 'inv'. If 
-it is not in the correct format or does not contain data for the correct 
-quadrats, then an informative error message will be returned. 
-
-* `dorm` This is a positive integer value that indicates how long you want the 
-function to allow an individual to be "dormant". In this case, dormancy can be 
-interpreted as the biological phenomenon where a plant has above-ground tissue 
-present in year 1, is alive underground but with no above-ground tissue in year 
-2, and then has above-ground tissue in a subsequent year. Dormancy can also be 
-interpreted here as data-collection error, whereby an individual is accidentally 
-not mapped in between years where it was recorded. 
-
-  *Consider the following example*: There is a polygon of species 'A' in year 1, 
-which is our "focal individual". In year 2, there is not a polygon of species 
-'A' that overlaps with our focal individual. In year 3, there is a polygon of 
-species 'A' that is in the same location as our focal individual. If `dorm` = 0, 
-then our focal individual would get a 0 in the survival column, and the polygon 
-of species 'A' in year 3 would be considered a new recruit and get a new 
-trackID. If `dorm= 1`, because there is overlap between two polygons of the same 
-species with only a 1-year gap between when they occur, these two polygons will 
-be considered the same genetic individual, will have the same trackID, and our 
-focal individual will have a '1' in the survival column. In an alternative 
-scenario, in years 3 and 4 there are not polygons of species 'A' that are in the 
-same location as our focal individual, but there is a polygon in year 4 that 
-overlaps our focal individual. If `dorm = 1`, then our focal individual would 
-get a 0 for survival, but if `dorm = 2`, then it would get a 1 for survival. 
-```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.1**: A visualization of the 'dormancy' scenario described above."}
-exampleSmall <- exampleDat[unique(c(30, 42, 44, 25,  2, 61, 59, 52, 45,  8, 42, 37, 60, 34, 45, 38, 26, 49, 52, 46)),]
-
-exampleSmall$FocalInd <- 'other individual'
-exampleSmall[10,'FocalInd'] <- 'focal individual'
-exampleSmall$Year <- "Year 1"
-exampleSmall_2 <- exampleSmall[c(1:9,11:nrow(exampleSmall)),]
-exampleSmall_2$Year <- "Year 2"
-exampleSmall_3 <- exampleSmall
-exampleSmall_3$Year <- "Year 3"
-
-exampleSmall <- rbind(exampleSmall, exampleSmall_2, exampleSmall_3)
-
-ggplot(data = exampleSmall) +
-  geom_sf(aes(color = FocalInd, fill = FocalInd)) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
-               lineend = "round", color = "grey30") + 
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  #labs(title = Year) +
-  facet_wrap( ~ Year) +
-  theme_classic() +
-  theme(axis.line = element_blank(), 
-        legend.text = element_text(face = "italic"),
-        plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c("#E69F00", "#A6A6A6", "#009E73"))  +
-  scale_color_discrete(type = c("#E69F00", "#A6A6A6", "#009E73"))
-```
-  
-  If you'd like to be more specific and perhaps biologically accurate, you can 
-  also specify the `dorm` argument uniquely for each species. For example, it 
-  might be that you are confident that your data collectors did not accidentally 
-  'miss' any individuals, and your 'dat' data.frame contains observations for 
-  shrubs or trees, which are very unlikely to go dormant, and small forbs, which 
-  are much more likely to go dormant for one or two years. In order to disallow 
-  dormancy for trees and shrubs, but to allow dormancy for forbs, you will 
-  provide a data.frame to the `dorm` argument instead of a single positive 
-  integer value. There will be two columns: 1) a "Species" column that has the 
-  species name for each species present in 'dat', and 2) a column called "dorm" 
-  that has positive integer values indicating the dormancy you'd like to allow 
-  for each species. Make sure that if you are following the data.frame approach, 
-  you must provide a dormancy argument for *every* species that has data in 
-  'dat'. Make sure that the species names in the `dorm` data.frame are spelled 
-  exactly the same as they are in 'dat'. The data.frame should look something 
-  like this:
-```{r echo = FALSE}
-dormDF <- data.frame("Species" = c("tree A", "shrub B", "tree C", "forb D", "forb E", "forb F"),
-           "dorm" = c(0,0,0,1,2,1))
-knitr::kable(dormDF, caption = "**Table 2.1**: Example 'dorm' data.frame", )
-```
-  
-* `buff` This is a positive numeric value that indicates how much an individual 
-can move from year 1 to year 2 and still be considered the same individual 
-(receive the same trackID). In addition to accounting for true variation in 
-location of a plant's stem from year to year, this argument also accounts for 
-small inconsistencies in mapping from year to year. The `buff` argument must be 
-in the same units as the spatial values in 'dat'. For example, if the spatial 
-data in 'dat' is measured in meters, and you want to allow a plant to 'move' 
-15 cm between year 1 and year 2, then you would include the argument 
-`buff = .15` in your call to `trackSpp()`. If you want to allow no movement, use 
-`buff = 0`. Below is a visualization of two different `buff` scenarios.
-
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.2**: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
-
-exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
-                              grasslandData$Quad == "SG2" & 
-                              grasslandData$Year %in% c(1922,1923), ]
-exampleDatIDsTemp <- exampleDat[exampleDat$Species == "Bouteloua rothrockii",]
-exampleDatIDsTemp <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area,7) %in% round(c( 0.0005471808, 0.0005321236),7),]
- 
-exampleDatIDsTemp$ghost <- "observation from current year"
-exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .10)
-exampleBuffed$Year <- 1922
-exampleBuffed$ghost <- "10 cm buffer"
-exampleBuffedNext <- exampleBuffed
-exampleBuffedNext$Year <- 1923
-ghost <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) == 0.0005472,]
-ghost$Year <- 1923
-ghost$ghost <- "polygon location in previous year"
-exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNext )
-
-
-ggplot(data = exampleDatIDs
-       ) +
-  geom_sf(aes(fill = ghost, alpha = ghost, color = ghost, lty = ghost)) +
-  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), size = .5, 
-               lineend = "round", color = "grey30")+ 
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  #labs(title = Year) +
-  facet_wrap( ~ Year) +
-  theme_classic() +
-  theme(axis.line = element_blank(), 
-        legend.text = element_text(face = "italic"),
-        #plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
- scale_color_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
-  scale_alpha_discrete(range = c(0, 1, .5)) +
-  scale_linetype_manual(values=c("twodash", "solid", "dotted"))
-```  
-
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.3**: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
-
-exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .03)
-exampleBuffed$Year <- 1922
-exampleBuffed$ghost <- "3 cm buffer"
-exampleBuffedNext <- exampleBuffed
-exampleBuffedNext$Year <- 1923
-ghost <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,]
-ghost$Year <- 1923
-ghost$ghost <- "polygon location in previous year"
-exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNext )
-
-
-ggplot(data = exampleDatIDs
-       ) +
-  geom_sf(aes(fill = ghost, alpha = ghost, color = ghost, lty = ghost)) +
-  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), size = .5, 
-               lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), size = .5, 
-               lineend = "round", color = "grey30") + 
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  #labs(title = Year) +
-  facet_wrap( ~ Year) +
-  theme_classic() +
-  theme(axis.line = element_blank(), 
-        legend.text = element_text(face = "italic"),
-        #plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
- scale_color_discrete(type = c("#E69F00", "#009E73", "#A6A6A6")) +
-  scale_alpha_discrete(range = c(0, 1, .5)) +
-  scale_linetype_manual(values=c("twodash", "solid", "dotted"))
-```  
-
-* `clonal` This is a Boolean argument (0 or 1) that indicates whether you want 
-to allow plants to be clonal or not. In the context of this type of data, 
-"clonal" means that one genetic individual (or "genet") can be recorded as 
-multiple polygons (or "ramets"). If `clonal = 1`, then multiple polygons in the 
-same year can be part of the same individual and have the same trackID. If 
-`clonal = 0`, then every polygon in a given year is a unique individual and has 
-a unique trackID. This option can be defined globally for all species present in 
-'dat' by setting `clonal` equal to 0 or 1 in the `trackSpp()` function call. 
-Alternatively, `clonal` can be specified uniquely for each species by creating a
-data.frame that contains a `clonal` argument for each species (analogous to the 
-data.frame for the `dorm` argument shown in Table 2.1, but with a column called 
-"clonal"). 
-
-The following arguments to `trackSpp()` are only required in certain contexts. 
-
-* `buffGenet` is a numeric argument that is only required if `clonal = 1` 
-or if `clonal` is a data.frame that contains at least a single '1' in the 
-"clonal" column. `buffGenet` is a numeric value that indicates how close
-polygons of the same species in the same year must be to one another in order to 
-be considered parts of the same genetic individual (ramets of the same genet). 
-This argument is passed to the `groupByGenet()` function, which assigns the same 
-trackID to individuals that are within the `buffGenet` buffer of each other. 
-The value of `buffGenet` must be greater than or equal to zero, and must be in 
-the same units as the spatial data in 'dat'. `buffGenet` can be a single numeric 
-value which will be applied to all species present in 'dat', or can be specified 
-uniquely for each species by creating a data.frame that contains a `buffGenet` 
-argument for each species (analogous to the data.frame for the `dorm` argument 
-shown in Table 2.1, but with a column called "buffGenet").
-,,k,k 
-* `aggregateByGenet` is a logical argument that is only required if `clonal = 1` 
-or if `clonal` is a data.frame that contains at least a single '1' in the 
-"clonal" column. This argument determines whether the output data.frame from 
-`trackSpp()` will have a row for every single ramet, or will be aggregated so 
-that each genet is represented by a single row. If `aggregateByGenet = FALSE`, 
-then the output is not aggregated. If `aggregateByGenet = TRUE` (the default 
-setting), then the results are aggregated using the PlantTracker function 
-`aggregateByGenet()`. This function combines the sf "POLYGONS" for each ramet 
-into one sf "MULTIPOLYGON" for the entire genet, and combines the associated 
-metadata ("Species", "Site", "Quad", "Year", "trackID", "basalArea_genet", 
-"age", "recruit", "survives_tplus1", "size_tplus1", "nearEdge") into one row for 
-this genet. Even if the input 'dat' had additional columns, they will not be 
-included in the output of `trackSpp` if `aggregateByGenet = TRUE`, since it is 
-uncertain if they can be summed across all ramets or are identical across all 
-ramets. For example, if each ramet has a unique character string in a column 
-called "name", there is no easy way to 'sum' the character strings in this 
-column to have one value for each genet. If you want the output data.frame from 
-`trackSpp()` to have the same columns as your input 'dat' data.frame, set the 
-`aggregateByGenet` argument to FALSE. However, Be Careful, since any demographic 
-analysis should be done with a data.set that has only one row per genet, 
-otherwise you will be estimating survival and growth rates on the scale of 
-ramets instead of genets. If you take the `aggregateByGenet = FALSE` route, be 
-sure to pass your dataset through the `aggregateByGenet()` function (or 
-aggregate to the genet scale using your preferred method) before 
-demographic analysis. 
-
-* `species/site/quad/year/geometry` These arguments only need to be included if 
-the columns in 'dat' that contain the data for species, site, 
-quadrat, year and geometry of each observation are *different* from the names 
-"Species", "Site", "Quad", "Year, and "geometry".  For example, if the column in 
-your version of 'dat' that contains the species identity of each observation is 
-called 'species_names', then the argument `species = "species_names"` must be 
-included in your call to `trackSpp()`. 
-
-These are all of the possible arguments to `trackSpp()`! 
-
-#### *2.2.* Function Output
-Below is an example of what the output of `trackSpp()` might look like, using 
-the example 'dat' and 'inv' data we've used so far. 
-```{r}
-datTrackSpp <- trackSpp(dat = dat, inv = inv,
-         dorm = 1,
-         buff = .05,
-         buffGenet = .005,
-         clonal = data.frame("Species" = c("Heteropogon contortus",
-                                           "Bouteloua rothrockii",
-                                           "Ambrosia artemisiifolia",
-                                           "Calliandra eriophylla"),
-                             "clonal" = c(1,1,0,0)),
-         aggregateByGenet = TRUE)
-knitr::kable(head(datTrackSpp))
-```
-
-If you did not allow any species to be clonal (`clonal = 0`) or if 
-`aggregateByGenet = TRUE` in your call to trackSpp(), then your output
-data.frame will have one row for each genet, and is ready for demographic 
-analysis! If your output data.frame is *not* yet aggregated by genet 
-(i.e. you set the `aggregateByGenet` argument to FALSE), then you need to 
-transform your data.frame so that each genet is represented by only one row of 
-data. You can use the `aggregateByGenet()` function from PlantTracker (see this 
-function's documentation for guidance), or your own method of choice. 
-
-You can stop here and proceed to your own analyses using the demographic data 
-you generated, or you can proceed with other PlantTracker functions outlined 
-below for some additional useful data.
-
-### *3* Calculating a Metric of Competition
-It is often useful in demographic analyses to have some idea of the competition 
-(or facilitation) that an individual organism is dealing with. Interactions 
-between individuals can have a profound impact on whether an organism survives 
-and grows. Spatial datasets of plant occurrence allow us to generate an estimate 
-of the interactions an individual plant has with other plants by determining how 
-many other individuals surround each plant. While this isn't a direct measure of
-competition or facilitation, it gives us an estimate that we can include in 
-demographic models.
-
-#### *3.1* Function options and arguments
-The `getNeighbors()` function in PlantTracker calculates this competition 
-estimate for each unique individual in your dataset. A user-specified buffer is 
-drawn around each individual, and then the function counts the number of other 
-plants within this buffer.This function can only be run on a dataset where each 
-unique individual (genet) is represented by only one row of data. If the genet 
-consists of multiple polygons, then they must be aggregated into one sf 
-"MULTIPOLYGON" object. If your dataset has multiple rows for each genet, then 
-you can use the `aggregateByGenet()` function to get it ready to use in 
-`getNeighbors()`. Additionally, `getNeighbors()` requires your dataset to have a 
-column containing a unique identifier for each genet. Across multiple years, 
-that genet must have the same unique identifier. If you are using this function 
-right after `trackSpp()`, your dataset will already have this unique identifier 
-in a column called "trackID".
-
-`getNeighbors()` has several options that allow you 
-to customize how the competition metric is calculated. 
-
-* First, the user can decide how the function 'counts' other plants inside the 
-buffer zone around the focal individual. Option 1) The function will calculate a 
-tally of the number of genets inside the buffer zone. Option 2) The function
-will calculate the proportion of the buffer zone that is occupied by 
-other plants. 
-
-* Second, the user can decide whether the function will calculate a metric of 
-intraspecific competition (only consider other plants in the buffer zone of the 
-same species as the focal individual) or interspecific competition (consider all 
-other plants in the buffer zone, regardless of species).
-
-```{r echo = FALSE, fig.width=6, fig.align = 'center', fig.cap = "**Figure 3.1**: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
-datComp <- datTrackSpp[datTrackSpp$Year == 1922,]
-
-ggplot(datComp) +
-  geom_sf(data = 
-            sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = .3, lty = 2) +
-  geom_sf(aes(fill = Species)) +
-   geom_sf(data = datComp[datComp$trackID == "HETCON_1922_6",], 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = 0, lwd = 1.5) +
-  xlim(c(0,.5)) +
-  ylim(c(.2,.7)) +
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  theme_classic() +
-  theme(legend.text = element_text(face = "italic"),
-        plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
-```
-
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.2**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.  "}
-
-st_intersects(st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
-countMethod <- datComp[c(3,5,63,67,70),]
-areaMethodTemp <- st_intersection(st_buffer(
-  datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
-areaMethod <- areaMethodTemp[st_is(areaMethodTemp, c("POLYGON", "MULTIPOLYGON")),]
-
-ggplot(datComp) +
-  geom_sf(data = 
-            sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = .3, lty = 2) +
-  geom_sf(aes(fill = Species)) +
-  geom_sf(data = datComp[datComp$trackID == "HETCON_1922_6",], 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = 0, lwd = 1.5) +
-  geom_sf(data = countMethod, aes(), alpha = 0, lwd = 1.5) +
-  geom_sf_label(data = countMethod, label = c(1,2,3,4,5), nudge_x = .035, 
-                label.padding = unit(.15, "lines"),
-                label.size = unit(.05,"mm")) +
-  xlim(c(0,.5)) +
-  ylim(c(.2,.7)) +
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  theme_classic() +
-  theme(legend.text = element_text(face = "italic"),
-        plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
-```
-
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.3**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.  "}
-areaMethodTemp <- st_intersection(st_buffer(
-  datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
-areaMethod <- areaMethodTemp[areaMethodTemp$trackID.1 != "HETCON_1922_6",]
-
-ggplot(datComp) +
-  geom_sf(data = 
-            sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = .3, lty = 2) +
-  geom_sf(aes(fill = Species)) +
-  geom_sf(data = datComp[datComp$trackID == "HETCON_1922_6",], 
-          aes(), color = "#CC79A7", fill = "#CC79A7", alpha = 0, lwd = 1.5) +
-  geom_sf(data = areaMethod, aes(), fill = "#A6A6A6", color = "grey50", alpha = 0.7, lwd = 1.5) +
-  xlim(c(0,.5)) +
-  ylim(c(.2,.7)) +
-  xlab("quadrat horizontal edge (m)") +
-  ylab("quadrat vertical edge (m)") +
-  theme_classic() +
-  theme(legend.text = element_text(face = "italic"),
-        plot.margin = margin(1,0,1,0),
-        legend.title = element_blank()) +
-  scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
- scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
-
-## basal area of focal individual = 0.004981431 
-## area of buffer 0.06953875 - 0.004981431 =  0.06455732
-## area of interspecific competitors  2.504885e-05 + 9.549092e-04 + 1.952117e-03 + 2.461883e-05 + 2.461883e-05 = 0.002981313
-## area of intraspecific competitors 2.504885e-05 + 9.549092e-04 + 1.952117e-03 = 0.002932075
-## proportion of interspecific competitors 0.002981313 / 0.06455732 = 0.04618087
-## proportion of intraspecific competitors 0.002932075 / 0.06455732 = 0.04541816
-```
-Below are the arguments in the `getNeighbors()` function. 
-
-* `dat` An sf data.frame in which each row represents data for a unique 
-individual organism in a unique year. The sf geometry for each row must be 
-either 'MULTIPOLYGON' or 'POLYGON' geometry. In addition to a 'geometry' column, 
-this data.frame must have columns that contain data indicating the site, 
-quadrat, site, and year of each observation. There also must be a column that 
-contains a unique identifying value for each genet in each year. If 'dat' is 
-coming directly from trackSpp()`, this column will be called 'trackID'.  
-
-* `buff` This is a single numeric value that indicates the desired width of the 
-'buffer' around the focal individual in which the competitors are to be counted. 
-This value must be in the same units as the spatial information in 'dat'.  
-
-* `method` This is a character string that must equal either 'count' or 'area'. 
-If `method = "count"`, then the number of individuals in the buffer area will be 
-tallied. If `method = "area"`, then the proportion of the buffer area that is 
-occupied by other individuals will be calculated. 
-
-* `compType` This is a character string that must be either 'allSpp' or 
-'oneSpp'. If `compType = "allSpp"`, then a metric of interspecific 
-competition is calculated, meaning that every individual within the buffer 
-around the focal individual is considered, no matter the species. If 
-`compType = "oneSpp"`, then a metric of intraspecific competition is calculated, 
-meaning that only individuals of the same species as the focal individual will 
-be considered when calculating the competition metric. If no value is provided, 
-it will default to "allSpp". 
-
-* `trackID/species/quad/year/site/geometry` These arguments only need to be 
-included if the columns in 'dat' that contain the data for trackID, species, 
-site, quadrat, year and geometry of each observation are *different* from the
-names "trackID, "Species", "Site", "Quad", "Year, and "geometry".  For example, 
-if the column in your version of 'dat' that contains the species identity of 
-each observation is called 'species_names', then the argument 
-`species = "species_names"` must be included in your call to `getNeighbors()`. 
-
-#### *3.2.* Function Outputs 
-
-The output of `getNeighbors()` is an sf data.frame that is identical to the 
-input 'dat', but with an additional column called 'neighbors', which contains 
-either an integer value indicating the number of individuals within the buffer 
-area, or a decimal less that 1 that indicates the proportion of the buffer area
-that is occupied by competitors. 
-
-Here's an example of a `getNeighbors()` function call using the resulting data 
-from the example in section *2.2*, as well as the resulting data.frame:  
-```{r}
-datNeighbors <- getNeighbors(dat = datTrackSpp,
-             buff = .15,
-             method = "area",
-             compType = "allSpp")
-
-knitr::kable(head(datNeighbors))
-```
-
-### *3* Next Steps
-At this point, this dataset should be ready for you to use in any applications 
-wish! There are a few additional functions that may help you in your analyses, 
-and these are outlined in this section. 
-
-* recruitment by species-by-plot-by-year: the `getRecruits` function
-
-* 
+#' Calculates the number of recruits of each species per year in each quadrat
+#'
+#' @description This function calculates the number of new plant recruits of
+#' each species in each quadrat in each year. The input data must already
+#' contain a column indicating whether each observation is classified as a
+#' recruit or not. This recruit status can be generated from the
+#' \code{\link{trackSpp}} function in `PlantTracker`, or can be information that
+#' was collected in the field. This function includes an option that determines
+#' whether each ramet of a clonal species is considered an individual recruit,
+#' or if the entire genet is considered a single recruit.
+#'
+#' @param dat An sf data.frame in which each row represents a unique polygon
+#' (either a genet or a ramet) in a unique site/quadrat/year combination. A
+#' data.frame returned by \code{\link{trackSpp}} can be put directly into this
+#' function. dat' must have columns that contain a unique identification for
+#' each research site (default name is "Site"), species name (default name is
+#' "Species"), quadrat identifier (default name is "Quad"), year of data
+#' collection (default name is "Year"), , a unique identifier for each genet
+#' (default name is 'trackID'), and an s.f 'geometry' column that contains a
+#' polygon or multipolygon data type for each individual observation.
+#' @param byGenet A logical argument. `TRUE` indicates that a new genet will be
+#' considered as only one recruit, even if it consists of multiple ramets.
+#' `FALSE` indicates that each new ramet will be considered as a new recruit,
+#' even if other ramets of the same genet were present in previous years.
+#' @param species An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains species name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Species" (default value is 'Species').
+#' @param quad An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains quadrat name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Quad" (default is 'Quad').
+#' @param site An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains site name data. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "Site" (default value is 'Site').
+#' @param year An optional character string argument. Indicates
+#' the name of the column in 'dat' that contains data for year of sampling. It
+#' is unnecessary to include a value for this argument if the column name is
+#' "Year" (default is 'Year').
+#' @param trackID An optional character string argument. Indicates the name of
+#' the column in 'dat' that contains unique identifiers for each genet. It is
+#' unnecessary to include a value for this argument if the column name is
+#' "trackID" (default is 'trackID')
+#' @param recruit An optional character string argument. Indicates the name of
+#' the column in 'dat' that contains information indicating whether or not this
+#' row represents data for a recruit. It is unnecessary to include a value for
+#' this argument if the column name is "recruit" (default is "recruit").
+#' @param ... Other arguments passed on to methods. Not currently used.
+#'
+#' @return This function returns a table with columns for site, quadrat,
+#' species name, year, and number of recruits
+#'
+#' @export
+#'
+#' @examples
+#' dat <- grasslandData[grasslandData$Site == c("CO") &
+#'  grasslandData$Species %in% c("Bouteloua gracilis", "Lepidium densiflorum") &
+#'  grasslandData$Year %in% c(1998:2002),]
+#' names(dat)[1] <- "speciesName"
+#' inv <- grasslandInventory[unique(dat$Quad)]
+#' outDat <- trackSpp(dat = dat,
+#'  inv = inv,
+#'  dorm = 1,
+#'  buff = .05,
+#'  buffGenet = 0.005,
+#'  clonal = data.frame("Species" = unique(dat$speciesName),
+#'  "clonal" = c(1,0)),
+#'  species = "speciesName",
+#'  aggregateByGenet = TRUE
+#'  )
+#'  getRecruits(dat = outDat,
+#'  byGenet = TRUE,
+#'  species = "speciesName"
+#'  )
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
+getRecruits <- function(dat,
+                        byGenet = TRUE,
+                        species = "Species",
+                        quad = "Quad",
+                        site = "Site",
+                        year = "Year",
+                        trackID = "trackID",
+                        recruit = "recruit",
+                        ...
+) {
+  # argument checks ---------------------------------------------------------
+  ## check the 'dat' data.frame and the column names (change if needed)
+  newNames <- list("species" = species, "site" = site, "quad" = quad,
+                   "year" = year, "trackID" = trackID)
+
+  ## check that each arg. is a character vector
+  if (sum(sapply(newNames, is.character)) != 5) { ## if there is one or more
+    # elements of the newNames list that is not a character vector
+    ## find which elements are not character vectors
+    badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
+                     "'", collapse = ", and ")
+
+    stop(paste0("The argument(s) ", badArgs, " must each contain a single
+    character string that gives the name(s) of the column(s) in 'dat' that
+    contain the data for ", badArgs))
+
+  } else { ## if each of the elements of 'newNames' is a character vector
+    ## make sure that each of the elements of newNames is present as a column
+    # name in 'dat'
+    if (sum(unlist(newNames) %in% names(dat)) != 5) { ## if the column names of
+      # 'dat' do NOT match the values provided in 'newNames'
+      badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
+                                                      names(dat))],"'",
+                          collapse = ", and ")
+
+      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
+      column names in 'dat'. These arguments must be character vectors that give
+      the name(s) of the column(s) in 'dat' that contain the data for ",
+                  badBadArgs, ".
+      Check for spelling errors, or make sure that you have
+      included values for these arguments that give the name of the columns in
+      'dat' that contain these data types." ))
+
+    }
+  }
+
+  ## re-assign the names of dat to the default column names
+  ## make a vector of 'user names'
+  usrNames <- unlist(newNames)
+  ## make a vector of 'default names'
+  defaultNames <- c("Species", "Site", "Quad", "Year",
+                    "trackID")
+
+  ## replace the user-provided names in 'dat' with the default names
+  names(dat)[match(usrNames, names(dat))] <- defaultNames
+
+  ## proceed with remaining checks
+  ## check the 'dat' argument (with default names)
+
+  ## does 'dat' contain sf data?
+  if (sum(class(dat) %in% "sf") > 0) { ## if there IS sf data, then drop it
+    dat <- st_drop_geometry(dat)
+  }
+
+  ## check the Species column
+  if (is.null(dat$Species) == FALSE) {
+    if (sum(is.na(dat$Species)) != 0 | ## cannot have 'NA' values for species
+        !is.character(dat$Species)  ## must be a character vector
+    ) {
+      stop("The 'Species' column must be a character column with no 'NA's.")
+    }
+  } else {
+    stop("The 'dat' data.frame must contain values in the column labeled
+         'Species'."
+    )
+  }
+
+  ## check the 'Year' column
+  if (is.null(dat$Year) == FALSE) { ## does the 'Year' column exist?
+    if (sum(is.na(dat$Year)) != 0 | ## cannot have 'NA' values for Year
+        !is.integer(dat$Year) ## must be an integer vector
+    ) {
+      stop("The 'Year' column must be an integer column with no 'NA's.")
+    }
+  } else {
+    stop("The 'dat' data.frame must contain values in the column labeled
+          'Year'.")
+  }
+
+  ## check the 'Quad' column
+  if (is.null(dat$Quad) == FALSE) { ## does the 'Quad' column exist?
+    if (sum(is.na(dat$Quad)) != 0 | ## cannot have 'NA' values for Quad
+        !is.character(dat$Quad) ## must be a character vector
+    ) {
+      stop("The 'Quad' column must be an character column with no 'NA's.")
+    }
+  } else {
+    stop("The 'dat' data.frame must contain values in the column labeled
+         'Quad'.")
+  }
+
+  ## check the 'trackID' column
+  if (is.null(dat$trackID) == FALSE) {## does the 'trackID' column exist?
+    if (sum(is.na(dat$trackID)) != 0) {
+      stop("The 'trackID' column must not have any 'NA's.")
+    }
+  } else {
+    stop("The 'dat' data.frame must contain values in the column labeled
+         'trackID'.")
+  }
+
+  ## check the 'recruit' column
+  if (is.null(dat$recruit) == FALSE) {## does the 'recruit' column exist?
+    if (nrow(dat[is.na(dat$recruit) |
+                 dat$recruit == 1 |
+                 dat$recruit == 0,]) != nrow(dat)
+    ) { ## the values must be either NA, 1, or 0
+      stop("The 'recruit' can only have values of NA, 1, or 0")
+    }
+  } else {
+    stop("The 'dat' data.frame must contain values in the column labeled
+         'recruit'.")
+  }
+
+  ## check the 'byGenet' argument
+  if (is.null(byGenet) == FALSE) { ## if the 'byGenet' arg exists
+    if (is.logical(byGenet) == FALSE) { ## if the arg isn't logical
+      stop("The 'byGenet' argument must be either TRUE or FALSE. TRUE means that
+      you want to count recruits so that each genet counts as one recruit.
+      FALSE means that you want to count recruits so that each ramet counts
+      as one recruit.")
+    }
+  } else { ## if the 'byGenet' arg doesn't exist
+    stop("The function call must include a 'byGenet' argument that is either
+         TRUE or FALSE.")
+  }
+
+  # work --------------------------------------------------------------------
+  ## subset 'dat' to only get the individuals that are recruits
+  datRecs <- dat[dat$recruit == 1 & is.na(dat$recruit) == FALSE,]
+
+  ## drop all of the columns except those that you'll need for this fxn
+  names(datRecs)
+  datRecs <- datRecs[,
+                     c("Site", "Quad", "Species", "trackID", "Year", "recruit")]
+
+  if (byGenet == TRUE) {
+    if (nrow(unique(datRecs[,c("Year","trackID")])) != nrow(datRecs) ) { ## if
+      # the number of year/trackID combos is not the same as the number of rows
+      # in 'datRecs', then 'datRecs' needs to be aggregated by genet
+      ## make sure that each genet has only one row in each year
+      datRecs<- aggregate(x = datRecs[,c('recruit')],
+                          by = list("Site" = datRecs$Site,
+                                    "Quad" = datRecs$Quad,
+                                    "Species" = datRecs$Species,
+                                    "trackID" = datRecs$trackID,
+                                    "Year" = datRecs$Year),
+                          FUN = sum)
+      ## the output will make some values >1, so change them back to 1
+      names(datRecs)[6] <- "recruit"
+      datRecs[datRecs$recruits > 1,"recruit"] <- 1
+    }
+  }
+
+  ## count the number of recruits in each year/species/quad/site combo
+  datRecruits <- aggregate(x = datRecs[,c("recruit")], by = list(
+    Year = datRecs$Year,
+    Species = datRecs$Species,
+    Quad = datRecs$Quad,
+    Site = datRecs$Site
+  ),
+  FUN = length)
+
+  names(datRecruits)[which(names(datRecruits) == "x")] <- "recruits"
+
+  ## reorder the names of columns
+  datRecruits <- datRecruits[,c("Site", "Quad", "Species", "Year", "recruits")]
+
+
+  ## revert the names of the output data.frame to the names that the user input
+  ## re-name the appropriate columns in the output data.frame with the
+  # user-provided names of 'dat'
+  ## from above, user-provided names are stored in 'usrNames'
+  defaultNames <- defaultNames[1:4]
+  ## reset the names for the columns that we changed to 'default' values
+  names(datRecruits)[match(defaultNames, names(datRecruits))] <-
+    usrNames[1:4]
+
+  # output ------------------------------------------------------------------
+  return(datRecruits)
+}

@@ -1,0 +1,85 @@
+---
+title: "The PlantTracker 'trackSpp' function"
+author: "Alice Stears"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Suggested_PlantTracker_Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  rmarkdown.html_vignette.check_title = FALSE
+)
+```
+
+```{r setup, include = FALSE}
+library(PlantTracker)
+library(ggplot2)
+library(sf)
+```
+
+## Introduction
+This vignette dives into the `trackSpp` function, the main 'workhorse' function
+in the PlantTracker R package. `trackSpp` transforms a dataset of annual 
+maps of plant occurence into a demographic dataset. To accomplish this, the 
+function compares maps accross sampling years and assigns unique identifiers to 
+plants that overlap from year to year. These unique identifiers are then used to 
+assign survival, growth, recruit status, and age to each individual plant in 
+each year. 
+
+This process is complex and requires certain assumptions, so the following pages 
+will explain and illustrate the logic of each of these steps. We recommend you 
+read through this vignette before using trackSpp() in order to fully understand 
+the assumptions inherent to the function, and to make sure that you are 
+adjusting the user-specificed arguments correctly. 
+
+## *1.* Input data
+The required inputs to the `trackSpp` function are explained in detail in 
+[Suggested PlantTracker Workflow](Suggested_plantTracker_Workflow.html), 
+Parts 1.1, 1.2, and 2. In this example, we'll use a smaller subset of the 
+'grasslandData' and 'grasslandInventory' datasets that are included 
+in PlantTracker. 
+
+Here are the first few rows of the 'dat' dataset we'll be using. 
+```{r  echo = FALSE}
+exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
+                              grasslandData$Quad == "SG2" ,]
+
+dataShow <- head(exampleDat[, !names(exampleDat) %in%
+                                  c("Clone", "Seedling", "Stems", "Basal",
+                                    "sp_code_4", "Area")])
+rownames(dataShow) <- NULL
+knitr::kable(dataShow, caption = "**Table 1.1**: Example 'dat' data.frame" )
+```
+
+Here are the maps for one quadrat in 'dat' over the first several years 
+of sampling: 
+```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "**Figure 1.1**: Spatial map of a subset of example 'dat' dataset"}
+exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
+                              grasslandData$Quad == "SG2" & 
+                              grasslandData$Year %in% c(1922:1927), ]
+ggplot(data = exampleDat) +
+  geom_sf(aes(color = Species, fill = Species)) +
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+               lineend = "round", color = "grey30") + 
+  xlab("quadrat horizontal edge (m)") +
+  ylab("quadrat vertical edge (m)") +
+  theme_classic() +
+  facet_wrap(~Year) +
+  theme(axis.line = element_blank(), 
+        legend.text = element_text(face = "italic"),
+        plot.margin = margin(1,0,1,0)) 
+```
+
+## *2.* 

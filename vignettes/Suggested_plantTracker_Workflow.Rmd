@@ -476,7 +476,7 @@ datTrackSpp <- trackSpp(dat = dat, inv = inv,
                                            "Bouteloua rothrockii",
                                            "Ambrosia artemisiifolia",
                                            "Calliandra eriophylla"),
-                             "clonal" = c(1,1,0,0)),
+                             "clonal" = c(TRUE,TRUE,FALSE,FALSE)),
          aggregateByGenet = TRUE)
 knitr::kable(head(datTrackSpp))
 ```

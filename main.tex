@@ -1,0 +1,109 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+%\usepackage{natbib}
+\usepackage{indentfirst} % to indent the first paragraph after a section heading
+\usepackage{apacite}
+\bibliographystyle{apacite-copy}
+%\setcitestyle{aysep={,}} % separate author name and year with a comma
+\renewcommand{\BRetrievedFrom}{" "}
+\renewcommand{\BRetrieved}{" "}
+\renewcommand{\doiprefix}{https://doi.org/}
+
+\usepackage{booktabs, tabularx, longtable}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{graphicx} 
+\usepackage[section]{placeins}
+\usepackage{amsmath}
+\usepackage[leftcaption]{sidecap}
+\graphicspath{ {./figures/} }
+\usepackage{setspace}
+\usepackage{caption}
+\captionsetup[table]{font={stretch=1.05, small}}   %% change table caption spacing
+\captionsetup[figure]{font={stretch=1.05, footnotesize}} %% change figure caption spacing
+\usepackage{titlesec}
+\titleformat{\section}
+ {\normalfont\fontsize{14}{15}\bfseries}{\thesection}{1em}{} %change the size of section header font
+\titleformat{\subsection}
+ {\normalfont\fontsize{12}{15}\bfseries}{\thesubsection}{1em}{} %change the size of subsection header font
+\renewcommand{\thesection}{} %remove the section numbers
+\renewcommand{\thesubsection}{} %remove subsection numbers
+
+%try to deal with the problem of too long figure caption
+\DeclareCaptionLabelFormat{adja-page}{\hrulefill\\#1 #2 \emph{(previous page)}}
+\usepackage{subfig}
+
+%try to deal with issue of figures going to the end of the document
+\makeatletter
+\AtBeginDocument{%
+ \expandafter\renewcommand\expandafter\subsection\expandafter{%
+  \expandafter\@fb@secFB\subsection
+ }
+}
+\makeatother
+
+\geometry{margin = 1in}
+\pagestyle{fancy}
+\fancyhf{}
+%set the header
+\rhead{\thepage}
+\lhead{A. Stears}
+%set the line spacing
+\renewcommand{\baselinestretch}{2}
+%add line numbers
+\usepackage{lineno}
+\linenumbers
+
+\begin{document}
+
+\begin{flushleft}
+\Large{\textbf{plantTrackeR: An R package to translate quadrat maps into demographic data }} 
+
+\normalsize{Alice E. Stears$^{1*}$, Peter B. Adler$^2$, Shannon Albeke$^{3}$, Jared Studyvin$^{4}
+$, Daniel C. Laughlin$^1$}
+
+\small{$^1$Botany Department and Program in Ecology, University of Wyoming, Laramie, WY; \linebreak
+$^2$Department of Wildland Resources and the Ecology Center, Utah State University, Logan, UT; \linebreak
+$^3$Wyoming Geographic Information Science Center, University of Wyoming,
+Laramie, WY; \linebreak
+$^4$ Department of Mathematics and Statistics, University of Wyoming, Laramie, WY \linebreak 
+}
+\small{$^*$Corresponding Author: astears@uwyo.edu}
+
+\end{flushleft}
+
+\section{Abstract}
+\section{Introduction}
+Long-term observations of plant communities and populations are both rare and valuable for answering ecological questions. These datasets can be used to identify baseline rates of fluctuation and turnover in community composition and structure that occur with natural environmental variation and stochasticity. These baselines are essential to test how anthropogenic impacts or other disturbances alter plant communities \cite{Magurran2010}. Long-term datasets themselves can also be important tools for identifying how systems change with anthropogenic influence or natural environmental variation, particularly if the process of interest occurs over a long period or with a substantial time lag \cite{Lindenmayer2012}. These datasets are also critical for testing ecological theory and ground-truthing forecast models. Despite their importance, long-term datasets are rare. Lack of funding, labor, permits, institutional interest, and an inconsistent methodology all complicate or even condemn long-term research projects, making those that exist even more valuable. One particular issue is inconsistent data collection practices, which can make a long-term dataset virtually unusable.
+
+There are many protocols to alleviate this issue of inconsistent methodology in long-term data collection. Several of these methods were outlined by Frederic Clements in his book "Plant Physiology and Ecology", which formalized methods for using quadrats in plant ecology to track individuals, populations, and communities through time \cite{Clements1907}. A quadrat is a square outline within which plants can be counted, species listed, and individuals mapped. One particular type of quadrat is the ‘chart-quadrat,’ a permanent, 1 m$^2$ within which the basal cover and species identity of every individual plant is mapped \cite{Hill1920}. Each individual is identified and mapped as a polygon, unless it  has a negligible basal area (i.e. a forb that has a single stem), in which case it is mapped as a point. Repeat sampling of chart-quadrats over time generates maps that show how overall ground cover, relative species cover, and distribution of individuals has shifted over the sampling period. Chart-quadrat data has been used to study change in plant communities over time, but also to determine demographic patterns of individual species \cite{Albertson1965, Wright1976}.
+
+Use of chart-quadrats became standard practice for vegetation monitoring in the early to mid-20$^{th}$ century, particularly in rangeland management \cite{Albertson1965, Hill1920}. Scientists established (and are still establishing) hundreds of chart-quadrats at many rangeland research sites throughout western North America \cite{Zachmann2010, Chu2013, Anderson2012, Anderson2011, Adler2007}. Because two corners of each chart-quadrat are marked with pieces of angle-iron, it has also been possible to re-locate many quadrats that were established as early as 1912, making it conceivable to extend these long-term datasets even farther \cite{Dowling2015, Adler2019}.
+
+Some historic chart-quadrat maps have been lost, but many have been recovered, digitized into shapefiles and are being used to test ecological theory. Chart-quadrat maps have been digitized for seven sites so far (Table \ref{tab:sites})\cite{Adler2007, Anderson2011, Zachmann2010, Chu2013, Anderson2012}. These datasets have been used to investigate questions ranging from the effect of drought on community composition and structure \cite{Albertson1965}, to testing the species-area relationship at small scales \cite{Adler2003}. Although these chart-quadrat datasets were not sampled with a methodology consistent with traditional demographic studies (i.e. each individual plant is given a unique identification and tagged so that it can be followed through multiple transitions), the spatially-explicit nature of these map datasets means that we can extract demographic data such as individual rates of growth and survival, and plot-level rates of reproduction (via recruitment of seedlings). If an individual plant of the same species occurs at approximately the same location from year to year, it can be reasonably assumed that it is the same individual. In this manner, we can determine individual growth and survival. This method of extracting demographic data from chart-quadrat maps has been streamlined using computer algorithms \cite{Lauenroth2008}, and the resulting demographic data has been used to test hypotheses about demography, including the effect of climate on patterns of recruitment \cite{Fair1999}, how plant growth form influences life span \cite{Chu2014}, and the effect of climate and grazing on perennial grass growth and survival \cite{Wright1976}. There remain many more questions that can be addressed using the rare long-term demographic datasets these chart-quadrat maps provide. This project uses growth and survival data from chart-quadrat datasets to test how species-level functional traits mediate the effect of inter-annual climate on vital rates.
+
+\textit{Goal: Develop an \textsf{R} package that provides generalizable functions that allow the user to extract demographic data from chart-quadrat datasets. This package will be submitted to the CRAN (Comprehensive \textsf{R} Archive Network) package repository, and will be documented with a published methods paper.}
+
+The original 'tracking' algorithms used to generate demographic data from quadrat maps are not user-friendly, require substantial editing to function with each unique dataset, and rely on outdated methods of working with spatially-referenced data in R. Thus, there is a demand for a method of extracting demographic data from chart-quadrat datasets that is more user-friendly, methodologically current, and open-source. The \textsf{R} package that I write will fill this need (Fig. \ref{fig:Ch1Fig}).
+All available chart-quadrat datasets \cite{Adler2007,Chu2013,Anderson2011,Anderson2012,Zachmann2010} have been re-checked for errors, and in some cases reformatted as ESRI shapefiles, then stored on our SQL-server relational database. This database also contains metadata for each study site and quadrat, as well as phenology data for each species, and site-level climate data. I will add leaf and root trait data once this dataset is complete. 
+
+The \textsf{R} package I create, called plantTracker, will contain the following main functions (Fig. \ref{fig:Ch1Fig}):
+\begin{enumerate}
+    \item \textbf{quadDemo()}: Calculate growth and survival data for a specified set of quadrats or species using algorithms that spatially track individual genets through time. Users define the allowable dormancy (how many years a plant is allowed to 'disappear' before returning again and still be considered the same individual), the allowable ramet movement between years, and whether ramets can be grouped at the genet scale, or if every point or polygon constitutes a unique individual (can be defined at the species level).
+    \item\textbf{neighbors()}: Estimate inter- and intra-specific competition around a focal individual by determining either number of individuals or basal area of individuals within a user-defined radius.
+    \item\textbf{quadCov()}: Calculate the cover of a specified species within quadrats, either in absolute or relative terms; or calculate the number of individuals within quadrats of a user-defined species.
+    \item\textbf{quadRecruit()}: Calculate the number of recruits in a year per quadrat for a user-defined species.
+\end{enumerate}
+There will be additional functions to read in data from the SQL database, import user-generated data, prepare data for analysis, and create quadrat maps. plantTracker functions will depend the sf, tidyverse, DBI, and odbc packages. I will publish a methods paper to formally document the functionality of plantTracker, and will publish the package to CRAN and GitHub so it is widely accessible and transparent.
+
+
+\section{plantTrackeR}
+\section{Applications of plantTrackeR}
+\section{Conclusion}
+
+\bibliography{references.bib}
+
+\end{document}

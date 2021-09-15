@@ -160,7 +160,8 @@
   # each iteration of the for-loop below
 
   ##  i = year in inventory
-  if (inv[firstYearIndex] < max(inv)) {
+  if (inv[firstYearIndex] < max(inv)) { ## is the first year of data also the
+    # last year of sampling?
     for (i in (firstYearIndex+1):length(inv)) {
       ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
       # 'tempCurrentYear' and 'tempNextYear' are not far enough apart to exceed

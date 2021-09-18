@@ -27,8 +27,8 @@ library(sf)
 This vignette dives into the `trackSpp` function, the main 'workhorse' function
 in the PlantTracker R package. `trackSpp` transforms a dataset of annual 
 maps of plant occurence into a demographic dataset. To accomplish this, the 
-function compares maps accross sampling years and assigns unique identifiers to 
-plants that overlap from year to year. These unique identifiers are then used to 
+function compares maps accross sampling years and assigns unique identifiers ("trackIDs") to plants that overlap from year to year. Plants with the same 
+trackID are assumed to be the same individual. These trackIDs are then used to
 assign survival, growth, recruit status, and age to each individual plant in 
 each year. 
 
@@ -36,7 +36,7 @@ This process is complex and requires certain assumptions, so the following pages
 will explain and illustrate the logic of each of these steps. We recommend you 
 read through this vignette before using trackSpp() in order to fully understand 
 the assumptions inherent to the function, and to make sure that you are 
-adjusting the user-specificed arguments correctly. 
+adjusting the user-specified arguments correctly. 
 
 ## *1.* Input data
 The required inputs to the `trackSpp` function are explained in detail in 
@@ -45,7 +45,7 @@ Parts 1.1, 1.2, and 2. In this example, we'll use a smaller subset of the
 'grasslandData' and 'grasslandInventory' datasets that are included 
 in PlantTracker. 
 
-Here are the first few rows of the 'dat' dataset we'll be using. 
+Here are the first few rows of the `dat` dataset we'll be using: 
 ```{r  echo = FALSE}
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" ,]
@@ -54,12 +54,14 @@ dataShow <- head(exampleDat[, !names(exampleDat) %in%
                                   c("Clone", "Seedling", "Stems", "Basal",
                                     "sp_code_4", "Area")])
 rownames(dataShow) <- NULL
-knitr::kable(dataShow, caption = "**Table 1.1**: Example 'dat' data.frame" )
+knitr::kable(dataShow, caption = "**Table 1.1**: Example `dat` data.frame" )
 ```
 
-Here are the maps for one quadrat in 'dat' over the first several years 
+
+Here are the maps for one quadrat in `dat` over the first several years 
 of sampling: 
-```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "**Figure 1.1**: Spatial map of a subset of example 'dat' dataset"}
+
+```{r echo = FALSE,  fig.width=7.5, fig.align = 'center', fig.cap = "**Figure 1.1**: Spatial map of a subset of example `dat` dataset"}
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
                               grasslandData$Year %in% c(1922:1927), ]
@@ -82,4 +84,166 @@ ggplot(data = exampleDat) +
         plot.margin = margin(1,0,1,0)) 
 ```
 
-## *2.* 
+## *2.* Iterating through sites, quadrats, and species
+The first step of `trackSpp` is iterating through `dat` first by site, then by 
+quadrat, then by species. `inv` is also filtered down to a single vector of 
+sequential sampling years for the quadrat in question. Then `trackSpp` gets the
+appropriate 'dorm', 'clonal', 'buff', and 'buffGenet' arguments for that given
+species, either by using the globally-specified value in the trackSpp function
+call, or by extracting the species-level value if the argument was given as a
+data.frame of unique values for each species. Then, the data and arguments are
+passed to the `assign` function. This function is not exported in PlantTracker, 
+but the code can be accessed by typing `PlantTracker:::assign` in the console. 
+The remainder of this vignette describes the process of the `assign` function. 
+
+## *3.* Tracking individuals over time using the `assign` function
+Once the input data has been filtered down to one site, one quadrat, and one
+species, then the `assign` function is used to track individuals through time. 
+In this vignette, we will use data from a site "AZs", quadrat "SG2", and the 
+species **"Heteropogon contortus"**. The `inv` vector for this quadrat is `c(1922, 1923, 1924, 1925, 1926, 1927, 1928, 1929, 1930, 1931, 1932, 1933, 1934)`
+
+### *3.1* Get data for the first year of sampling
+The data is subset yet again, this time for only the first year of observations 
+for this species in this quadrat, and stored in a data.frame called
+`tempCurrentYear`. In our example, data from 1922 will be stored in 
+this data.frame. 
+
+### *3.2* Group genets together using `groupByGenet`, and assign 'trackID's to each individual in the first year of sampling
+Because this is the first year of sampling, no polygons have been grouped into
+genets (if 'clonal' = TRUE), and none have been assigned trackIDs. Both of these
+tasks are accomplished by a function called `ifClonal`, which is internal to
+`assign`. If 'clonal' = FALSE, then clonality is not allowed, and each polygon is
+assumed to represent a unique genet. In this case, each polygon/row in
+`tempCurrentYear` is assigned a unique 'genetID' that acts as a temporary 
+identifier that will be used later in the function. 
+
+If 'clonal' = TRUE, then clonality is allowed, and it is possible for multiple
+polygons/rows in the raw data to represent one genetic individual. In this case, 
+we use a function called `groupByGenet` to group polygons together into one genet. 
+This function uses the 'buffGenet' argument that is supplied to `trackSpp`. The 
+distance ('buffGenet' x 2) is the maximum distance that two polygon edges can be 
+from one another and still be considered ramets from the same genet. In other 
+words, Any two polygons with edges that are less than ('buffGenet' x 2) from one 
+another will getthe same 'genetID'. `groupByGenet` creates a matrix of distances 
+between every single polygon present in the input data.frame, and clusters them 
+together based on proximities that are below the threshold indicated by 
+'buffGenet'. Then, basal area is summed for all ramets and stored in the
+'basalArea_genet' column of `tempCurrentYear`. Also, once temporary genetIDs 
+have been assigned, a permanent 'trackID' is given to each genet. This is a
+combination of the six letter species code, year of first observation, and an
+arbitrary index differentiating individuals of the the same species and year of
+recruitment (e.g. HETCON_1922_3). 
+%ASK DAVE ABOUT THIS--NOT SURE HOW TO EXPLAIN THE MATRIX STUFF... 
+
+### *3.3* Assign age and recruitment data to first year 
+We can also give all individuals in the first year data in the 'age' and 
+'recruit' columns. If the first year for which there is data in `dat` is 
+actually the very first year the quadrat was sampled (e.g. there are 
+*Heteropogon contortus* observations in 1922, and the quadrat SG2 was first 
+sampled in 1922), then we put an 'NA' in both the 'age' and 'recruitment' 
+columns. Because there was no data collected in the previous year, we don't know 
+if any of these plants are new recruits, and don't know their age.  
+
+If the first year of data in `dat` -- now in `tempCurrentYear`-- is *after* 
+the first year the quadrat was sampled (e.g. the first *Heteropogon contortus*
+observations are in 1924, but the quadrat SG2 was first sampled in 1922), then 
+we know that these individuals in `tempCurrentYear` really are new recruits and 
+are in their first year, because they were not present in the previous year. 
+They get a '1' in both the 'recruit' and 'age' columns. 
+
+If the first year of data in `dat` is also the *last* year that the quadrat is 
+sampled (e.g. the first *Heteropogon contortus* observations are in 1934, which 
+is the last year of sampling), then the observations in `tempCurrentYear` get a 
+'1' in both the 'recruit' and 'age' columns, but also get an 'NA' in the
+'size_tplus1' and 'survives_tplus1' columns. If this is the case, the `assign` 
+function still uses `ifClonal` to assign genetIDs to these observations and then 
+assigns trackIDs. But there are no further steps needed to generate demographic 
+data, so the function returns `tempCurrentYear` as the result after this point. 
+
+### *3.4* Comparing sequential years of data to track indivudals through time
+Now comes the main work of the function, which compares quadrat maps for a 
+species over time, and assigns the same trackID to polygons that overlap from 
+year to year. This is accomplished using a for loop that compares the current 
+year of data to the next year of data. The loop iterates through year by the 
+index 'i'. The 'current' year is the year with the index 'i-1' in the `inv` 
+vector, and the associated data is stored in the `tempCurrentYear` data.frame. 
+The 'next' year is the year with the index 'i' in the `inv` vector, and the 
+associated data is stored in `tempNextYear` data.frame. There are multiple 
+if-else statements nested within this larger for loop, which I'll explain using 
+a dichotomous key below. 
+
+### *3.4.1* Is there a gap between year 'i-1' and year 'i'?
+Not every quadrat was sampled every year, and this is indicated in the `inv`
+vector. This is one case where the 'dorm' argument input into `trackSpp` and 
+then passed to `assign` comes in. The value of 'dorm' indicates how many years 
+it is 'acceptable' for a plant to disappear from the quadrat maps and still be
+considered the same individual with the same trackID. The value of 'dorm' must 
+be determined by the user, and represents a point where it's necessary to have 
+some biological knowledge about the species present in the dataset. For example, 
+allowing dormancy makes sense for some species such as perennial forbs, but 
+doesn't for large organisms such as trees. `trackSpp` allows you to specify the 
+'dorm' argument globally with one value, or individually for each species. The 
+'dorm' argument can also be a way to control how 'forgiving' you want to be with 
+the dataset. For example, if you expect that plants were sometimes missed during 
+the mapping or digitatization process, then allowing a dormancy value of '1' 
+will help account for this. It's important to realize that using a 'dorm' value 
+of '1' or higher will likely *slightly* overestimate growth and survival, while 
+using a value of '0' will likely slightly underestimate growth and survival. 
+
+If a gap between `inv[i]` and `inv[i-1]` is...                   | 
+-----------------------------------------------------------------|-----------
+... greater than the 'dorm' value + 1 (e.g. if 'dorm' = 1, inv[i] = 1923, and inv[i-1] = 1920; 1923 - 1920 > (1+1)), then we don't know if the observations in `tempCurrentYear` survived or grew. They get an 'NA' in the 'size_tplus1' and 'survives_tplus1' columns.  | Go to step *3.4.?*
+... less than or equal to the 'dorm' value + 1 (e.g. if 'dorm' = 1, inv[i] = 1923, and inv[i-1] = 1921; 1923 - 1921 = (1+1)), then we can compare the data from year inv[i-1] (`tempCurrentYear`) to data from year inv[i] (`tempNextYear`). | Proceed to step *3.4.2*. 
+
+### *3.4.2* Get data for year 'i'
+We already have data stored for the 'current' year, `inv[i-1]`, stored in 
+`tempCurrentYear`. Now that we know that the gap between years doesn't exceed 
+'dorm', we can get data from the 'next' year, year `inv[i]`. We do this by 
+subsetting `dat` for all observations in year `inv[i]`. Then, we use `isClonal` 
+to group closely-grouped polygons into genets if applicable, and assign 
+genetIDs. This dataset is stored in the `tempNextYear` data.frame. 
+Proceed to step *3.4.3*. 
+
+### *3.4.3* Are there actually any observations in the 'current' year (`inv[i-1]`)? 
+Even if a quadrat was sampled in `inv[i-1]`, it is possible that there weren't actually any plants there that year.
+
+If there ...                                                     |
+-----------------------------------------------------------------|-----------
+... is data in `tempCurrentYear`                                 | Proceed to step *3.4.4*
+... is *not* data in `tempCurrentYear`                           | Go to step *3.4.??*
+ 
+### *3.4.4* Add a buffer around the 'current' year data
+Now a buffer is added around each polygon in `tempCurrentYear`. This data is stored in teh `tempCurrentBuff` data.frame. This buffer is of the width specified in the 'buff' argument of `trackSpp` that is passed to `assign`. Adding this buffer before comparing maps from the current and next years allows for mapping error and slight movement of plants between years, which is especially likely for forbs that resprout every year. Proceed to step *3.4.5*.
+
+### *3.4.5* Are there actually any observations in the 'next' year (`inv[i]`)? 
+Even if a quadrat was sampled in `inv[i]`, it is possible that there weren't actually any plants there that year. 
+
+If there ...                                                     |
+-----------------------------------------------------------------|-----------
+... is data in `tempNextYear`                                 | Proceed to step *3.4.7*
+... is *not* data in `tempNextYear`                           | Take the entire `tempCurrentYear` data.frame to step *3.4.6* 
+
+
+### *3.4.6* 'Store' observations as 'ghosts' to compare to data from `inv[i+1]`.
+This step also involved with the 'dormancy' concept discussed in section 
+*3.4.1*. If dormancy is not allowed for this species (i.e. 'dorm' = 0), then 
+the observations in question must be given an '0' in the 'survives_tplus1' 
+column and an 'NA' in the 'size_tplus1' column. 
+
+However, if dormancy *is* allowed for this species, the individuals that were 'sent' to this step because they didn't overlap with anything in year 'i' can be 'stored' and compared to the next set of data from year 'i+1'. We call these stored individuals 'ghosts'. These ghosts will be compared to the polygons from year 'i+1', 'i+2', etc. all the way until the dormancy argument is exceeded. For example, if some *Heteropogon contortus* individuals were present in 1922, but did not overlap with any plants in 1923 and 'dorm' = 1, then they are stored as 'ghosts' and their locations together with those of individuals from 1923 are compared to the mapped individuals from 1924. If these 'ghosts' have no matches in the 1924 data, then they get a '0' in the 'survives_tplus1' column since they are only allowed to be dormant for one year.   
+
+### *3.4.?* Store the resulting demographic data
+Now demographic data (or NA's, if appropriate) and trackIDs have been assigned to every individual in `tempCurrentYear` (if there are actually observations in `inv[i-1]`), we can 
+save these results. They are added to a data.frame that, when the for loop 
+finishes, will be returned by the `assign` function. If `inv[i]` is *not* the 
+last year of sampling, then proceed to step *3.4.?*. If `inv[i]` *is* the last 
+year of sampling, then the for loop is over!
+
+### *3.4.??* Get ready for the next iteration of the loop
+If there are still iterations of the loop left, that is if `inv[i]` is not the 
+last year of `inv`, then the data from year[i] (typically already stored in 
+`tempNextYear`) is put into the `tempCurrentYear` data.frame. If there are not 
+already genetIDs assigned to the data from `inv[i]`, then it is passed through 
+`ifClonal`. The loop proceeds to the next value of 'i' 
+(start again at section *3.4.1*). 
+

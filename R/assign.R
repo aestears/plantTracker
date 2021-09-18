@@ -283,7 +283,7 @@
           ## add a buffer to the current year data
           tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
 
-          ## MAKE SURE THERE IS DATA IN YEAR i (tempNextYear i
+          ## MAKE SURE THERE IS DATA IN YEAR i (tempNextYear)
           if (nrow(tempNextYear) < 1) { ## if the tempNextYear data does NOT
             # exist, then keep the tempCurrentYear data.frame for the next i
             ## if the gap between year of measurement (year inv[i-1]) and the
@@ -367,13 +367,12 @@
             next
             ## end of 'else' that has steps if tempNextYear is empty
           } else { ## if the tempNextYear data DOES exist,
-            # ((nrow(tempNextYear)>0)) proceed with the loop
             ## AGGREGATE BY GENET for year i (if clonal = TRUE)
             tempNextYear <- ifClonal(cloneDat = tempNextYear, clonal = clonal,
                                      buffGenet = buffGenet)
 
             ## FIND OVERLAPPING POLYGONS
-            ## trying to get the amount of overlap between each polygon
+            ## get the amount of overlap between each polygon
             overlapArea <- suppressWarnings(sf::st_intersection(tempCurrentBuff,
                                                                 tempNextYear))
 

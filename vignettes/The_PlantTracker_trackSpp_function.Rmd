@@ -196,16 +196,17 @@ If a gap between `inv[i]` and `inv[i-1]` is...                   |
 ... less than or equal to the 'dorm' value + 1 (e.g. if 'dorm' = 1, inv[i] = 1923, and inv[i-1] = 1921; 1923 - 1921 = (1+1)), then we can compare the data from year inv[i-1] (`tempCurrentYear`) to data from year inv[i] (`tempNextYear`). | Proceed to step *3.4.2*. 
 
 ### *3.4.2* Get data for year 'i'
-We already have data stored for the 'current' year, `inv[i-1]`, stored in 
+We already have datafor the 'current' year (`inv[i-1]`) stored in 
 `tempCurrentYear`. Now that we know that the gap between years doesn't exceed 
-'dorm', we can get data from the 'next' year, year `inv[i]`. We do this by 
+'dorm', we can get data from the 'next' year (`inv[i]`). We do this by 
 subsetting `dat` for all observations in year `inv[i]`. Then, we use `isClonal` 
 to group closely-grouped polygons into genets if applicable, and assign 
 genetIDs. This dataset is stored in the `tempNextYear` data.frame. 
 Proceed to step *3.4.3*. 
 
 ### *3.4.3* Are there actually any observations in the 'current' year (`inv[i-1]`)? 
-Even if a quadrat was sampled in `inv[i-1]`, it is possible that there weren't actually any plants there that year.
+Even if a quadrat was sampled in `inv[i-1]`, it is possible that there weren't 
+actually any plants there that year.
 
 If there ...                                                     |
 -----------------------------------------------------------------|-----------
@@ -213,37 +214,79 @@ If there ...                                                     |
 ... is *not* data in `tempCurrentYear`                           | Go to step *3.4.??*
  
 ### *3.4.4* Add a buffer around the 'current' year data
-Now a buffer is added around each polygon in `tempCurrentYear`. This data is stored in teh `tempCurrentBuff` data.frame. This buffer is of the width specified in the 'buff' argument of `trackSpp` that is passed to `assign`. Adding this buffer before comparing maps from the current and next years allows for mapping error and slight movement of plants between years, which is especially likely for forbs that resprout every year. Proceed to step *3.4.5*.
+Now a buffer is added around each polygon in `tempCurrentYear`. This data is 
+stored in teh `tempCurrentBuff` data.frame. This buffer is of the width 
+specified in the 'buff' argument of `trackSpp` that is passed to `assign`. 
+Adding this buffer before comparing maps from the current and next years allows 
+for mapping error and slight movement of plants between years, which is 
+especially likely for forbs that resprout every year. Proceed to step *3.4.5*.
 
 ### *3.4.5* Are there actually any observations in the 'next' year (`inv[i]`)? 
-Even if a quadrat was sampled in `inv[i]`, it is possible that there weren't actually any plants there that year. 
+Even if a quadrat was sampled in `inv[i]`, it is possible that there weren't 
+actually any plants there that year. 
 
 If there ...                                                     |
 -----------------------------------------------------------------|-----------
-... is data in `tempNextYear`                                 | Proceed to step *3.4.7*
-... is *not* data in `tempNextYear`                           | Take the entire `tempCurrentYear` data.frame to step *3.4.6* 
+... is data in `tempNextYear`                                    | If 'clonal' = TRUE, proceed to step *3.4.7*. If 'clonal' = FALSE, go to step *3.4.8*
+... is *not* data in `tempNextYear`                              | Take the entire `tempCurrentYear` data.frame to step *3.4.6* 
 
 
-### *3.4.6* 'Store' observations as 'ghosts' to compare to data from `inv[i+1]`.
-This step also involved with the 'dormancy' concept discussed in section 
+### *3.4.6* 'Store' observations as 'ghosts' to compare to data from the next year (`inv[i+1]`) during the next iteration of the loop.
+This step also involves the 'dormancy' concept discussed in section 
 *3.4.1*. If dormancy is not allowed for this species (i.e. 'dorm' = 0), then 
-the observations in question must be given an '0' in the 'survives_tplus1' 
-column and an 'NA' in the 'size_tplus1' column. 
+the observations in question that were 'sent' to this step must be given a '0' 
+in the 'survives_tplus1' column and an 'NA' in the 'size_tplus1' column. Because 
+they are not allowed to be dormant, if they don't have overlapping individuals 
+in the next year (`inv[i]`), then they are dead. Go to step *3.4.??*. 
 
-However, if dormancy *is* allowed for this species, the individuals that were 'sent' to this step because they didn't overlap with anything in year 'i' can be 'stored' and compared to the next set of data from year 'i+1'. We call these stored individuals 'ghosts'. These ghosts will be compared to the polygons from year 'i+1', 'i+2', etc. all the way until the dormancy argument is exceeded. For example, if some *Heteropogon contortus* individuals were present in 1922, but did not overlap with any plants in 1923 and 'dorm' = 1, then they are stored as 'ghosts' and their locations together with those of individuals from 1923 are compared to the mapped individuals from 1924. If these 'ghosts' have no matches in the 1924 data, then they get a '0' in the 'survives_tplus1' column since they are only allowed to be dormant for one year.   
+However, if dormancy *is* allowed for this species, the individuals that were 
+'sent' to this step because they didn't overlap with anything in year `inv[i]` 
+can be 'stored' and compared to the next set of data from year 'i+1'. We call 
+these stored individuals 'ghosts'. These ghosts will be compared to the polygons 
+from year 'i+1', 'i+2', etc. all the way until the dormancy argument is 
+exceeded. For example, if some *Heteropogon contortus* individuals were present 
+in 1922, but did not overlap with any plants in 1923 and 'dorm' = 1, then they 
+are stored as 'ghosts' and their locations together with those of individuals 
+from 1923 are compared to the mapped individuals from 1924. If these 'ghosts' 
+have no matches in the 1924 data, then they get a '0' in the 'survives_tplus1' 
+column since they are only allowed to be dormant for one year. We then call 
+these individuals 'dead ghosts'. When this step is complete, the 'dead ghosts' 
+are added to the output data.frame The 'ghosts are saved in the 
+`tempCurrentYear` data.frame, which now only contains individuals that have an 
+overlapping polygon in year `inv[i]` and ghosts. Start the loop again with the 
+next 'i' (Got to section *3.4.1*)
+
+### *3.4.7* Group the `tempNextYear` observations into genets
+If 'clonal' = TRUE for this species, use the `ifClonal` to group individual 
+polygons that are close enough to one another to be considered the same genet 
+(i.e. are within (2 x 'buffGenet') of one another). Individuals in the same 
+genet are given the same genetID. 
+
+### *3.4.8* Are there any overlaps between polygons in `tempCurrentYear` and `tempNextYear`? 
+Use the `st_intersection` function from the sf package to determine if there is any overlap between polygons in the the current year (`inv[i-1]`, stored in`tempCurrentYear`) and the next year (`inv[i]`, stored in `tempNextYear`). 
+
+If there ...                                                     |
+-----------------------------------------------------------------|-----------
+... is overlap between `tempCurrentYear` and `tempNextyear`  | Proceed to step *3.4.9*
+... is *not* overlap between `tempCurrentYear` and `tempNextyear` | Take the `tempCurrentYear` data.frame to step *3.4.6*. Take the `tempNextYear` data.frame to step *3.4.??*, but first assign them a '1' in the 'recruit' column and a '1' in the 'age' column. 
+
+### *3.4.9* Compare the overlap between `tempCurrentYear` and `tempNextYear` to assign trackIDs. 
+The `st_intersection` function used in step *3.4.8* 
+
 
 ### *3.4.?* Store the resulting demographic data
 Now demographic data (or NA's, if appropriate) and trackIDs have been assigned to every individual in `tempCurrentYear` (if there are actually observations in `inv[i-1]`), we can 
 save these results. They are added to a data.frame that, when the for loop 
 finishes, will be returned by the `assign` function. If `inv[i]` is *not* the 
-last year of sampling, then proceed to step *3.4.?*. If `inv[i]` *is* the last 
+last year of sampling, then proceed to step *3.4.??*. If `inv[i]` *is* the last 
 year of sampling, then the for loop is over!
 
 ### *3.4.??* Get ready for the next iteration of the loop
 If there are still iterations of the loop left, that is if `inv[i]` is not the 
-last year of `inv`, then the data from year[i] (typically already stored in 
-`tempNextYear`) is put into the `tempCurrentYear` data.frame. If there are not 
-already genetIDs assigned to the data from `inv[i]`, then it is passed through 
+last year of `inv`, then the data from year[i] (stored in 
+`tempNextYear`) and any 'ghosts' from previous years that are confirmed to be 
+dead, are put into the `tempCurrentYear` data.frame. This happens even if `tempNextYear` is empty. 
+If there are not already genetIDs assigned to the data from `inv[i]` in `tempNextYear` (which happens if this is the first year after a gap in sampling), then it is passed through 
 `ifClonal`. The loop proceeds to the next value of 'i' 
 (start again at section *3.4.1*). 
 

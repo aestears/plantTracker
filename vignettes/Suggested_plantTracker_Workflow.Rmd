@@ -142,7 +142,7 @@ It's important to note that, while PlantTracker was designed to be used with
 small-scale maps of plant occurence in quadrats, it is concievably possible to 
 use other styles of map data in PlantTracker functions. All that is required is 
 a single mapped basal area (or point location converted to a small polygon) at 
-each time point for each organism (or genet), and is accompanied by the required 
+each time point for each organism (or ramet), and is accompanied by the required 
 metadata detailed above. For example, PlantTracker functions could be used to 
 estimate tree demographic rates at the scale of 100 m x 50 m plots.
 

@@ -263,7 +263,7 @@
           }
           ## if else to determine what to do next, but depending on whether this
           # is the last year of sampling or not
-          if (inv[i]==max(inv)) { ## if this IS the last year
+          if (inv[i] == max(inv)) { ## if this IS the last year
             ## put the 'tempNextYear' data into the assignOut d.f
             if (exists("assignOut") == TRUE) {
               ## if this is not the first year, then add demographic data to the
@@ -278,8 +278,8 @@
             next
           }
           ## end of 'if' of what to do if tempCurrentYear is empty
-        } else  { ## what to do if the 'tempCurrentYear';
-          # (nrow(tempCurrentYear)>=1)DOES have data
+        } else  { ## what to do if the 'tempCurrentYear'
+          # (nrow(tempCurrentYear)>=1) DOES have data
           ## add a buffer to the current year data
           tempCurrentBuff <- sf::st_buffer(tempCurrentYear, buff)
 

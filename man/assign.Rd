@@ -19,7 +19,9 @@ This function will add columns called "basalArea_ramet", "trackID",
 "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
 contain columns with these names.}
 
-\item{inv}{An integer vector that contains all of years in which this quadrat (or other unique spatial area) was sampled. Years must be ordered sequentially.}
+\item{inv}{An integer vector that contains all of years in which this quadrat
+(or other unique spatial area) was sampled. Years must be
+ordered sequentially.}
 
 \item{dorm}{A numeric vector of length 1, indicating the number of years this
 species is allowed to go dormant, i.e. be absent from the map but be
@@ -34,13 +36,15 @@ considered the same individual.}
 \item{buffGenet}{A numeric vector of length 1 that is greater than or equal
 to zero, indicating how close (in the same units as spatial values in 'dat')
 polygons must be to one another in the same year to be grouped as a genet
-(if 'clonal' argument = 1). This argument is passed to
+(if 'clonal' argument = TRUE). This argument is passed to
 the \code{\link{groupByGenet}} function, which is used inside the
 \code{\link{assign}} function.}
 
-\item{clonal}{A numeric Boolean vector of length 1, indicating whether this
+\item{clonal}{A logical argument of length 1, indicating whether this
 species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
-can be grouped as one individual (genet)).}
+can be grouped as one individual (genet)). If clonal = TRUE, the species is
+allowed to be clonal, and if clonal = FALSE, the species is not allowed to
+be clonal.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
@@ -56,5 +60,5 @@ see \code{\link{trackSpp}} for details of arguments and usage.
 \code{\link[=trackSpp]{trackSpp()}}, which is a wrapper for the \code{\link[=assign]{assign()}} function that
 applies it over many species and quadrats. The \code{\link[=assign]{assign()}} function uses the
 \code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
-(if 'clonal' argument = 1).
+(if 'clonal' argument = TRUE).
 }

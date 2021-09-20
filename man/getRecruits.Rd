@@ -12,7 +12,8 @@ getRecruits(
   site = "Site",
   year = "Year",
   trackID = "trackID",
-  recruit = "recruit"
+  recruit = "recruit",
+  ...
 )
 }
 \arguments{
@@ -60,10 +61,14 @@ unnecessary to include a value for this argument if the column name is
 the column in 'dat' that contains information indicating whether or not this
 row represents data for a recruit. It is unnecessary to include a value for
 this argument if the column name is "recruit" (default is "recruit").}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
 This function returns a table with columns for site, quadrat,
 species name, year, and number of recruits
+
+
 }
 \description{
 This function calculates the number of new plant recruits of
@@ -95,4 +100,5 @@ outDat <- trackSpp(dat = dat,
  byGenet = TRUE,
  species = "speciesName"
  )
+
 }

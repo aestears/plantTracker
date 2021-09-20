@@ -17,6 +17,7 @@ trackSpp(
   year = "Year",
   geometry = "geometry",
   aggregateByGenet = TRUE,
+  printMessages = TRUE,
   ...
 )
 }
@@ -60,7 +61,7 @@ genet.}
 \item{buffGenet}{A numeric vector of length 1 that is greater than or equal
 to zero, indicating how close (in the same units as spatial values in 'dat')
 polygons must be to one another in the same year to be grouped as a genet
-(if 'clonal' argument = 1). OR buffGenet can be a data.frame with
+(if 'clonal' argument = TRUE). OR buffGenet can be a data.frame with
 the columns "Species" and "buffGenet". This data.frame must have a row for
 each unique species present in 'dat', with species name as a character string
 in the "Species" column, and a numeric value greater than or equal to 0 in
@@ -69,13 +70,15 @@ be to one another to be considered the same genet. This argument is passed to
 the \code{\link{groupByGenet}} function, which is used inside the
 \code{\link{assign}} function.}
 
-\item{clonal}{A numeric Boolean vector of length 1, indicating whether a
+\item{clonal}{A logical vector of length 1, indicating whether a
 species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
-can be grouped as one individual (genet)). OR clonal can be a data.frame with
-the columns "Species" and "clonal". This data.frame must have a row for each
-unique species present in 'dat', with species name as a character string in
-the "Species" column, and a Boolean value in the 'clonal' column indicating
-whether that species is allowed to be clonal (1) or not (0).}
+can be grouped as one individual (genet)). If clonal = TRUE, the species is
+allowed to be clonal, and if clonal = FALSE, the species is not allowed to
+be clonal. OR clonal can be a data.frame with the columns "Species" and
+"clonal". This data.frame must have a row for each unique species present in
+'dat', with species name as a character string in the "Species" column, and a
+logical value in the 'clonal' column indicating whether that species is
+allowed to be clonal (TRUE) or not (FALSE).}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
@@ -112,6 +115,14 @@ the data (each ramet gets a row). Note that if the value is TRUE, then some
 columns of the input data.frame 'dat' will be dropped. If you do not wish
 this to happen, then you can aggregate the data.frame to genet by hand.}
 
+\item{printMessages}{A logical argument that determines whether the this
+function returns messages about genet aggregation, as well as messages
+indicating which year is the last year of sampling in each quadrat and which
+year(s) come before a gap in sampling that exceeds the 'dorm' argument (and
+thus which years of data have an 'NA' for "survives_tplus1" and
+"size_tplus1"). If printMessages = TRUE (the default), then messages are
+printed. If printMessages = FALSE, then messages are not printed.}
+
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
@@ -135,11 +146,11 @@ accurately determine whether or not it is a new recruit in year \emph{t}.}
 \item{survives_tplus1}{A Boolean integer indicating whether this individual
 survived (1), or died (0) in year \emph{t+1}.}
 \item{basalArea_genet}{The size of this entire genet in year \emph{t}, in the same
-units as the 'area' column in 'dat.' If the 'clonal' argument = 0, then this
+units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then this
 number will be identical to the 'basalArea_ramet' column. }
 \item{basalArea_ramet}{This is only included if 'aggregateByGenet' = FALSE.
 This is the size of this ramet in year \emph{t}, in the same units as the 'area'
-column in 'dat'. If the 'clonal' argument = 0 , then this number will be
+column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
 identical to the 'basalArea_genet' column.}
 \item{nearEdge}{A logical value indicating whether this individual is within
 a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
@@ -154,7 +165,7 @@ This function is a wrapper function that applies the \code{\link{assign}}
 function across multiple species, quadrats, or sites. For each species and
 quadrat, \code{\link[=trackSpp]{trackSpp()}} loads a spatially referenced data.frame ('dat'), and
 then uses the \code{\link{groupByGenet}} function to assign genetIDs to
-polygons (if 'clonal' = 1) such that polygons that form the same genet have
+polygons (if 'clonal' = TRUE) such that polygons that form the same genet have
 the same genetID. A buffer of a distance defined by 'buff' is applied around
 each genet polygon. Then, the spatial data for each genet from the current
 year (year \emph{t}) is compared to individuals in the next year (year \emph{t+1}).
@@ -184,7 +195,7 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
  aggregateByGenet = TRUE
  )
@@ -196,5 +207,5 @@ outDat <- trackSpp(dat = dat,
 quadrats, and uses the \code{\link[=aggregateByGenet]{aggregateByGenet()}} function to aggregate the
 demographic results by genet (if 'aggregateByGenet' = TRUE). The \code{\link[=assign]{assign()}}
 function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
-(if 'clonal' argument = 1).
+(if 'clonal' argument = TRUE).
 }

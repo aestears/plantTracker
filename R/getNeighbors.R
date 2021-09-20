@@ -230,7 +230,7 @@ per year.")
 
   ## set up the progress bar
   if (method == 'count' & compType == 'oneSpp') {
-    progress_bar = txtProgressBar(min = 0,
+    progress_bar = utils::txtProgressBar(min = 0,
                                   max = nrow(unique(
                                     sf::st_drop_geometry(dat[,c("Site", "Quad",
                                                                 "Year",
@@ -243,7 +243,7 @@ per year.")
     rownames(temp) <- 1:nrow(temp)
   }
   if (method == 'count' & compType == 'allSpp') {
-    progress_bar = txtProgressBar(min = 0,
+    progress_bar = utils::txtProgressBar(min = 0,
                                   max = nrow(unique(
                                     sf::st_drop_geometry(dat[,c("Site", "Quad",
                                                                 "Year")]))),
@@ -301,7 +301,7 @@ per year.")
               m <- which(temp$Site == i & temp$Quad == j & temp$Species == l
                          & temp$Year == k)
               ## add to the progress bar
-              setTxtProgressBar(progress_bar, value = m)
+              utils::setTxtProgressBar(progress_bar, value = m)
             }
 
           } else if (compType == 'allSpp') { ## calculating interspecific
@@ -341,7 +341,7 @@ per year.")
             m <- which(temp$Site == i & temp$Quad == j
                        & temp$Year == k)
             ## add to the progress bar
-            setTxtProgressBar(progress_bar, value = m)
+            utils::setTxtProgressBar(progress_bar, value = m)
           }
         }
       }
@@ -389,7 +389,7 @@ per year.")
                                 tempAreas$Year == tempAreas$Year.1,]
 
       ## now aggregate by focal genet (column name = 'trackID')
-      temp3 <- aggregate_pb(x = tempAreas2$geometry,
+      temp3 <- aggregate(x = tempAreas2$geometry,
                          by = list("Site" = tempAreas2$Site,
                                    "Quad" = tempAreas2$Quad,
                                    "Species" = tempAreas2$Species,

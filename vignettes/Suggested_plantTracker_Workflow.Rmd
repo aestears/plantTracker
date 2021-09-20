@@ -4,7 +4,7 @@ author: Alice Stears
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Suggested_PlantTracker_Workflow}
+  %\VignetteIndexEntry{Suggested_plantTracker_Workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
+library(devtools)
+load_all()
 ```
 
 
@@ -114,7 +116,7 @@ the ride" in any analysis using PlantTracker functions.
 
 Here's what some of the example 'dat' data (from the 'SG2' quadrat at the 
 'AZ' site in 1922) look like when plotted spatially:    
-```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "**Figure 1.1**: Spatial map of a subset of example 'dat' dataset"}
+```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "Figure 1.1: Spatial map of a subset of example 'dat' dataset"}
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
                               grasslandData$Year == 1922, ]
@@ -245,7 +247,8 @@ scenario, in years 3 and 4 there are not polygons of species 'A' that are in the
 same location as our focal individual, but there is a polygon in year 4 that 
 overlaps our focal individual. If `dorm = 1`, then our focal individual would 
 get a 0 for survival, but if `dorm = 2`, then it would get a 1 for survival. 
-```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.1**: A visualization of the 'dormancy' scenario described above."}
+```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.1: A visualization of the 'dormancy' scenario described above."}
+
 exampleSmall <- exampleDat[unique(c(30, 42, 44, 25,  2, 61, 59, 52, 45,  8, 42, 37, 60, 34, 45, 38, 26, 49, 52, 46)),]
 
 exampleSmall$FocalInd <- 'other individual'
@@ -316,7 +319,7 @@ data in 'dat' is measured in meters, and you want to allow a plant to 'move'
 `buff = .15` in your call to `trackSpp()`. If you want to allow no movement, use 
 `buff = 0`. Below is a visualization of two different `buff` scenarios.
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.2**: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
 
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
@@ -362,7 +365,7 @@ ggplot(data = exampleDatIDs
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.3**: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
 
 exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .03)
 exampleBuffed$Year <- 1922
@@ -373,7 +376,6 @@ ghost <- exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,]
 ghost$Year <- 1923
 ghost$ghost <- "polygon location in previous year"
 exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNext )
-
 
 ggplot(data = exampleDatIDs
        ) +
@@ -429,29 +431,29 @@ value which will be applied to all species present in 'dat', or can be specified
 uniquely for each species by creating a data.frame that contains a `buffGenet` 
 argument for each species (analogous to the data.frame for the `dorm` argument 
 shown in Table 2.1, but with a column called "buffGenet").
-,,k,k 
-* `aggregateByGenet` is a logical argument that is only required if `clonal = 1` 
+
+* `aggByGenet` is a logical argument that is only required if `clonal = 1` 
 or if `clonal` is a data.frame that contains at least a single '1' in the 
 "clonal" column. This argument determines whether the output data.frame from 
 `trackSpp()` will have a row for every single ramet, or will be aggregated so 
-that each genet is represented by a single row. If `aggregateByGenet = FALSE`, 
-then the output is not aggregated. If `aggregateByGenet = TRUE` (the default 
+that each genet is represented by a single row. If `aggByGenet = FALSE`, 
+then the output is not aggregated. If `aggByGenet = TRUE` (the default 
 setting), then the results are aggregated using the PlantTracker function 
 `aggregateByGenet()`. This function combines the sf "POLYGONS" for each ramet 
 into one sf "MULTIPOLYGON" for the entire genet, and combines the associated 
 metadata ("Species", "Site", "Quad", "Year", "trackID", "basalArea_genet", 
 "age", "recruit", "survives_tplus1", "size_tplus1", "nearEdge") into one row for 
 this genet. Even if the input 'dat' had additional columns, they will not be 
-included in the output of `trackSpp` if `aggregateByGenet = TRUE`, since it is 
+included in the output of `trackSpp` if `aggByGenet = TRUE`, since it is 
 uncertain if they can be summed across all ramets or are identical across all 
 ramets. For example, if each ramet has a unique character string in a column 
 called "name", there is no easy way to 'sum' the character strings in this 
 column to have one value for each genet. If you want the output data.frame from 
 `trackSpp()` to have the same columns as your input 'dat' data.frame, set the 
-`aggregateByGenet` argument to FALSE. However, Be Careful, since any demographic 
+`aggByGenet` argument to FALSE. However, Be Careful, since any demographic 
 analysis should be done with a data.set that has only one row per genet, 
 otherwise you will be estimating survival and growth rates on the scale of 
-ramets instead of genets. If you take the `aggregateByGenet = FALSE` route, be 
+ramets instead of genets. If you take the `aggByGenet = FALSE` route, be 
 sure to pass your dataset through the `aggregateByGenet()` function (or 
 aggregate to the genet scale using your preferred method) before 
 demographic analysis. 
@@ -470,7 +472,7 @@ These are all of the possible arguments to `trackSpp()`!
 Below is an example of what the output of `trackSpp()` might look like, using 
 the example 'dat' and 'inv' data we've used so far. 
 ```{r}
-datTrackSpp <- trackSpp(dat = dat, inv = inv,
+datTrackSpp <- PlantTracker::trackSpp(dat = dat, inv = inv,
          dorm = 1,
          buff = .05,
          buffGenet = .005,
@@ -479,15 +481,17 @@ datTrackSpp <- trackSpp(dat = dat, inv = inv,
                                            "Ambrosia artemisiifolia",
                                            "Calliandra eriophylla"),
                              "clonal" = c(TRUE,TRUE,FALSE,FALSE)),
-         aggregateByGenet = TRUE)
+         aggByGenet = TRUE,
+         printMessages = FALSE
+         )
 knitr::kable(head(datTrackSpp))
 ```
 
 If you did not allow any species to be clonal (`clonal = 0`) or if 
-`aggregateByGenet = TRUE` in your call to trackSpp(), then your output
+`aggByGenet = TRUE` in your call to trackSpp(), then your output
 data.frame will have one row for each genet, and is ready for demographic 
 analysis! If your output data.frame is *not* yet aggregated by genet 
-(i.e. you set the `aggregateByGenet` argument to FALSE), then you need to 
+(i.e. you set the `aggByGenet` argument to FALSE), then you need to 
 transform your data.frame so that each genet is represented by only one row of 
 data. You can use the `aggregateByGenet()` function from PlantTracker (see this 
 function's documentation for guidance), or your own method of choice. 
@@ -535,7 +539,7 @@ intraspecific competition (only consider other plants in the buffer zone of the
 same species as the focal individual) or interspecific competition (consider all 
 other plants in the buffer zone, regardless of species).
 
-```{r echo = FALSE, fig.width=6, fig.align = 'center', fig.cap = "**Figure 3.1**: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
+```{r echo = FALSE, fig.width=6, fig.align = 'center', fig.cap = "Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
 datComp <- datTrackSpp[datTrackSpp$Year == 1922,]
 
 ggplot(datComp) +
@@ -557,9 +561,9 @@ ggplot(datComp) +
  scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
 
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.2**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.  "}
+```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5."}
 
-st_intersects(st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
+suppressWarnings(st_intersects(st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp))
 countMethod <- datComp[c(3,5,63,67,70),]
 areaMethodTemp <- st_intersection(st_buffer(
   datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
@@ -567,7 +571,7 @@ areaMethod <- areaMethodTemp[st_is(areaMethodTemp, c("POLYGON", "MULTIPOLYGON"))
 
 ggplot(datComp) +
   geom_sf(data = 
-            sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), 
+            suppressWarnings(sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1)), 
           aes(), color = "#CC79A7", fill = "#CC79A7", alpha = .3, lty = 2) +
   geom_sf(aes(fill = Species)) +
   geom_sf(data = datComp[datComp$trackID == "HETCON_1922_6",], 
@@ -588,14 +592,14 @@ ggplot(datComp) +
  scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
 
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.3**: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.  "}
-areaMethodTemp <- st_intersection(st_buffer(
-  datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)
+```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462."}
+areaMethodTemp <- suppressWarnings(st_intersection(st_buffer(
+  datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp))
 areaMethod <- areaMethodTemp[areaMethodTemp$trackID.1 != "HETCON_1922_6",]
 
 ggplot(datComp) +
   geom_sf(data = 
-            sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), 
+            suppressWarnings(sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1)), 
           aes(), color = "#CC79A7", fill = "#CC79A7", alpha = .3, lty = 2) +
   geom_sf(aes(fill = Species)) +
   geom_sf(data = datComp[datComp$trackID == "HETCON_1922_6",], 
@@ -666,7 +670,7 @@ that is occupied by competitors.
 Here's an example of a `getNeighbors()` function call using the resulting data 
 from the example in section *2.2*, as well as the resulting data.frame:  
 ```{r}
-datNeighbors <- getNeighbors(dat = datTrackSpp,
+datNeighbors <- PlantTracker::getNeighbors(dat = datTrackSpp,
              buff = .15,
              method = "area",
              compType = "allSpp")

@@ -100,7 +100,7 @@
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "geometry" (default is 'geometry').
-#' @param aggregateByGenet A logical argument that determines whether the output
+#' @param aggByGenet A logical argument that determines whether the output
 #' of [trackSpp()] will be aggregated by genet. If the value is TRUE
 #' (the default), then each unique trackID in each year will be represented by
 #' only one row in the output data.frame (each genet gets only one row). This
@@ -140,7 +140,7 @@
 #' \item{basalArea_genet}{The size of this entire genet in year *t*, in the same
 #' units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then this
 #' number will be identical to the 'basalArea_ramet' column. }
-#' \item{basalArea_ramet}{This is only included if 'aggregateByGenet' = FALSE.
+#' \item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
 #' This is the size of this ramet in year *t*, in the same units as the 'area'
 #' column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
 #' identical to the 'basalArea_genet' column.}
@@ -150,7 +150,7 @@
 #' @seealso [assign()], which is used inside the [trackSpp()] function.
 #' [trackSpp()] applies the [assign()] function over multiple species and
 #' quadrats, and uses the [aggregateByGenet()] function to aggregate the
-#' demographic results by genet (if 'aggregateByGenet' = TRUE). The [assign()]
+#' demographic results by genet (if 'aggByGenet' = TRUE). The [assign()]
 #' function uses the [groupByGenet()] function to group ramets into genets
 #' (if 'clonal' argument = TRUE).
 #'
@@ -167,7 +167,7 @@
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
 #'  "clonal" = c(TRUE,FALSE)),
 #'  species = "speciesName",
-#'  aggregateByGenet = TRUE
+#'  aggByGenet = TRUE
 #'  )
 #'
 #' @export
@@ -179,7 +179,7 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                      quad = "Quad",
                      year = "Year",
                      geometry = "geometry",
-                     aggregateByGenet = TRUE,
+                     aggByGenet = TRUE,
                      printMessages = TRUE,
                      ...) {
   # argument checks ---------------------------------------------------------
@@ -368,9 +368,9 @@ values of either FALSE or TRUE for each species with no NAs.")
           'buffGenet' column with numeric values for each species.")
         }
       }
-      #check aggregateByGenet
-      if (!is.logical(aggregateByGenet)) {
-        stop("The 'aggregateByGenet' argument must be a logical value. TRUE
+      #check aggByGenet
+      if (!is.logical(aggByGenet)) {
+        stop("The 'aggByGenet' argument must be a logical value. TRUE
         means that every row in the output of trackSpp() represents a unique
         genetic individual (genet) in a given year. FALSE means that every row
         in the output of trackSpp() represents a unique stem (ramet) in a given
@@ -419,16 +419,16 @@ values of either FALSE or TRUE for each species with no NAs.")
         with numeric values for each species.")
       }
     }
-    #check aggregateByGenet
-    if (!is.logical(aggregateByGenet)) {
-      stop("The 'aggregateByGenet' argument must be a logical value. TRUE means
+    #check aggByGenet
+    if (!is.logical(aggByGenet)) {
+      stop("The 'aggByGenet' argument must be a logical value. TRUE means
       that every row in the output of trackSpp() represents a unique genetic
       individual (genet) in a given year. FALSE means that every row in the
       output of trackSpp() represents a unique stem (ramet) in a given year.")
     }
   } else {
     buffGenet <- NA
-    aggregateByGenet <- FALSE
+    aggByGenet <- FALSE
   }
 
   #check printMessages
@@ -478,10 +478,14 @@ values of either FALSE or TRUE for each species with no NAs.")
 
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
-    ifelse(printMessages==TRUE, cat(paste0("Site: ",i, "\n")))
+    if(printMessages==TRUE){
+      cat(paste0("Site: ",i, "\n"))
+    }
     ## get the quadrats w/in that site
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
-      ifelse(printMessages==TRUE, cat(paste0("-- Quadrat: ",j, "\n")))
+      if(printMessages==TRUE) {
+        cat(paste0("-- Quadrat: ",j, "\n"))
+        }
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
         invQuad <- inv[[j]]
@@ -542,12 +546,18 @@ values of either FALSE or TRUE for each species with no NAs.")
         }
         ## print the name of the species that was just finished
         if (k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]) {
-          ifelse(printMessages==TRUE, cat(paste0("---- Species: ",k)))
+          if(printMessages==TRUE) {
+            cat(paste0("---- Species: ",k))
+          }
         } else if (k == tail(unique(dat[dat$Site==i & dat$Quad==j,]$Species),
                              n = 1)) {
-          ifelse(printMessages==TRUE, cat(paste0("; ",k, "\n")))
+          if(printMessages==TRUE) {
+            cat(paste0("; ",k, "\n"))
+          }
         } else {
-          ifelse(printMessages==TRUE, cat(paste0("; ",k)))
+          if(printMessages==TRUE) {
+            cat(paste0("; ",k))
+          }
         }
       }
       ## notify user of last year of sampling (or last year of sampling before a
@@ -579,8 +589,8 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## remove the 'indexStore' value
   trackSppOut <- trackSppOut[,names(trackSppOut) != "indexStore"]
 
-  ## aggregate the output by trackID (if aggregateByGenet == TRUE)
-  if (aggregateByGenet == TRUE) {
+  ## aggregate the output by trackID (if aggByGenet == TRUE)
+  if (aggByGenet == TRUE) {
     ## aggregate demographic data by trackID/Quad/Year/Site/Species
     trackSppOut <- aggregateByGenet(dat = trackSppOut)
 
@@ -590,7 +600,7 @@ values of either FALSE or TRUE for each species with no NAs.")
     " by genet. Because of this, some columns that were present in your",
     " input data.frame may no longer be present. If you don't want the",
     " output to be aggregated by genet, include the argument",
-    " 'aggregateByGenet == FALSE' in your call to trackSpp()."))
+    " 'aggByGenet == FALSE' in your call to trackSpp()."))
     }
   }
 
@@ -669,7 +679,7 @@ values of either FALSE or TRUE for each species with no NAs.")
 #                 "U6" = c(2018:2020)
 #               )
 #
-# test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .05, buffGenet = .05, clonal = 0, site = "Location", quad = "Plot_ID", aggregateByGenet = FALSE)
+# test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .05, buffGenet = .05, clonal = 0, site = "Location", quad = "Plot_ID", aggByGenet = FALSE)
 #
 # test$trackID_num <-
 #   stringr::str_match(string = test$trackID, pattern = "[:digit:]{1,3}$+")

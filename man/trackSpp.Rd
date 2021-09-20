@@ -16,7 +16,7 @@ trackSpp(
   quad = "Quad",
   year = "Year",
   geometry = "geometry",
-  aggregateByGenet = TRUE,
+  aggByGenet = TRUE,
   printMessages = TRUE,
   ...
 )
@@ -105,7 +105,7 @@ the name of the column in 'dat' that contains sf geometry data. It is
 unnecessary to include a value for this argument if the column name is
 "geometry" (default is 'geometry').}
 
-\item{aggregateByGenet}{A logical argument that determines whether the output
+\item{aggByGenet}{A logical argument that determines whether the output
 of \code{\link[=trackSpp]{trackSpp()}} will be aggregated by genet. If the value is TRUE
 (the default), then each unique trackID in each year will be represented by
 only one row in the output data.frame (each genet gets only one row). This
@@ -148,7 +148,7 @@ survived (1), or died (0) in year \emph{t+1}.}
 \item{basalArea_genet}{The size of this entire genet in year \emph{t}, in the same
 units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then this
 number will be identical to the 'basalArea_ramet' column. }
-\item{basalArea_ramet}{This is only included if 'aggregateByGenet' = FALSE.
+\item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
 This is the size of this ramet in year \emph{t}, in the same units as the 'area'
 column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
 identical to the 'basalArea_genet' column.}
@@ -197,7 +197,7 @@ outDat <- trackSpp(dat = dat,
  clonal = data.frame("Species" = unique(dat$speciesName),
  "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 
 }
@@ -205,7 +205,7 @@ outDat <- trackSpp(dat = dat,
 \code{\link[=assign]{assign()}}, which is used inside the \code{\link[=trackSpp]{trackSpp()}} function.
 \code{\link[=trackSpp]{trackSpp()}} applies the \code{\link[=assign]{assign()}} function over multiple species and
 quadrats, and uses the \code{\link[=aggregateByGenet]{aggregateByGenet()}} function to aggregate the
-demographic results by genet (if 'aggregateByGenet' = TRUE). The \code{\link[=assign]{assign()}}
+demographic results by genet (if 'aggByGenet' = TRUE). The \code{\link[=assign]{assign()}}
 function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
 (if 'clonal' argument = TRUE).
 }

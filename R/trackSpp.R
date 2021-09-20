@@ -478,10 +478,10 @@ values of either FALSE or TRUE for each species with no NAs.")
 
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
-    cat(paste0("Site: ",i, "\n"))
+    ifelse(printMessages==TRUE, cat(paste0("Site: ",i, "\n")))
     ## get the quadrats w/in that site
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
-      cat(paste0("-- Quadrat: ",j, "\n"))
+      ifelse(printMessages==TRUE, cat(paste0("-- Quadrat: ",j, "\n")))
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
         invQuad <- inv[[j]]
@@ -542,12 +542,12 @@ values of either FALSE or TRUE for each species with no NAs.")
         }
         ## print the name of the species that was just finished
         if (k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]) {
-          cat(paste0("---- Species: ",k))
+          ifelse(printMessages==TRUE, cat(paste0("---- Species: ",k)))
         } else if (k == tail(unique(dat[dat$Site==i & dat$Quad==j,]$Species),
                              n = 1)) {
-          cat(paste0("; ",k, "\n"))
+          ifelse(printMessages==TRUE, cat(paste0("; ",k, "\n")))
         } else {
-          cat(paste0("; ",k))
+          ifelse(printMessages==TRUE, cat(paste0("; ",k)))
         }
       }
       ## notify user of last year of sampling (or last year of sampling before a

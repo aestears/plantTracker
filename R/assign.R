@@ -722,9 +722,9 @@ return(assignOut)
 
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
-#
-# prepares the dataset to feed into the 'assign' function (the 'Assign'
-# function will do this ahead of time when the user calls it)
+# #
+# # prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# # function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "KS"
 #                            & grasslandData$Quad == "q33"
 #                            & grasslandData$Species == "Ambrosia psilostachya",]
@@ -742,7 +742,7 @@ return(assignOut)
 #                      dorm = 1,
 #                      buff = .05,
 #                      buffGenet = .001,
-#                      clonal =  1)
+#                      clonal =  TRUE)
 
 
 # # ggplot(testOutput) +

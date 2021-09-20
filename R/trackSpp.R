@@ -377,7 +377,7 @@ values of either FALSE or TRUE for each species with no NAs.")
         year.")
       }
     }
-  } else if (is.numeric(clonal) & clonal == TRUE) {  ## if the clonal argument
+  } else if (is.logical(clonal) & clonal == TRUE) {  ## if the clonal argument
     # is one value, is it set to TRUE?
     if (missing(buffGenet)) {
       stop("The 'buffGenet' argument must have a value.")
@@ -565,7 +565,7 @@ values of either FALSE or TRUE for each species with no NAs.")
         if (length(gapYears) > 0) {
           print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
                        " value of 'NA' in the 'survives_tplus1' and",
-                       " 'size_tplus1'columns because ", gapYears," is the last"
+                       " 'size_tplus1' columns because ", gapYears," is the last"
                        , " year of sampling in this quadrat before a gap that
                        exceeds the 'dorm' argument."))
         }

@@ -2,7 +2,7 @@
 title: "The plantTracker 'trackSpp' function"
 author: "Alice Stears"
 date: "`r Sys.Date()`"
-output: rmarkdown::pdf_document
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{The_plantTracker_trackSpp_function}
   %\VignetteEncoding{UTF-8}
@@ -256,7 +256,7 @@ overlap from year to year. This is accomplished using a for loop that
 compares the previous year of data to the current year of data. The loop
 iterates through year by the index *i*. The 'current' year is the year
 with the index 'i-1' in the `inv` vector, and the associated data is
-stored in the `tempPreviousYear` data.frame. The 'next' year is the year
+stored in the `tempPreviousYear` data.frame. The 'current' year is the year
 with the index *i* in the `inv` vector, and the associated data is
 stored in `tempCurrentYear` data.frame. There are multiple if-else
 statements nested within this larger for loop, which I'll explain using
@@ -303,7 +303,7 @@ survival.
 
 We already have data for the 'previous' year (`inv[i-1]`) stored in
 `tempPreviousYear`. Now that we know that the gap between years doesn't
-exceed 'dorm', we can get data from the 'next' year (`inv[i]`). We do
+exceed 'dorm', we can get data from the 'current' year (`inv[i]`). We do
 this by subsetting `dat` for all observations in year `inv[i]`.
 Then, we use `isClonal` to group closely-grouped polygons into genets if
 applicable, and assign genetIDs. This data set is stored in the
@@ -329,7 +329,7 @@ weren't actually any plants there that year.
 ### *3.4.4* Add a buffer around the 'current' year data
 
 Now a buffer is added around each polygon in `tempPreviousYear`. This
-data is stored in the `tempCurrentBuff` data.frame. This buffer is of
+data is stored in the `tempPreviousBuff` data.frame. This buffer is of
 the width specified in the 'buff' argument of `trackSpp` that is passed
 to `assign`. Adding this buffer before comparing maps from the previous
 and current years allows for mapping error and slight movement of plants
@@ -427,7 +427,7 @@ ggplot(data = exampleDatIDs
 ```
 
 
-### *3.4.5* Are there actually any observations in the 'next' year (`inv[i]`)?
+### *3.4.5* Are there actually any observations in the 'current' year (`inv[i]`)?
 
 Even if a quadrat was sampled in `inv[i]`, it is possible that there
 weren't actually any plants there that year.
@@ -456,7 +456,7 @@ given a '0' in the 'survives_tplus1' column and an 'NA' in the
 'size_tplus1' column. Because they are not allowed to be dormant, if
 they don't have overlapping individuals in the current year
 (`inv[i]`)--which they don't if they're sent to this step--then they're
-dead. **Take these observations to step *3.4.11*.**
+dead. **Take these observations to step *3.4.10*.**
 
 However, if dormancy *is* allowed for this species, the individuals that
 were 'sent' to this step because they didn't overlap with anything in
@@ -515,7 +515,7 @@ ggplot(data = exampleSmall) +
 If 'clonal' = TRUE for this species, use the `ifClonal` to group
 individual polygons that are close enough to one another to be
 considered the same genet (i.e. are within (2 x 'buffGenet') of one
-another). Individuals in the same genet are given the same genetID.
+another). Individuals in the same genet are given the same genetID. **Go to step *3.4.8*. **
 
 ### *3.4.8* Are there any overlaps between polygons in `tempPreviousYear` and `tempCurrentYear`?
 
@@ -825,4 +825,75 @@ ggplot(data = exampleOut) +
         legend.title = element_blank()) 
 ```
 
+Here is that same data subset, but run through trackSpp using a buffGenet value of .05
+```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.2: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 
+## get trackIDs 
+exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .05, aggByGenet = TRUE, printMessages = FALSE))
+
+labels <- data.frame(trackID = unique(exampleOut$trackID), 
+                     trackID_new = c(1:length(unique(exampleOut$trackID))))
+exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$trackID)]
+
+ggplot(data = exampleOut) +
+  geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
+  geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
+  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  xlab("quadrat horizontal edge (m)") +
+  ylab("quadrat vertical edge (m)") +
+  xlim(c(0,.5)) +
+  ylim(c(0,.7)) +
+  scale_fill_discrete(guide = "none") +
+  scale_color_discrete(guide = "none") +
+  #labs(title = Year) +
+  facet_wrap(~ Year, ncol = 4) +
+  theme_classic() +
+  theme(axis.line = element_blank(), 
+        legend.text = element_text(face = "italic"),
+        plot.margin = margin(1,0,1,0),
+        legend.title = element_blank()) 
+```
+
+
+Here it is again, but run through trackSpp using clonal = FALSE
+```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.3: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
+
+## get trackIDs 
+exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = FALSE, dorm = 1, aggByGenet = TRUE, printMessages = FALSE))
+
+labels <- data.frame(trackID = unique(exampleOut$trackID), 
+                     trackID_new = c(1:length(unique(exampleOut$trackID))))
+exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$trackID)]
+
+ggplot(data = exampleOut) +
+  geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
+  geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
+  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), size = .5, 
+               lineend = "round", color = "grey30") + 
+  xlab("quadrat horizontal edge (m)") +
+  ylab("quadrat vertical edge (m)") +
+  xlim(c(0,.5)) +
+  ylim(c(0,.7)) +
+  scale_fill_discrete(guide = "none") +
+  scale_color_discrete(guide = "none") +
+  #labs(title = Year) +
+  facet_wrap(~ Year, ncol = 4) +
+  theme_classic() +
+  theme(axis.line = element_blank(), 
+        legend.text = element_text(face = "italic"),
+        plot.margin = margin(1,0,1,0),
+        legend.title = element_blank()) 
+```

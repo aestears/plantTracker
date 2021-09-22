@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
-library(devtools)
-load_all()
+# library(devtools)
+# load_all()
 ```
 
 ## Introduction

@@ -76,8 +76,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 
 getRecruits <- function(dat,
                         byGenet = TRUE,

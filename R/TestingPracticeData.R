@@ -65,14 +65,15 @@
 # # add a column for site
 # trees_sf$Site <- "laSelva"
 #
-# # ## test w/ a plot
-# # ggplot(data = trees_sf[trees_sf$plot == "L1",]) +
-# #   geom_sf(aes(col = as.factor(dia_year))) +
-# #   facet_wrap(~plot) +
-# #   theme_classic()
+# ## test w/ a plot
+# ggplot(data = trees_sf[trees_sf$plot == "L1" & trees_sf$dia_year %in% c(1997:2002),]) +
+#   geom_sf(aes(col = as.factor(dia_year))) +
+#   facet_wrap(~dia_year) +
+#   theme_classic() +
+#   scale_colour_discrete(guide = "none")
 #
 # ## get survival information
-# ## assing an arbitrary index to each row in 'trees'
+# ## assign an arbitrary index to each row in 'trees'
 # trees_sf$index <- 1:nrow(trees_sf)
 # trees_no_sf <- st_drop_geometry(trees_sf)
 # ## put an NA for survival

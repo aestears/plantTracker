@@ -8,7 +8,7 @@
 An sf data frame with 10405 rows and 15 variables:
 \describe{
 \item{Species}{A character string indicating the specific epithet for this
-observation. As long as all values in the column are consisten, the ideal
+observation. As long as all values in the column are consistent, the ideal
 formats are the 1) the latin binomial separated by a space (i.e.
 "Bouteloua gracilis"), 2) the latin binomial separated by an underscore
 (i.e. "Bouteloua_gracilis"), or 3) a species code consisting of the first

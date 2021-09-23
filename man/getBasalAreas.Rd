@@ -98,7 +98,7 @@ outDat <- trackSpp(dat = dat,
  clonal = data.frame("Species" = unique(dat$speciesName),
  "clonal" = c(1,0)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 getBasalAreas(dat = outDat,
 species = "speciesName")

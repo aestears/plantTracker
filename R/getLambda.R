@@ -56,13 +56,13 @@
 #' @return This function returns a data.frame with columns containing site,
 #' quadrat, and species data, as well as the following columns:
 #' \describe{
-#' \item{Year_t} {the 'current' year}
-#' \item{absolute_basalArea_t} {basal area (in the same units as the spatial
+#' \item{Year_t}{the 'current' year}
+#' \item{absolute_basalArea_t}{basal area (in the same units as the spatial
 #' elements of 'dat') for this species in this quadrat in year 't'}
-#' \item{Year_tplus1} {the 'next' year}
-#' \item{absolute_basalArea_tplus1} {basal area (in the same units as the spatial
+#' \item{Year_tplus1}{the 'next' year}
+#' \item{absolute_basalArea_tplus1}{basal area (in the same units as the spatial
 #' elements of 'dat') for this species in this quadrat in year 't+1'}
-#' \item{lambda} {The population growth rate for this species in this quadrat
+#' \item{lambda}{The population growth rate for this species in this quadrat
 #' from year t to year t+1.}
 #' }
 #'

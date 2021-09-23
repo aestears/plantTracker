@@ -7,7 +7,7 @@
 #' that is occupied by a given species ("percent total basal area"). If you'd
 #' like to ultimately calculate the population growth rate (lambda) for each
 #' species, you can use the \code{\link{getLambda}} function directly, which
-#' takes raw species occurence data (like in 'dat' here) and returns lambda
+#' takes raw species occurrence data (like in 'dat' here) and returns lambda
 #' values for each species and quadrat.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
@@ -78,7 +78,7 @@
 #'  buff = .05,
 #'  buffGenet = 0.005,
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
-#'  "clonal" = c(1,0)),
+#'  "clonal" = c(TRUE,FALSE)),
 #'  species = "speciesName",
 #'  aggByGenet = TRUE
 #'  )

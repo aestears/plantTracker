@@ -141,7 +141,7 @@ ggplot(data = exampleDat) +
 ```
 
 It's important to note that, while PlantTracker was designed to be used with 
-small-scale maps of plant occurence in quadrats, it is concievably possible to 
+small-scale maps of plant occurence in quadrats, it is conceivably possible to 
 use other styles of map data in PlantTracker functions. All that is required is 
 a single mapped basal area (or point location converted to a small polygon) at 
 each time point for each organism (or ramet), and is accompanied by the required 
@@ -694,4 +694,4 @@ year: the `getBasalAreas` function
 * Make maps of quadrats over time: the `drawQuadMap` function
 
 Specific instructions for how to use each of these functions can be found in 
-their documnetation!
+their documentationtation!

@@ -95,9 +95,9 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 drawQuadMap(dat = outDat,
 type = "bySpecies",

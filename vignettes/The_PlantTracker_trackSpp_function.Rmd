@@ -1,5 +1,5 @@
 ---
-title: "The plantTracker 'trackSpp' function"
+title: "The plantTracker 'trackSpp()' function"
 author: "Alice Stears"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -24,14 +24,14 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
-# library(devtools)
-# load_all()
+library(devtools)
+load_all()
 ```
 
 ## Introduction
 
-This vignette dives into the `trackSpp` function, the main 'workhorse'
-function in the plantTracker R package. `trackSpp` transforms a data set
+This vignette dives into the `trackSpp()` function, the main 'workhorse'
+function in the plantTracker R package. `trackSpp()` transforms a data set
 of annual maps of plant occurrence into a demographic data set. To
 accomplish this, the function compares maps across sampling years and
 assigns unique identifiers ("trackIDs") to plants that overlap from year
@@ -42,17 +42,17 @@ recruit status, and age to each individual plant in each year.
 This process is complex and requires certain assumptions, so the
 following pages will explain and illustrate the logic of each of these
 steps. We recommend you read through this vignette before using
-trackSpp() in order to fully understand the assumptions inherent to the
+`trackSpp()` in order to fully understand the assumptions inherent to the
 function, and to make sure that you are adjusting the user-specified
 arguments correctly.
 
 ## *1.* Input data
 
-The required inputs to the `trackSpp` function are explained in detail
+The required inputs to the `trackSpp()` function are explained in detail
 in [Suggested plantTracker
 Workflow](Suggested_plantTracker_Workflow.html), Parts 1.1, 1.2, and 2.
-In this example, we'll use a smaller subset of the 'grasslandData' and
-'grasslandInventory' data sets that are included in plantTracker.
+In this example, we'll use a smaller subset of the `grasslandData` and
+`grasslandInventory` data sets that are included in plantTracker.
 
 Here are the first few rows of the `dat` data set we'll be using:
 
@@ -95,23 +95,23 @@ ggplot(data = exampleDat) +
 
 ## *2.* Iterating through sites, quadrats, and species
 
-The first step of `trackSpp` is iterating through `dat` first by site,
+The first step of `trackSpp()` is iterating through `dat` first by site,
 then by quadrat, then by species. `inv` is also filtered down to a
 single vector of sequential sampling years for the quadrat in question.
-Then `trackSpp` gets the appropriate 'dorm', 'clonal', 'buff', and
+Then `trackSpp()` gets the appropriate 'dorm', 'clonal', 'buff', and
 'buffGenet' arguments for that given species, either by using the
-globally-specified value in the trackSpp function call, or by extracting
+globally-specified value in the trackSpp() function call, or by extracting
 the species-level value if the argument was given as a data.frame of
 unique values for each species. Then, the data and arguments are passed
-to the `assign` function. This function is not exported in plantTracker,
-but the code can be accessed by typing `plantTracker:::assign` in the
+to the `assign()` function. This function is not exported in plantTracker,
+but the code can be accessed by typing `plantTracker:::assign()` in the
 console. The remainder of this vignette describes the process of the
-`assign` function.
+`assign()` function.
 
-## *3.* Tracking individuals over time using the `assign` function
+## *3.* Tracking individuals over time using the `assign()` function
 
 Once the input data has been filtered down to one site, one quadrat, and
-one species, then the `assign` function is used to track individuals
+one species, then the `assign()` function is used to track individuals
 through time. In this vignette, we will use data from a site "AZs",
 quadrat "SG2", and the species **"Heteropogon contortus"**. The `inv`
 vector for this quadrat is
@@ -129,7 +129,7 @@ will be stored in this data.frame.
 Because this is the first year of sampling, no polygons have been
 grouped into genets (if 'clonal' = TRUE), and none have been assigned
 trackIDs. Both of these tasks are accomplished by a function called
-`ifClonal`, which is internal to `assign`. If 'clonal' = FALSE, then
+`ifClonal()`, which is internal to `assign()`. If 'clonal' = FALSE, then
 clonality is not allowed, and each polygon is assumed to represent a
 unique genet. In this case, each polygon/row in `tempPreviousYear` is
 assigned a unique 'genetID' that acts as a temporary identifier that
@@ -137,13 +137,13 @@ will be used later in the function.
 
 If 'clonal' = TRUE, then clonality is allowed, and it is possible for
 multiple polygons/rows in the raw data to represent one genetic
-individual. In this case, we use a function called `groupByGenet` to
+individual. In this case, we use a function called `groupByGenet()` to
 group polygons together into one genet. This function uses the
-'buffGenet' argument that is supplied to `trackSpp`. The distance
+'buffGenet' argument that is supplied to `trackSpp()`. The distance
 ('buffGenet' x 2) is the maximum distance that two polygon edges can be
 from one another and still be considered ramets from the same genet. In
 other words, Any two polygons with edges that are less than ('buffGenet'
-x 2) from one another will get the same 'genetID.' `groupByGenet`
+x 2) from one another will get the same 'genetID.' `groupByGenet()`
 creates a matrix of distances between every single polygon present in
 the input data.frame, and clusters them together based on proximities
 that are below the threshold indicated by 'buffGenet.' Then, basal area
@@ -156,7 +156,7 @@ recruitment (e.g. HETCON_1922_3).
 
 This following figures show data for one year (1922) and one species (*Heteropogon contortus*). 
 
-```{r echo = FALSE,  fig.show = 'hold', fig.width=7, fig.align = 'left', fig.cap = "Figure 3.2: The value of 'buffGenet' used in the `trackSpp` function can make a big difference in genetID assignments. These examples move from no genet grouping on the left, where every polygon has its own genetID, to grouping any ramets together that are less than 10 cm apart on the right. Colors and numbers indicate different genetIDs. Buffers are drawn around ramets that belong to the same genet.", warning=FALSE}
+```{r echo = FALSE,  fig.show = 'hold', fig.width=7, fig.align = 'left', fig.cap = "Figure 3.2: The value of 'buffGenet' used in the `trackSpp()` function can make a big difference in genetID assignments. These examples move from no genet grouping on the left, where every polygon has its own genetID, to grouping any ramets together that are less than 10 cm apart on the right. Colors and numbers indicate different genetIDs. Buffers are drawn around ramets that belong to the same genet.", warning=FALSE}
 
 figDat <- exampleDat[exampleDat$Species == "Heteropogon contortus" & exampleDat$Year == 1922, c("Species", "geometry")]
 
@@ -243,8 +243,8 @@ the quadrat is sampled (e.g. the first *Heteropogon contortus*
 observations are in 1934, which is the last year of sampling), then the
 observations in `tempPreviousYear` get a '1' in both the 'recruit' and
 'age' columns, but also get an 'NA' in the 'size_tplus1' and
-'survives_tplus1' columns. If this is the case, the `assign` function
-still uses `ifClonal` to assign genetIDs to these observations and then
+'survives_tplus1' columns. If this is the case, the `assign()` function
+still uses `ifClonal()` to assign genetIDs to these observations and then
 assigns trackIDs. But there are no further steps needed to generate
 demographic data, so the function returns `tempPreviousYear` as the
 result after this point.
@@ -262,17 +262,19 @@ stored in `tempCurrentYear` data.frame. There are multiple if-else
 statements nested within this larger for loop, which I'll explain using
 a dichotomous key below.
 
-### *3.4.1* Is there a gap between year 'i-1' and year *i*?
+<a id="3_4_1"></a>
+
+### *3.4.1* Is there a gap between year 'i-1' and year *i*?  
 Not every quadrat was sampled every year, and this is indicated in the
 `inv` vector. This is one case where the 'dorm' argument input into
-`trackSpp` and then passed to `assign` comes in. The value of 'dorm'
+`trackSpp()` and then passed to `assign()` comes in. The value of 'dorm'
 indicates how many years it is 'acceptable' for a plant to disappear
 from the quadrat maps and still be considered the same individual with
 the same trackID. The value of 'dorm' must be determined by the user,
 and represents a point where it's necessary to have some biological
 knowledge about the species present in the data set. For example,
 allowing dormancy makes sense for some species such as perennial forbs,
-but doesn't for large organisms such as trees. `trackSpp` allows you to
+but doesn't for large organisms such as trees. `trackSpp()` allows you to
 specify the 'dorm' argument globally with one value, or individually for
 each species. The 'dorm' argument can also be a way to control how
 'forgiving' you want to be with the data set. For example, if you expect
@@ -286,20 +288,22 @@ survival.
 +------------------------------------------------------------+---------+
 | If a gap between `inv[i]` and `inv[i-1]` is...             |         |
 +============================================================+=========+
-| ... greater than the 'dorm' value + 1 (e.g. if 'dorm' = 1, | **Go to |
+| ... greater than the 'dorm' value + 1 (e.g. if 'dorm' = 1, | Go to   |
 | inv[i] = 1923, and inv[i-1] = 1920; 1923 - 1920 \> (1+1)), | step    |
-| then we don't know if the observations in                  | *3.     |
-| `tempPreviousYear` survived or grew. They get an 'NA' in   | 4.10*** |
+| then we don't know if the observations in                  |[3.4.10](#3_4_10)|
+| `tempPreviousYear` survived or grew. They get an 'NA' in   |         |
 | the 'size_tplus1' and 'survives_tplus1' columns .......... |         |
 +------------------------------------------------------------+---------+
-| ... less than or equal to the 'dorm' value + 1 (e.g. if    | **      |
+| ... less than or equal to the 'dorm' value + 1 (e.g. if    |         |
 | 'dorm' = 1, inv[i] = 1923, and inv[i-1] = 1921; 1923 -     | Proceed |
 | 1921 = (1+1)), then we can compare the data from year      | to step |
-| inv[i-1] (`tempPreviousYear`) to data from year inv[i]     | *3.     |
-| (`tempCurrentYear`)  ..................................... | 4.2*.** |
+| inv[i-1] (`tempPreviousYear`) to data from year inv[i]     |[3.4.2](#3_4_2)|
+| (`tempCurrentYear`)  ..................................... |         |
 +------------------------------------------------------------+---------+
 
-### *3.4.2* Get data for year *i*
+<a id="3_4_2"></a>
+
+### *3.4.2* Get data for year *i*   
 
 We already have data for the 'previous' year (`inv[i-1]`) stored in
 `tempPreviousYear`. Now that we know that the gap between years doesn't
@@ -307,9 +311,11 @@ exceed 'dorm', we can get data from the 'current' year (`inv[i]`). We do
 this by subsetting `dat` for all observations in year `inv[i]`.
 Then, we use `isClonal` to group closely-grouped polygons into genets if
 applicable, and assign genetIDs. This data set is stored in the
-`tempCurrentYear` data.frame. **Proceed to step *3.4.3*.**
+`tempCurrentYear` data.frame. **Proceed to step [3.4.3](#3_4_3).**
 
-### *3.4.3* Are there actually any observations in the 'current' year (`inv[i-1]`)?
+<a id="3_4_3"></a>
+
+### *3.4.3* Are there actually any observations in the 'current' year (`inv[i-1]`)?  
 
 Even if a quadrat was sampled in `inv[i-1]`, it is possible that there
 weren't actually any plants there that year.
@@ -317,24 +323,26 @@ weren't actually any plants there that year.
 +-----------------------------------------------------------+----------+
 | If there ...                                              |          |
 +===========================================================+==========+
-| ... is data in `tempPreviousYear`.............            |**Proceed |
+| ... is data in `tempPreviousYear`.............            |Proceed   |
 |                                                           | to step  |
-|                                                           |*3.4.4*** |
+|                                                           |[3.4.4](#3_4_4)|
 +-----------------------------------------------------------+----------+
-| ... is *not* data in `tempPreviousYear`......             | **Go to  |
+| ... is *not* data in `tempPreviousYear`......             | Go to    |
 |                                                           | step     |
-|                                                           |*3.4.11***|
+|                                                           |[3.4.11](#3_4_11)|
 +-----------------------------------------------------------+----------+
 
-### *3.4.4* Add a buffer around the 'current' year data
+<a id="3_4_4"></a>
+
+### *3.4.4* Add a buffer around the 'current' year data  
 
 Now a buffer is added around each polygon in `tempPreviousYear`. This
 data is stored in the `tempPreviousBuff` data.frame. This buffer is of
-the width specified in the 'buff' argument of `trackSpp` that is passed
-to `assign`. Adding this buffer before comparing maps from the previous
+the width specified in the 'buff' argument of `trackSpp()` that is passed
+to `assign()`. Adding this buffer before comparing maps from the previous
 and current years allows for mapping error and slight movement of plants
 between years, which is especially likely for forbs that resprout every
-year. **Proceed to step *3.4.5*.**
+year. **Proceed to step [3.4.5](#3_4_5).**
 
 ```{r echo = FALSE, warning= FALSE, fig.width=6, fig.align = 'left', fig.cap = "Figure 3.4.4.1: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
 
@@ -381,7 +389,7 @@ ggplot(data = exampleDatIDs
   scale_alpha_discrete(range = c(0, 1, .5)) +
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```
-```{r echo = FALSE, warning= FALSE, fig.width=6, fig.align = 'left', fig.cap = "Figure 3.4.4.2: With a 5 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
+```{r echo = FALSE, warning= FALSE, fig.width=6, fig.align = 'left', fig.cap = "Figure 3.4.4.2: With a 5 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" , ]
 exampleDatIDsTemp <- exampleDat[exampleDat$Species == "Bouteloua rothrockii" & 
@@ -426,37 +434,40 @@ ggplot(data = exampleDatIDs
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```
 
+<a id="3_4_5"></a>
 
-### *3.4.5* Are there actually any observations in the 'current' year (`inv[i]`)?
+### *3.4.5* Are there actually any observations in the 'current' year (`inv[i]`)?  
 
 Even if a quadrat was sampled in `inv[i]`, it is possible that there
-weren't actually any plants there that year.
+weren't actually any plants there that year. 
 
 +----------------------------------------------+-----------------------+
 | If there ...                                 |                       |
 +==============================================+=======================+
-| ... is data in `tempCurrentYear`.............| **If 'clonal' = TRUE, |
+| ... is data in `tempCurrentYear`.............| If 'clonal' = TRUE,   |
 |                                              | proceed to step       |
-|                                              | *3.4.7*.** **If       |
+|                                              | [3.4.7](#3_4_7). If   |
 |                                              | 'clonal' = FALSE, go  |
-|                                              | to step *3.4.8***     |
+|                                              | to step [3.4.8](#3_4_8)|
 +----------------------------------------------+-----------------------+
-| ... is *not* data in `tempCurrentYear`.......| **Take the entire     |
+| ... is *not* data in `tempCurrentYear`.......| Take the entire       |
 |                                              | `tempPreviousYear`    |
 |                                              | data.frame to step    |
-|                                              | *3.4.6***             |
+|                                              | [*3.4.6*]             |
 +----------------------------------------------+-----------------------+
 
-### *3.4.6* 'Store' observations as 'ghosts' to compare to data from the next year (`inv[i+1]`) during the next iteration of the loop.
+<a id="3_4_6"></a>
+
+### *3.4.6* 'Store' observations as 'ghosts' to compare to data from the next year (`inv[i+1]`) during the next iteration of the loop. 
 
 This step also involves the 'dormancy' concept discussed in section
-*3.4.1*. If dormancy is not allowed for this species (i.e. 'dorm' = 0),
+[*3.4.1*]. If dormancy is not allowed for this species (i.e. 'dorm' = 0),
 then the observations in question that were 'sent' to this step must be
 given a '0' in the 'survives_tplus1' column and an 'NA' in the
 'size_tplus1' column. Because they are not allowed to be dormant, if
 they don't have overlapping individuals in the current year
 (`inv[i]`)--which they don't if they're sent to this step--then they're
-dead. **Take these observations to step *3.4.10*.**
+dead. **Take these observations to step [3.4.10](#3_4_10).**
 
 However, if dormancy *is* allowed for this species, the individuals that
 were 'sent' to this step because they didn't overlap with anything in
@@ -474,7 +485,7 @@ one year. We then call these individuals 'dead ghosts.' Any observations
 that are sent to this step, but that were observed in a year that is
 greater than 1 + 'dorm' years ago, become 'dead ghosts.' The 'dead
 ghosts' are added to the output data.frame. **The 'ghosts' are saved for
-the next step, which is *3.4.11***
+the next step, which is [3.4.11](#3_4_11)**
 
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 3.4.6.1: A visualization of the 'dormancy' scenario described above. The observation in 1922 has no overlap with any observation in 1923 (panels 1 and 2). However, if 'dorm' is greater than or equal to 1, we can save the 1922 observation as a 'ghost' (illustrated with a dotted border in panel 2). When compared to observations in 1924, there is an overlap! If 'dorm' = 1 (or more), then the observation in 1922 will get a '1' in the 'survives_tplus1' column. If 'dorm' = 0, then the observation in 1922 will get a '0' for survival, and the observation in 1924 will be a new recruit. "}
 exampleSmall <- exampleDat[exampleDat$Species == "Heteropogon contortus" & exampleDat$Year %in% c(1922, 1923, 1924),]
@@ -510,14 +521,18 @@ ggplot(data = exampleSmall) +
         legend.title = element_blank()) 
 ```
 
-### *3.4.7* Group the `tempCurrentYear` observations into genets
+<a id="3_4_7"></a>
 
-If 'clonal' = TRUE for this species, use the `ifClonal` to group
+### *3.4.7* Group the `tempCurrentYear` observations into genets 
+
+If 'clonal' = TRUE for this species, use the `ifClonal()` to group
 individual polygons that are close enough to one another to be
 considered the same genet (i.e. are within (2 x 'buffGenet') of one
-another). Individuals in the same genet are given the same genetID. **Go to step *3.4.8*. **
+another). Individuals in the same genet are given the same genetID. **Go to step [3.4.8](#3_4_8).**
 
-### *3.4.8* Are there any overlaps between polygons in `tempPreviousYear` and `tempCurrentYear`?
+<a id="3_4_8"></a>
+
+### *3.4.8* Are there any overlaps between polygons in `tempPreviousYear` and `tempCurrentYear`?    
 
 Use the `st_intersection` function from the sf package to determine if
 there is any overlap between polygons in the the previous year
@@ -527,31 +542,32 @@ there is any overlap between polygons in the the previous year
 +-----------------------------------------------+----------------------+
 | If there ...                                  |                      |
 +===============================================+======================+
-| ... is overlap between `tempPreviousYear` and | **Proceed to step    |
-| `tempCurrentYear`..................           | *3.4.9***            |
+| ... is overlap between `tempPreviousYear` and | Proceed to step      |
+| `tempCurrentYear`..................           | [3.4.9](#3_4_9)      |
 +-----------------------------------------------+----------------------+
-| ... is *not* overlap between                  | **Take the           |
+| ... is *not* overlap between                  | Take the             |
 | `tempPreviousYear` and `tempCurrentYear`...   | `tempPreviousYear`   |
 |                                               | data.frame to step   |
-|                                               | *3.4.6*.** **Take    |
-|                                               | the                  |
+|                                               | [3.4.6](#3_4_6).Take the|
 |                                               | `tempCurrentYear`    |
 |                                               | data.frame to step   |
-|                                               | *3.4.11*** , but     |
+|                                               | [3.4.11](#3_4_11), but|
 |                                               | first assign them a  |
 |                                               | '1' in the 'recruit' |
 |                                               | column and a '1' in  |
 |                                               | the 'age' column.    |
 +-----------------------------------------------+----------------------+
 
+<a id="3_4_9"></a>
+
 ### *3.4.9* Compare the overlap between `tempPreviousYear` and `tempCurrentYear` to assign trackIDs.
 
-The `st_intersection` function used in step *3.4.8* returns a matrix
+The `st_intersection` function used in step [3.4.8](#3.4.8) returns a matrix
 that gives the total area of overlap between each genet in
 `tempPreviousYear` and each genet in `tempCurrentYear`. Because the
 'parent' polygons (those in `tempPreviousYear`) and the 'child' polygons
 (those in `tempCurrentYear`) have already been grouped by genet, each
-'parent' can only have one 'child.' The `assign` function uses a while
+'parent' can only have one 'child.' The `assign()` function uses a while
 loop to look through the matrix generated by step 3.4.8. The highest
 value in the matrix indicates the greatest degree of overlap between a
 given 'parent' and 'child.' The trackID from that parent is given to
@@ -655,7 +671,7 @@ exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$t
 
 ggplot(data = exampleOut) +
   geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
-  geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
+  geom_sf_text(aes(label = trackID_new), nudge_x = .02, nudge_y = -.02) +
   geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
                lineend = "round", color = "grey30") + 
   geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
@@ -724,28 +740,35 @@ ggplot(data = exampleOut) +
 ```
 
 
-**The `ghosts` data.frame is sent to step *3.4.6.*** All of the
+**The `ghosts` data.frame is sent to step [3.4.6.](#3_4_6)** All of the
 observations in the `parents` data.frame get a '1' in the
 'survives_tplus1' column, and the total genet area of their 'child' is
 put into the 'size_tplus1' column. Then, **the `parents` data.frame is
-sent to step *3.4.10*** All of the observations in the `children`
+sent to step [3.4.10](#3_4_10)** All of the observations in the `children`
 data.frame get a '0' in the 'recruit' column, the age column is
 populated with 1 + the age of their parent. The observations in the
 `orphans` data.frame get a '1' in the 'recruit' column and a '1' in the
-'age' column. However if the `orphans` occur after a gap in sampling, they instead get an 'NA' in the 'recruit' and 'age' columns, since we don't know whether they were recruited in year *i* or during the gap. Then, **both the `children` and `orphans` data.frames are sent to step *3.4.11*.**
+'age' column. However if the `orphans` occur after a gap in sampling, they
+instead get an 'NA' in the 'recruit' and 'age' columns, since we don't know
+whether they were recruited in year *i* or during the gap. Then, **both the**
+**`children` and `orphans` data.frames are sent to step [3.4.11](#3_4_11).**
 
-### *3.4.10* Store the resulting demographic data
+<a id="3_4_10"></a>
+
+### *3.4.10* Store the resulting demographic data 
 
 Now demographic data (or NAs, if appropriate) and trackIDs have been
 assigned to every individual in `tempPreviousYear` (if there are
 actually observations in `inv[i-1]`), we can save these results. They
 are added to a data.frame that, when the for loop finishes, will be
-returned by the `assign` function. If there are any 'dead ghosts', they
+returned by the `assign()` function. If there are any 'dead ghosts', they
 are also added to the output data.frame. If `inv[i]` is *not* the last
-year of sampling, then proceed to step *3.4.11*. If `inv[i]` *is* the
+year of sampling, then proceed to step [3.4.11](#3_4_11). If `inv[i]` *is* the
 last year of sampling, then the for loop is over!
 
-### *3.4.11* Get ready for the next iteration of the loop
+<a id="3_4_11"></a>
+
+### *3.4.11* Get ready for the next iteration of the loop  
 
 If there are still iterations of the loop left, that is if `inv[i]` is
 not the last year of `inv`, then the data from year[i] (stored either in
@@ -754,26 +777,26 @@ previous years are put into the `tempPreviousYear` data.frame. This
 happens even if `tempCurrentYear` is empty. If there are not already
 genetIDs assigned to the data from `inv[i]` in `tempCurrentYear` (which
 happens if this is the first year after a gap in sampling), then it is
-passed through `ifClonal`. The loop proceeds to the next value of *i*
-(start again at section *3.4.1*).
+passed through `ifClonal()`. The loop proceeds to the next value of *i*
+(start again at section [3.4.1](#3_4_1)).
 
 Once the loop has progressed through the 'last' year, then the output
 data set will be saved, and the next species in the data set will be
-sent to `assign`!
+sent to `assign()`!
 
-## *4.* Preparing the `trackSpp` results to be returned!
-There are just a few more steps in `trackSpp` after the `assign` function has been applied to every species present in the data set. 
+## *4.* Preparing the `trackSpp()` results to be returned!
+There are just a few more steps in `trackSpp()` after the `assign()` function has been applied to every species present in the data set. 
 
 ### *4.1* Aggregating the results by genet
-The data.frames returned by the `assign` function are the exact same length as the input data frames. This means that, even though trackIDs and demographic data are assigned on the genet level, each 'observation', or ramet, has its own row of data. If the `trackSpp` argument 'aggByGenet' = TRUE, the output data set is passed through the `aggregateByGenet` function from plantTracker. This aggregates the data set so that each genet in each year is represented by only one row of data. The polygons for each ramet are combined into one spatial object using the `st_union` function from the 'sf' package. The resulting data.frame will be shorter and narrower than the input data.frame, since rows are combined. 
-While the output of the `assign` function contains a column for 'basalArea_ramet', this column is no longer present once the results are aggregated. 
+The data.frames returned by the `assign()` function are the exact same length as the input data frames. This means that, even though trackIDs and demographic data are assigned on the genet level, each 'observation', or ramet, has its own row of data. If the `trackSpp()` argument 'aggByGenet' = TRUE, the output data set is passed through the `aggregateByGenet` function from plantTracker. This aggregates the data set so that each genet in each year is represented by only one row of data. The polygons for each ramet are combined into one spatial object using the `st_union` function from the 'sf' package. The resulting data.frame will be shorter and narrower than the input data.frame, since rows are combined. 
+While the output of the `assign()` function contains a column for 'basalArea_ramet', this column is no longer present once the results are aggregated. 
 
 If there were any columns in the input data.frame beyond those required (Species, Site, Quad, Year, geometry), these will be dropped also, since the function can't predict whether it will be possible to aggregate those on the genet level. If your input data.frame has data in additional columns that can be aggregated and that you want to keep with the demographic data, I recommend using 'aggByGenet' = FALSE. If you want to ultimately aggregate the demographic data by genet, you can use the `sf::aggregate` function on your own, or modify the code for the `aggregateByGenet` function to include your additional columns. If you have set 'clonal' = FALSE for all species in your input data.frame, I also recommend using 'aggByGenet' = FALSE, since your results will already be on the genet scale! 
 
 ### *4.2* Informative messages
-If the argument 'printMessages' = TRUE, one or two messages will be printed as each species goes through the `assign` function. These messages are not warnings or errors! Unless the function returns a message preceded by the word "warning" or "error", the function is working! The messages I'm talking about here provide information about why there are 'NA's present in the demographic results, which may be concerning if you aren't expecting them. The first message tells you which year is the last year of sampling for this quadrat. Observations in the last year of sampling will have an 'NA' in both the 'survives_tplus1' and 'size_tplus' columns because we have no data to determine whether they survived. The second message only appears if there is a gap in sampling for that quadrat that exceeds the 'dorm' argument. The message indicates that observations in the year(s) preceding that gap will have 'NA's in the 'survives_tplus1' 'size_tplus1' columns, since we don't know when they died. If both 'printMessages' = TRUE and 'aggByGenet' = TRUE, an additional message will be printed. This message will warn that the output data.frame is shorter and narrower than the input data.frame, and will explain why that is. 
+If the argument 'printMessages' = TRUE, one or two messages will be printed as each species goes through the `assign()` function. These messages are not warnings or errors! Unless the function returns a message preceded by the word "warning" or "error", the function is working! The messages I'm talking about here provide information about why there are 'NA's present in the demographic results, which may be concerning if you aren't expecting them. The first message tells you which year is the last year of sampling for this quadrat. Observations in the last year of sampling will have an 'NA' in both the 'survives_tplus1' and 'size_tplus' columns because we have no data to determine whether they survived. The second message only appears if there is a gap in sampling for that quadrat that exceeds the 'dorm' argument. The message indicates that observations in the year(s) preceding that gap will have 'NA's in the 'survives_tplus1' 'size_tplus1' columns, since we don't know when they died. If both 'printMessages' = TRUE and 'aggByGenet' = TRUE, an additional message will be printed. This message will warn that the output data.frame is shorter and narrower than the input data.frame, and will explain why that is. 
 
-Lastly, if 'printMessages' = TRUE, the `trackSpp` function will print progress messages that indicate which site is being run the function, then which species, then which quadrat. This is helpful both to know how far the function has gotten in your data, and also is helpful if the function errors out. You can find roughly where the problem in the data is, since you know the species, quadrat, and site where the function crashed. 
+Lastly, if 'printMessages' = TRUE, the `trackSpp()` function will print progress messages that indicate which site is being run the function, then which species, then which quadrat. This is helpful both to know how far the function has gotten in your data, and also is helpful if the function errors out. You can find roughly where the problem in the data is, since you know the species, quadrat, and site where the function crashed. 
 
 
 If 'printMessages' = FALSE, then no messages will be returned. 
@@ -825,7 +848,7 @@ ggplot(data = exampleOut) +
         legend.title = element_blank()) 
 ```
 
-Here is that same data subset, but run through trackSpp using a buffGenet value of .05
+Here is that same data subset, but run through `trackSpp()` using a buffGenet value of .05
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.2: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 
 ## get trackIDs 
@@ -862,7 +885,7 @@ ggplot(data = exampleOut) +
 ```
 
 
-Here it is again, but run through trackSpp using clonal = FALSE
+Here it is again, but run through `trackSpp()` using clonal = FALSE
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.3: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 
 ## get trackIDs 

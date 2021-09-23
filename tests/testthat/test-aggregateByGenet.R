@@ -11,7 +11,7 @@ outDat <- trackSpp(dat = dat,
                    clonal = data.frame("Species" = unique(dat$speciesName),
                                        "clonal" = c(TRUE,FALSE)),
                    species = "speciesName",
-                   aggregateByGenet = FALSE
+                   aggByGenet = FALSE
                    )
 ## get a test aggregateByGenet() output
 testDat <- aggregateByGenet(dat = outDat,

@@ -72,7 +72,7 @@
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
 #'  "clonal" = c(1,0)),
 #'  species = "speciesName",
-#'  aggregateByGenet = TRUE
+#'  aggByGenet = TRUE
 #'  )
 #' drawQuadMap(dat = outDat,
 #' type = "bySpecies",

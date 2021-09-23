@@ -65,7 +65,7 @@
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
 #'  "clonal" = c(TRUE,FALSE)),
 #'  species = "speciesName",
-#'  aggregateByGenet = FALSE
+#'  aggByGenet = FALSE
 #'  )
 #'
 #' aggregateByGenet(dat = outDat,

@@ -43,8 +43,8 @@
 #' all of the years in which that quadrat (or other unique spatial area) was
 #' sampled.
 #' @param dorm A numeric vector of length 1, indicating the number of years
-#' these species is allowed to go dormant, i.e. be absent from the map but be
-#' considered the same individual when it reappears. This must be an integer
+#' these species are allowed to go dormant, i.e. be absent from the map but be
+#' considered the same individual when they reappear. This must be an integer
 #' greater than or equal to 0. OR dorm can be a data.frame with
 #' the columns "Species" and "dorm". This data.frame must have a row for each
 #' unique species present in 'dat', with species name as a character string in
@@ -82,23 +82,23 @@
 #' allowed to be clonal (TRUE) or not (FALSE).
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
-#' unnecessary to include a value for this argument if the column name is
+#' unnecessary to provide a value for this argument if the column name is
 #' "Species" (default value is 'Species').
 #' @param site An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains site name data. It is
-#' unnecessary to include a value for this argument if the column name is
+#' unnecessary to provide a value for this argument if the column name is
 #' "Site" (default value is 'Site').
 #' @param quad An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains quadrat name data. It is
-#' unnecessary to include a value for this argument if the column name is
+#' unnecessary to provide a value for this argument if the column name is
 #' "Quad" (default is 'Quad').
 #' @param year An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains data for year of sampling. It
-#' is unnecessary to include a value for this argument if the column name is
+#' is unnecessary to provide a value for this argument if the column name is
 #' "Year" (default is 'Year').
 #' @param geometry An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains sf geometry data. It is
-#' unnecessary to include a value for this argument if the column name is
+#' unnecessary to provide a value for this argument if the column name is
 #' "geometry" (default is 'geometry').
 #' @param aggByGenet A logical argument that determines whether the output
 #' of [trackSpp()] will be aggregated by genet. If the value is TRUE
@@ -109,7 +109,7 @@
 #' the data (each ramet gets a row). Note that if the value is TRUE, then some
 #' columns of the input data.frame 'dat' will be dropped. If you do not wish
 #' this to happen, then you can aggregate the data.frame to genet by hand.
-#' @param printMessages A logical argument that determines whether the this
+#' @param printMessages A logical argument that determines whether this
 #' function returns messages about genet aggregation, as well as messages
 #' indicating which year is the last year of sampling in each quadrat and which
 #' year(s) come before a gap in sampling that exceeds the 'dorm' argument (and
@@ -450,28 +450,6 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## put the data we actually need into the 'dat' object
   dat <- dat[,names(dat) %in% c("Site", "Quad", "Year", "Species",
                                 "geometry", "indexStore")]
-
-  ## get the 6-letter species code for each observation
-  ## make a column in the d.f with the 6-letter species code for each row
-  ## if the species column contains species name with a space
-  if (sum(grepl(pattern = "[[:space:]]",x = dat$Species)) > 0  ## does the
-      # species column contain a space? (is the length of the rows that contain
-      # a space greater than 0?)
-      ) {
-    dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
-      paste0(substr(toupper(x[1]), 1, 3), ## species name
-             substr(toupper(x[2]), 1, 3)) ## genus name
-    )
-  } else if (sum(grepl(pattern = "_",x = dat$Species)) > 0) {
-      dat$sp_code_6  <- sapply(strsplit(dat$Species, "_"), function(x)
-        paste0(substr(toupper(x[1]), 1, 3), ## species name
-               substr(toupper(x[2]), 1, 3)) ## genus name
-      )
-      } else {  ## if the species column contains some sort of code (i.e.
-        # uppercase letters), or something else...
-          # name alone in the sp_code_6 column
-          dat$sp_code_6 <- dat$Species
-        }
 
   ## get the basal area for each observation
   dat$basalArea_ramet <- st_area(dat)

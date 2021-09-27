@@ -382,7 +382,6 @@ vector of years in which that quadrat was sampled."))
 #   "Site = ",
 #   "Quad = quadrat",
 #   "Year = Year",
-#   "sp_code_6 = sp_code_6",
 #   "geometry = geometry")
 #
 # checkDat(dat, inv,  quad = "location", year = "YeAr", reformatDat = TRUE)

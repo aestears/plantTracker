@@ -50,9 +50,94 @@ arguments correctly.
 
 The required inputs to the `trackSpp()` function are explained in detail
 in [Suggested plantTracker
-Workflow](Suggested_plantTracker_Workflow.html), Parts 1.1, 1.2, and 2.
-In this example, we'll use a smaller subset of the `grasslandData` and
-`grasslandInventory` data sets that are included in plantTracker.
+Workflow](Suggested_plantTracker_Workflow.html), Parts 1.1, 1.2, and 2, as well 
+as the "help" file for this function (which you can access by typing `?trackSpp`
+in the R console).  However, I'll include a short description of the 
+arguments here: 
+
+dat, inv, dorm , buff , buffGenet , clonal,
+                     species = "Species",
+                     site = "Site",
+                     quad = "Quad",
+                     year = "Year",
+                     geometry = "geometry",
+                     aggByGenet = TRUE,
+                     printMessages = TRUE
+                     
++--------------+--------------------------------------+---------+--------+
+|`trackSpp()`  | description                          |required?|default?|
+|argument      |                                      |         |        |
++==============+======================================+=========+========+
+| dat          | An sf data.frame in which each row   |  Yes    |  N/A   |
+|              | has spatial data for an individual   |         |        |
+|              | observation in one year.             |         |        |
++--------------+--------------------------------------+---------+--------+
+| inv          | A named list in which the name of    |  Yes    |  N/A   |
+|              | each element of the list is a quadrat|         |        |
+|              | name in 'dat', and the contents of   |         |        |
+|              | that list element is  a numeric      |         |        |
+|              | vector of all of the years in which  |         |        |
+|              | that quadrat was sampled.            |         |        |
++--------------+--------------------------------------+---------+--------+
+| dorm         | A single value greater than or equal |  Yes    |  N/A   |
+|              | to 0 indicating  the number of years |         |        |
+|              | these species are allowed to go      |         |        |
+|              | dormant. **OR** a data.frame with a  |         |        |
+|              | row for each species in 'dat',       |         |        |
+|              | species names in the "Species" column|         |        |
+|              | and a dormancy value in the          |         |        |
+|              | 'dorm' column.                       |         |        |
++--------------+--------------------------------------+---------+--------+
+| buff         | A single value greater than or equal |  Yes    |  N/A   |
+|              | equal to zero, indicating how  far a |         |        |
+|              | far a polygon can move from year `i` |         |        |
+|              | to year `i+1` and still be considered|         |        |
+|              | the same individual. **OR** a        |         |        |
+|              | data.frame with a row for each       |         |        |
+|              | species present in 'dat', species    |         |        |
+|              | names in the "Species"  column, and a|         |        |
+|              | 'buff' value in the 'buff' column.   |         |        |
++--------------+--------------------------------------+---------+--------+
+| clonal       | A logical value (TRUE or FALSE)      |  Yes    |  N/A   |
+|              | indicating whether a species is      |         |        |
+|              | allowed to be clonal or not. **OR**  |         |        |
+|              | a data.frame with a row for each     |         |        |
+|              | species in 'dat', species names in   |         |        |
+|              | the "Species" column, and a 'clonal' |         |        |
+|              | value in  the 'clonal' column.       |         |        |
++--------------+--------------------------------------+---------+--------+
+| buffGenet    | A single value greater than or equal | Yes, but|  N/A   |
+|              | to zero indicating how close polygons| only if |        |
+|              | must be to one another in the same   | 'clonal'|        |
+|              | year to be grouped as a genet.       | = TRUE  |        |
+|              | **OR** a data.frame with a row       |         |        |
+|              | for each species in 'dat', species   |         |        |
+|              | names in the "Species" column, and a |         |        |
+|              | 'buffGenet' value in the 'buffGenet' |         |        |
+|              | column.                              |         |        |
++--------------+--------------------------------------+---------+--------+
+| species/     | Five separate arguments, each a      |  No     |"Species"|
+| site/        | character string that indicates the  |         | /"Site"|
+| quad/        | name of the column in 'dat' that     |         | /"Quad"|
+| year/        | contains data for each of these      |         | /"Year"|
+| geometry     | required data types. No value is     |         | /"geometry"|
+|              | required if the column name is the   |         |        |
+|              | same as the default. If only one     |         |        |
+|              |column names is different than the    |         |        |
+|              |default, then you only need to supply |         |        |
+|              |a value for that argument.            |         |        |
++--------------+--------------------------------------+---------+--------+
+| aggByGenet   | A logical argument (TRUE or FALSE)   |  No     | TRUE   |
+|              | that determines whether the output   |         |        |
+|              | will be aggregated by genet.         |         |        |
++--------------+--------------------------------------+---------+--------+
+| printMessages| A logical argument (TRUE or FALSE)   |  No     | TRUE   |
+|              |that determines if the function       |         |        |
+|              |returns informative messages.         |         |        |
++--------------+--------------------------------------+---------+--------+
+
+Throughout this vignette, we'll use a smaller subset of the `grasslandData` and
+`grasslandInventory` data sets that are included in plantTracker for examples.
 
 Here are the first few rows of the `dat` data set we'll be using:
 
@@ -453,7 +538,7 @@ weren't actually any plants there that year.
 | ... is *not* data in `tempCurrentYear`.......| Take the entire       |
 |                                              | `tempPreviousYear`    |
 |                                              | data.frame to step    |
-|                                              | [*3.4.6*]             |
+|                                              | [3.4.6](#3_4_6)       |
 +----------------------------------------------+-----------------------+
 
 <a id="3_4_6"></a>

@@ -536,11 +536,26 @@
             ## check: individuals w/ the same trackID-- can't have a decrease in
             # size more than 90% and still be the same individual (i.e. current
             # year must be > 10% of the size of previous year)
-            shrinkage <- merge(sf::st_drop_geometry(
-              tempPreviousYear[,c("Area", "trackID")]),
-                  sf::st_drop_geometry(tempCurrentYear[,c("Area", "trackID")]),
-                  by = "trackID") ## get a list of the trackIDs that are present
-            # in both the previous and current years
+
+            ## make sure the areas are aggregated by genet
+            smallPrevious <- aggregate(x = sf::st_drop_geometry(
+              tempPreviousYear[, "Area"]),
+              by = list("Year_prev" = tempPreviousYear$Year,
+                         "trackID" = tempPreviousYear$trackID),
+              FUN = sum
+              )
+
+            smallCurrent <- aggregate(x = sf::st_drop_geometry(
+              tempCurrentYear[, "Area"]),
+              by = list("Year_curr" = tempCurrentYear$Year,
+                        "trackID" = tempCurrentYear$trackID),
+              FUN = sum
+            )
+
+            ## get a list of the trackIDs that are present in both the previous
+            # and current years
+            shrinkage <- merge(smallPrevious, smallCurrent,
+                  by = "trackID")
 
             ## get ratio of current year size to previous year size. Is the
             # ratio less than or equal to .1?
@@ -555,6 +570,32 @@
             ## check: for individuals that are dormant (and only if dorm = 1),
             # then a really tiny plant can't become a really big plant (i.e. a
             # plant that is really tiny probably can't go dormant)
+            if (dorm >= 1) { ## if the dorm argument is > 0...
+              ## is there a difference of greater than 1 year between any of the
+              # individuals with the same trackID?
+              ## get individuals that have a gap > 1
+              # between current and previous year
+              dormants <- shrinkage[shrinkage$trackID %in%
+                                      which((shrinkage$Year_curr -
+                                      shrinkage$Year_prev ) > 1),]
+              ## get individuals that have a 'very small size' in the previous
+              # year (as long as the size isn't exactly the same from year to
+              # year--since they are likely then points and have a fixed radius)
+              dormants <- dormants[round(dormants$Area.x,8) !=
+                                     round(dormants$Area.y,8),]
+              ## get the trackID of individuals in the previous year that were
+              # smaller than the 5th percentile of the distribution of sizes
+              # for this species
+              smallest <- exp(qnorm(p = .05,
+                                    mean = mean(log(dat$Area)),
+                                    sd = sd(log(dat$Area))))
+              tooSmallIDs <- dormants[dormants$Area.x < smallest, "trackID"]
+
+              ## remove the trackIDs for the 'children' of the 'parent'
+              # individuals that are too small to have survived dormancy
+              tempCurrentYear[tempCurrentYear$trackID %in% tooSmallIDs,
+                              "trackID"] <- NA
+            }
 
             ## ORPHANS: deal with 'child' polygons that don't have parents
             ## give them new trackIDs

@@ -101,6 +101,30 @@
     dat$basalArea_ramet <-  st_area(dat)
   }
 
+  ## get the 6-letter species code for each observation
+  ## make a column in the d.f with the 6-letter species code for each row
+  ## only if the species column contains species name with a space
+  if (sum(grepl(pattern = "[[:space:]]",x = dat$Species)) > 0  ## does the
+      # species column contain a space? (is the length of the rows that contain
+      # a space greater than 0?)
+      ) {
+    dat$sp_code_6  <- sapply(strsplit(dat$Species, " "), function(x)
+      paste0(substr(toupper(x[1]), 1, 3), ## species name
+             substr(toupper(x[2]), 1, 3)) ## genus name
+    )
+  } else if (sum(grepl(pattern = "_",x = dat$Species)) > 0) { ## if the species
+    # name doesn't contain a space, does it have an underscore?
+    dat$sp_code_6  <- sapply(strsplit(dat$Species, "_"), function(x)
+      paste0(substr(toupper(x[1]), 1, 3), ## species name
+             substr(toupper(x[2]), 1, 3)) ## genus name
+    )
+  } else {  ## if the species column contains some sort of code (i.e.
+    # uppercase letters), or something else...
+    # put the name alone in the sp_code_6 column
+    dat$sp_code_6 <- dat$Species
+  }
+
+
   ## assign an arbitrary, unique index number to each row in the dataset
   dat$index <- c(1:nrow(dat))
 

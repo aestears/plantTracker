@@ -1,5 +1,5 @@
 ---
-title: "Suggested PlantTracker Workflow"
+title: "Suggested plantTracker Workflow"
 author: Alice Stears
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -27,10 +27,10 @@ library(sf)
 
 
 ## Introduction
-Welcome to PlantTracker! This package was designed to transform long-term 
+Welcome to plantTracker! This package was designed to transform long-term 
 quadrat maps that show plant occurrence and size into demographic data that can 
 be used to answer questions about population and community ecology. 
-This vignette is designed to help you use PlantTracker functions to move from a 
+This vignette is designed to help you use plantTracker functions to move from a 
 spatially referenced dataset containing plant cover data, to an output dataset 
 that contains growth and survival data for each observed individual. 
 
@@ -38,14 +38,14 @@ This vignette will walk you through the steps to get from maps of plant cover
 to a demographic dataset that you can use for analysis!
 
 ## *1.* Prepare data
-The functions in PlantTracker require data in a specific format. PlantTracker
+The functions in plantTracker require data in a specific format. plantTracker
 includes an example dataset that consists of two pieces: `grasslandData` and 
 `grasslandInventory`. You can load these example datasets into your global 
 environment by calling `data(grasslandData)` and `data(grasslandInventory)`. You 
 can view the documentation for these datasets by calling 
 `?grasslandData` and `?grasslandInventory`. 
 
-Most PlantTracker functions require two data objects. The first is a data.frame 
+Most plantTracker functions require two data objects. The first is a data.frame 
 that contains the location and metadata for each mapped individual, which we 
 from now on will call `dat`. The second is a list that contains a vector of 
 years in which each quadrat was sampled, which we from now on will cal `inv`. 
@@ -95,10 +95,10 @@ relatively meaningless for observations originally mapped as points.
 
 *  ... *not* have columns called 'neighbors', 'nearEdge',  'trackID', 'age', 
 'size_tplus1', 'recruit', 'survives_tplus1', 'basalArea_ramet', or 
-'basalArea_genet', since these columns are added by PlantTracker functions. 
+'basalArea_genet', since these columns are added by plantTracker functions. 
 
 *  Note: Additional columns can be included in the input data.frame, although 
-they might not be included in the output of PlantTracker functions. 
+they might not be included in the output of plantTracker functions. 
 
 Here are the first few rows of a possible `dat` input data.frame: 
 ```{r  echo = FALSE}
@@ -111,7 +111,7 @@ knitr::kable(dataShow, caption = "**Table 1.1**: Example `dat` data.frame" )
 
 Note that the required columns are 'Species', 'Site', 'Quad', 'Year', and
 'geometry'. The additional columns 'Type' and 'sp_code_6' are just "along for 
-the ride" in any analysis using PlantTracker functions. 
+the ride" in any analysis using plantTracker functions. 
 
 
 Here's what some of the example `dat` data (from the 'SG2' quadrat at the 
@@ -140,12 +140,12 @@ ggplot(data = exampleDat) +
         plot.margin = margin(1,0,1,0)) 
 ```
 
-It's important to note that, while PlantTracker was designed to be used with 
+It's important to note that, while plantTracker was designed to be used with 
 small-scale maps of plant occurence in quadrats, it is conceivably possible to 
-use other styles of map data in PlantTracker functions. All that is required is 
+use other styles of map data in plantTracker functions. All that is required is 
 a single mapped basal area (or point location converted to a small polygon) at 
 each time point for each organism (or ramet), and is accompanied by the required 
-metadata detailed above. For example, PlantTracker functions could be used to 
+metadata detailed above. For example, plantTracker functions could be used to 
 estimate tree demographic rates at the scale of 100 m x 50 m plots.
 
 #### *1.2* The `inv` list must . . .
@@ -175,7 +175,7 @@ correspond to each of these quadrats.
 
 #### *1.3* Checking the `inv` and `dat` arguments  
 This step is optional, but can be useful if you're unsure whether your `dat` and 
-`inv` arguments are in the correct format. The PlantTracker function 
+`inv` arguments are in the correct format. The plantTracker function 
 `checkDat()` takes `dat` and `inv` as arguments for the arguments `dat` and
 `inv`, and will return informative error messages if either argument is not in 
 the correct format. 
@@ -308,6 +308,12 @@ dormDF <- data.frame("Species" = c("tree A", "shrub B", "tree C", "forb D", "for
 knitr::kable(dormDF, caption = "**Table 2.1**: Example 'dorm' data.frame", )
 ```
   
+  
+  *Important Note* Be very careful about how you define the 'dorm' argument. The 
+  bigger the 'dorm' argument, the more likely you are to overestimate survival. 
+  For annually-sampled data, I would need a very biologically-compelling reason 
+  to to specify a 'dorm' argument greater than 1 year.
+  
 * 'buff' This is a positive numeric value that indicates how much an individual 
 can move from year 1 to year 2 and still be considered the same individual 
 (receive the same trackID). In addition to accounting for true variation in 
@@ -438,7 +444,7 @@ or if 'clonal' is a data.frame that contains at least a single '1' in the
 `trackSpp()` will have a row for every single ramet, or will be aggregated so 
 that each genet is represented by a single row. If `aggByGenet = FALSE`, 
 then the output is not aggregated. If `aggByGenet = TRUE` (the default 
-setting), then the results are aggregated using the PlantTracker function 
+setting), then the results are aggregated using the plantTracker function 
 `aggregateByGenet()`. This function combines the sf "POLYGONS" for each ramet 
 into one sf "MULTIPOLYGON" for the entire genet, and combines the associated 
 metadata ("Species", "Site", "Quad", "Year", "trackID", "basalArea_genet", 
@@ -493,11 +499,11 @@ data.frame will have one row for each genet, and is ready for demographic
 analysis! If your output data.frame is *not* yet aggregated by genet 
 (i.e. you set the 'aggByGenet' argument to FALSE), then you need to 
 transform your data.frame so that each genet is represented by only one row of 
-data. You can use the `aggregateByGenet()` function from PlantTracker (see this 
+data. You can use the `aggregateByGenet()` function from plantTracker (see this 
 function's documentation for guidance), or your own method of choice. 
 
 You can stop here and proceed to your own analyses using the demographic data 
-you generated, or you can proceed with other PlantTracker functions outlined 
+you generated, or you can proceed with other plantTracker functions outlined 
 below for some additional useful data.
 
 ### *3* Calculating a Metric of Competition
@@ -511,7 +517,7 @@ competition or facilitation, it gives us an estimate that we can include in
 demographic models.
 
 #### *3.1* Function options and arguments
-The `getNeighbors()` function in PlantTracker calculates this competition 
+The `getNeighbors()` function in plantTracker calculates this competition 
 estimate for each unique individual in your dataset. A user-specified buffer is 
 drawn around each individual, and then the function counts the number of other 
 plants within this buffer.This function can only be run on a dataset where each 

@@ -247,8 +247,8 @@
         } ## end of 'if' that determines if there is data in year i
         ## end of 'if' that determines what to do if the gap between years
         # exceeds the dormancy argument
-      } else { ## if the gap between years does; (inv[i] - inv[i-1] <=
-        # (dorm+1)) NOT exceed the dormancy argument
+      } else { ## if the gap between years (inv[i] - inv[i-1] <= (dorm+1))
+        # does NOT exceed the dormancy argument
         ## 'tempPreviousYear' is the sf data.frame of the 'current' year
         ## need to get the sf data.frame of the 'next' year (year 'i')
         tempCurrentYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
@@ -263,8 +263,8 @@
         ## MAKE SURE THERE IS DATA IN YEAR i-1 (tempPreviousYear isn't empty) If
         # not, then go to the next i (only after replacing 'tempPreviousYear'
         # with the tempCurrentYear data.frame)
-        if (nrow(tempPreviousYear) < 1) { ## what to do if 'tempPreviousYear' does
-          # NOT exist, then overwrite the tempPreviousYear w/ data from the
+        if (nrow(tempPreviousYear) < 1) { ## what to do if 'tempPreviousYear'
+          # does NOT exist, then overwrite the tempPreviousYear w/ data from the
           # 'next' year, and go to the next i
           ## but first, give them trackIDs and recruit/age data (if
           # appropriate)-- because they go directly into 'tempPreviousYear,' so
@@ -533,6 +533,29 @@
               ## end of 'if' that contains the work if there ARE overlaps
             }
 
+            ## check: individuals w/ the same trackID-- can't have a decrease in
+            # size more than 90% and still be the same individual (i.e. current
+            # year must be > 10% of the size of previous year)
+            shrinkage <- merge(sf::st_drop_geometry(
+              tempPreviousYear[,c("Area", "trackID")]),
+                  sf::st_drop_geometry(tempCurrentYear[,c("Area", "trackID")]),
+                  by = "trackID") ## get a list of the trackIDs that are present
+            # in both the previous and current years
+
+            ## get ratio of current year size to previous year size. Is the
+            # ratio less than or equal to .1?
+            shrinkers <- shrinkage$trackID[(shrinkage$Area.y /
+                                              shrinkage$Area.x) <= .1]
+
+            if (length(shrinkers) > 0) { ## if there are any shrinkers...
+              tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
+                              "trackID"] <- NA
+            }
+
+            ## check: for individuals that are dormant (and only if dorm = 1),
+            # then a really tiny plant can't become a really big plant (i.e. a
+            # plant that is really tiny probably can't go dormant)
+
             ## ORPHANS: deal with 'child' polygons that don't have parents
             ## give them new trackIDs
             orphans <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
@@ -746,27 +769,27 @@ return(assignOut)
 
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
-# #
-# # prepares the dataset to feed into the 'assign' function (the 'trackSpp'
-# # function will do this ahead of time when the user calls it)
-# sampleDat <- grasslandData[grasslandData$Site == "KS"
-#                            & grasslandData$Quad == "q33"
-#                            & grasslandData$Species == "Ambrosia psilostachya",]
-# # this should be a data.frame
-# dat <- sampleDat
-# #
-# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # # to tell the 'assign' function when the quadrat was sampled
-# sampleInv<- grasslandInventory[["q33"]]
-# # this should be an integer vector
-# inv <- sampleInv
 #
-# testOutput <- assign(dat = dat,
-#                      inv = inv,
-#                      dorm = 1,
-#                      buff = .05,
-#                      buffGenet = .001,
-#                      clonal =  TRUE)
+# prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# function will do this ahead of time when the user calls it)
+sampleDat <- grasslandData[grasslandData$Site == "KS"
+                           & grasslandData$Quad == "q45"
+                           & grasslandData$Species == "Aristida longiseta",]
+# this should be a data.frame
+dat <- sampleDat
+#
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+sampleInv<- grasslandInventory[["453"]]
+# this should be an integer vector
+inv <- sampleInv
+
+testOutput <- assign(dat = dat,
+                     inv = inv,
+                     dorm = 1,
+                     buff = .05,
+                     buffGenet = .001,
+                     clonal =  TRUE)
 
 
 # # ggplot(testOutput) +

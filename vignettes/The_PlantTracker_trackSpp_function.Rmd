@@ -904,7 +904,7 @@ exampleSmall <-suppressWarnings(st_intersection(exampleSmall, box))
 exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE))
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
-                     trackID_new = c(1:19))
+                     trackID_new = c(1:22))
 exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$trackID)]
 
 ggplot(data = exampleOut) +
@@ -935,7 +935,6 @@ ggplot(data = exampleOut) +
 
 Here is that same data subset, but run through `trackSpp()` using a buffGenet value of .05
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.2: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
-
 ## get trackIDs 
 exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .05, aggByGenet = TRUE, printMessages = FALSE))
 

@@ -39,8 +39,8 @@ all of the years in which that quadrat (or other unique spatial area) was
 sampled.}
 
 \item{dorm}{A numeric vector of length 1, indicating the number of years
-these species is allowed to go dormant, i.e. be absent from the map but be
-considered the same individual when it reappears. This must be an integer
+these species are allowed to go dormant, i.e. be absent from the map but be
+considered the same individual when they reappear. This must be an integer
 greater than or equal to 0. OR dorm can be a data.frame with
 the columns "Species" and "dorm". This data.frame must have a row for each
 unique species present in 'dat', with species name as a character string in
@@ -82,27 +82,27 @@ allowed to be clonal (TRUE) or not (FALSE).}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Species" (default value is 'Species').}
 
 \item{site}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains site name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Site" (default value is 'Site').}
 
 \item{quad}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains quadrat name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Quad" (default is 'Quad').}
 
 \item{year}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains data for year of sampling. It
-is unnecessary to include a value for this argument if the column name is
+is unnecessary to provide a value for this argument if the column name is
 "Year" (default is 'Year').}
 
 \item{geometry}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains sf geometry data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "geometry" (default is 'geometry').}
 
 \item{aggByGenet}{A logical argument that determines whether the output
@@ -115,7 +115,7 @@ the data (each ramet gets a row). Note that if the value is TRUE, then some
 columns of the input data.frame 'dat' will be dropped. If you do not wish
 this to happen, then you can aggregate the data.frame to genet by hand.}
 
-\item{printMessages}{A logical argument that determines whether the this
+\item{printMessages}{A logical argument that determines whether this
 function returns messages about genet aggregation, as well as messages
 indicating which year is the last year of sampling in each quadrat and which
 year(s) come before a gap in sampling that exceeds the 'dorm' argument (and

@@ -273,13 +273,13 @@
             ## get a d.f that contains the obs. w/ no trackIDs
             tempTrackIDs <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
 
-            ## add trackIDs to the tempPreviousYear data.frame
+            ## add trackIDs to the tempCurrentYear data.frame
             tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
               tempTrackIDs$sp_code_6, "_", tempTrackIDs$Year, "_",
               tempTrackIDs$genetID)
 
             ## then need to add 'age' and 'recruit' data (but first check that
-            # this isn't he first year after a gap in sampling)
+            # this isn't the first year after a gap in sampling)
             tempCurrentYear[(tempCurrentYear$Year - inv[i-1]) < 2,
                          c("age")] <- 0
             tempCurrentYear[(tempCurrentYear$Year - inv[i-1]) < 2,
@@ -348,7 +348,7 @@
                   assignOut <- deadGhosts
                 }
               }
-            } else {  ## what to do if this i is the 'last' year!
+          } else {  ## what to do if this i is the 'last' year!
               ## get 'ghosts' (if there are any)
               ghosts <- tempPreviousYear[(((inv[i]+1)-tempPreviousYear$Year) <=
                                            (dorm + 1)),]
@@ -561,13 +561,16 @@
 
             ## get ratio of current year size to previous year size. Is the
             # ratio less than or equal to .1?
-            shrinkers <- shrinkage$trackID[(shrinkage$Area.y /
-                                              shrinkage$Area.x) <= .1]
+            if (nrow(shrinkage) > 0) {
+              shrinkers <- shrinkage$trackID[(shrinkage$Area.y /
+                                                shrinkage$Area.x) <= .1]
 
-            if (length(shrinkers) > 0) { ## if there are any shrinkers...
-              tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
-                              "trackID"] <- NA
+              if (length(shrinkers) > 0) { ## if there are any shrinkers...
+                tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
+                                "trackID"] <- NA
+              }
             }
+
 
             ## check: for individuals that are dormant (and only if dorm = 1),
             # then a really tiny plant can't become a really big plant (i.e. a

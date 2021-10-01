@@ -100,7 +100,7 @@ outDat <- trackSpp(dat = dat,
  species = "speciesName",
  aggByGenet = TRUE
  )
-getBasalAreas(dat = outDat,
+getBasalAreas(dat = outDat, inv = inv,
 species = "speciesName")
 }
 \seealso{

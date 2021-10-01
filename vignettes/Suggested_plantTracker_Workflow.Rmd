@@ -1,7 +1,7 @@
 ---
 title: "Suggested plantTracker Workflow"
 author: Alice Stears
-date: "`r Sys.Date()`"
+date: 29 September 2021
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Suggested_plantTracker_Workflow}

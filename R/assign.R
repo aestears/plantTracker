@@ -47,7 +47,7 @@
 #' (if 'clonal' argument = TRUE).
 #'
 #' @import sf
-#' @importFrom stats aggregate reshape
+#' @importFrom stats aggregate reshape qnorm sd
 
  assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
                     ...){

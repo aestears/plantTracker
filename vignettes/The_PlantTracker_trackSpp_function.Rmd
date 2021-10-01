@@ -1,7 +1,7 @@
 ---
 title: "The plantTracker 'trackSpp()' function"
 author: "Alice Stears"
-date: "`r Sys.Date()`"
+date: 29 September 2021
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{The_plantTracker_trackSpp_function}
@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
-library(devtools)
-load_all()
+# library(devtools)
+# load_all()
 ```
 
 ## Introduction

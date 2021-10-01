@@ -143,6 +143,10 @@ positive values (or NA).")
   if (is.logical(dat$nearEdge) == FALSE) {
 stop("The 'nearEdge' column in 'dat' must be a logical vector.")
   }
+  ## 'Suspect' column
+  if (is.logical(dat$Suspect) == FALSE) {
+  stop("The 'Suspect' column in 'dat' must be a logical vector.")
+}
 #site ## the name of the column in 'dat' that contains the values for site
 
 #quad ## the name of the column in 'dat' that contains the data for quadrat
@@ -196,64 +200,127 @@ that give the name of the columns in 'dat' that contain these data types." ))
   ## replace the user-provided names in 'dat' with the default names
   names(dat)[match(usrNames, names(dat))] <- defaultNames
 
-  ## if there *is* a 'type_USER' argument, then include this!
-  if (sum(names(dat) == "Type_USER") == 1) {
-    ## aggregate the 'dat' argument by trackID
-    ## sum the appropriate columns
-    datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
-                        by = list("Site" = dat$Site,
-                                  "Quad" = dat$Quad,
-                                  "Species" = dat$Species,
-                                  "trackID" = dat$trackID,
-                                  "Year" = dat$Year,
-                                  "type" = dat$Type_USER),
-                        do_union = TRUE,
-                        FUN = sum)
-    ## rename the 'basalArea_ramet' column
-    names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
-    ## correct the 'age column'
-    dat <- st_drop_geometry(dat)
-    datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
-                                      'size_tplus1', 'nearEdge')],
-                          by = list("Site" = dat$Site,
-                                    "Quad" = dat$Quad,
-                                    "Species" = dat$Species,
-                                    "trackID" = dat$trackID,
-                                    "Year" = dat$Year,
-                                    "type" = dat$Type_USER),
-                          FUN = mean
-                          )
-    ## join the data.frames together
-    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
-                                               "trackID", "Year", "type"))
+  ## if there is a 'Suspect' column
+  if ("Suspect" %in% names(dat)) {
+    ## if there *is* a 'type_USER' argument, then include this!
+    if (sum(names(dat) == "Type_USER") == 1) {
+      ## aggregate the 'dat' argument by trackID
+      ## sum the appropriate columns
+      datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year,
+                                      "type" = dat$Type_USER),
+                            do_union = TRUE,
+                            FUN = sum)
+      ## rename the 'basalArea_ramet' column
+      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      ## correct the 'age column'
+      dat <- st_drop_geometry(dat)
+      datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                        'size_tplus1', 'nearEdge', 'Suspect')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year,
+                                      "type" = dat$Type_USER),
+                            FUN = mean
+      )
+      ## join the data.frames together
+      datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                                 "trackID", "Year", "type"))
 
-  } else {
-    ## aggregate the 'dat' argument by trackID
-    ## sum the appropriate columns
-    datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
-                          by = list("Site" = dat$Site,
-                                    "Quad" = dat$Quad,
-                                    "Species" = dat$Species,
-                                    "trackID" = dat$trackID,
-                                    "Year" = dat$Year),
-                          do_union = TRUE,
-                          FUN = sum)
-    ## rename the 'basalArea_ramet' column
-    names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
-    ## correct the 'age column'
-    dat <- st_drop_geometry(dat)
-    datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
-                                      'size_tplus1', 'nearEdge')],
-                          by = list("Site" = dat$Site,
-                                    "Quad" = dat$Quad,
-                                    "Species" = dat$Species,
-                                    "trackID" = dat$trackID,
-                                    "Year" = dat$Year),
-                          FUN = mean
-    )
-    ## join the data.frames together
-    datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
-                                               "trackID", "Year"))
+    } else {
+      ## aggregate the 'dat' argument by trackID
+      ## sum the appropriate columns
+      datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year),
+                            do_union = TRUE,
+                            FUN = sum)
+      ## rename the 'basalArea_ramet' column
+      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      ## correct the 'age column'
+      dat <- st_drop_geometry(dat)
+      datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                        'size_tplus1', 'nearEdge', 'Suspect')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year),
+                            FUN = mean
+      )
+      ## join the data.frames together
+      datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                                 "trackID", "Year"))
+    }
+  } else { ## if there is NOT a "Suspect column
+    ## if there *is* a 'type_USER' argument, then include this!
+    if (sum(names(dat) == "Type_USER") == 1) {
+      ## aggregate the 'dat' argument by trackID
+      ## sum the appropriate columns
+      datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year,
+                                      "type" = dat$Type_USER),
+                            do_union = TRUE,
+                            FUN = sum)
+      ## rename the 'basalArea_ramet' column
+      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      ## correct the 'age column'
+      dat <- st_drop_geometry(dat)
+      datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                        'size_tplus1', 'nearEdge', 'Suspect')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year,
+                                      "type" = dat$Type_USER),
+                            FUN = mean
+      )
+      ## join the data.frames together
+      datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                                 "trackID", "Year", "type"))
+
+    } else {
+      ## aggregate the 'dat' argument by trackID
+      ## sum the appropriate columns
+      datOut_1 <- aggregate(x = dat[,c('basalArea_ramet')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year),
+                            do_union = TRUE,
+                            FUN = sum)
+      ## rename the 'basalArea_ramet' column
+      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      ## correct the 'age column'
+      dat <- st_drop_geometry(dat)
+      datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
+                                        'size_tplus1', 'nearEdge')],
+                            by = list("Site" = dat$Site,
+                                      "Quad" = dat$Quad,
+                                      "Species" = dat$Species,
+                                      "trackID" = dat$trackID,
+                                      "Year" = dat$Year),
+                            FUN = mean
+      )
+      ## join the data.frames together
+      datOut <- merge(datOut_1, datOut_2, by = c("Site", "Quad", "Species",
+                                                 "trackID", "Year"))
+    }
   }
 
   ## fix the 'nearEdge' mean issue--is averaged to a numeric value, not logical
@@ -261,6 +328,10 @@ that give the name of the columns in 'dat' that contain these data types." ))
   # others aren't.
   datOut[datOut$nearEdge > 0, 'nearEdge'] <- 1
   datOut$nearEdge <- as.logical(datOut$nearEdge)
+  ## fix the 'suspect' column (was changed to 0/1, needs to be logical)
+  if ("Suspect" %in% names(datOut)) {
+    datOut$Suspect <- as.logical(datOut$Suspect)
+  }
 
   datFinal <- datOut
   ## change the column names back to what were present in 'dat'

@@ -537,7 +537,10 @@ values of either FALSE or TRUE for each species with no NAs.")
                          dorm = dormK,
                          buff = buffK,
                          buffGenet = buffGenetK,
-                         clonal = clonalK
+                         clonal = clonalK,
+                         flagSuspects = flagSuspects,
+                         shrink = shrink,
+                         dormSize = dormSize
         )
         ## see if the output d.f exists yet (trackSpOut)
         ## if it does exist, then add datOut for the current spp. to the output
@@ -626,24 +629,26 @@ values of either FALSE or TRUE for each species with no NAs.")
 }
 
 # Testing -----------------------------------------------------------------
-# dat <- grasslandData[grasslandData$Site == "CO"
-#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
-#                      #& grasslandData$Species == "Bouteloua gracilis",]
-# names(dat)[1]<- "Species_Name"
-# names(dat)[8] <- "location"
-# #dat <- dat[dat$location != "ungz_5a",]
-# #dat <- dat[,c(1:6,8:13)]
-# inv <- grasslandInventory
-# #inv <- inv[1:5]
-# dorm <- 1
-# buff <- .05
-# buffGenet <- 0.005
-# clonal <- data.frame(Species = unique(dat$Species),
-#                      clonal = c(TRUE))
-#
-# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff, buffGenet = buffGenet,
-#                     clonal = clonal , species = "Species_Name",
-#                     quad = "location", printMessages = FALSE)
+dat <- grasslandData[grasslandData$Site == "CO"
+                     & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+                     #& grasslandData$Species == "Bouteloua gracilis",]
+names(dat)[1]<- "Species_Name"
+names(dat)[8] <- "location"
+#dat <- dat[dat$location != "ungz_5a",]
+#dat <- dat[,c(1:6,8:13)]
+inv <- grasslandInventory
+#inv <- inv[1:5]
+dorm <- 1
+buff <- .05
+buffGenet <- 0.005
+clonal <- data.frame(Species = unique(dat$Species),
+                     clonal = c(TRUE))
+
+testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
+                    buffGenet = buffGenet,
+                    clonal = clonal , species = "Species_Name",
+                    quad = "location", printMessages = FALSE,
+                    flagSuspects = TRUE)
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

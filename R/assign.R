@@ -110,7 +110,7 @@
   }
   ## if 'flagSuspects' is TRUE, add a column for the flags to go into
   if (flagSuspects == TRUE) {
-    dat$Suspect <- 0 ## default value is 0
+    dat$Suspect <- FALSE ## default value is 0
     }
 
   ## get the 6-letter species code for each observation
@@ -581,7 +581,7 @@
 
                 if (length(shrinkers) > 0) { ## if there are any shrinkers...
                   tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
-                                  "Suspect"] <- 1
+                                  "Suspect"] <- TRUE
                 }
               }
 
@@ -617,7 +617,7 @@
                     ## remove the trackIDs for the 'children' of the 'parent'
                     # individuals that are too small to have survived dormancy
                     tempCurrentYear[tempCurrentYear$trackID %in% tooSmallIDs,
-                                    "Suspect"] <- 1
+                                    "Suspect"] <- TRUE
                   }
                 }
               }

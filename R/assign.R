@@ -49,7 +49,15 @@
 #' @import sf
 #' @importFrom stats aggregate reshape qnorm sd
 
- assign <- function(dat, inv, dorm , buff , buffGenet, clonal,
+ assign <- function(dat,
+                    inv,
+                    dorm,
+                    buff,
+                    buffGenet,
+                    clonal,
+                    flagSuspects = FALSE,
+                    shrink = 0.1,
+                    dormSize = .05,
                     ...){
   ## argument checking --------------------------------------------------------
    ## don't really do arg. checking, since this function is not exported, and
@@ -100,6 +108,10 @@
   if (sum(dat$basalArea_ramet) == 0) {
     dat$basalArea_ramet <-  st_area(dat)
   }
+  ## if 'flagSuspects' is TRUE, add a column for the flags to go into
+  if (flagSuspects == TRUE) {
+    dat$Suspect <- 0 ## default value is 0
+    }
 
   ## get the 6-letter species code for each observation
   ## make a column in the d.f with the 6-letter species code for each row
@@ -533,76 +545,80 @@
               ## end of 'if' that contains the work if there ARE overlaps
             }
 
-            ## check: individuals w/ the same trackID-- can't have a decrease in
-            # size more than 90% and still be the same individual (i.e. current
-            # year must be > 10% of the size of previous year)
+            ## make optional checks that will flag obs. as 'suspect'
+            if (flagSuspects == TRUE) {
+              ## check: individuals w/ the same trackID-- can't have a decrease
+              # in size more than 90% and still be the same individual (i.e.
+              # current year must be > 10% of the size of previous year)
 
-            ## make sure the areas are aggregated by genet
-            smallPrevious <- aggregate(x = sf::st_drop_geometry(
-              tempPreviousYear[, "basalArea_ramet"]),
-              by = list("Year_prev" = tempPreviousYear$Year,
-                         "trackID" = tempPreviousYear$trackID),
-              FUN = sum
+              ## make sure the areas are aggregated by genet
+              smallPrevious <- aggregate(x = sf::st_drop_geometry(
+                tempPreviousYear[, "basalArea_ramet"]),
+                by = list("Year_prev" = tempPreviousYear$Year,
+                          "trackID" = tempPreviousYear$trackID),
+                FUN = sum
               )
-            names(smallPrevious)[3] <- "Area"
+              names(smallPrevious)[3] <- "Area"
 
-            smallCurrent <- aggregate(x = sf::st_drop_geometry(
-              tempCurrentYear[, "basalArea_ramet"]),
-              by = list("Year_curr" = tempCurrentYear$Year,
-                        "trackID" = tempCurrentYear$trackID),
-              FUN = sum
-            )
-            names(smallCurrent)[3] <- "Area"
+              smallCurrent <- aggregate(x = sf::st_drop_geometry(
+                tempCurrentYear[, "basalArea_ramet"]),
+                by = list("Year_curr" = tempCurrentYear$Year,
+                          "trackID" = tempCurrentYear$trackID),
+                FUN = sum
+              )
+              names(smallCurrent)[3] <- "Area"
 
-            ## get a list of the trackIDs that are present in both the previous
-            # and current years
-            shrinkage <- merge(smallPrevious, smallCurrent,
-                  by = "trackID")
+              ## get a list of the trackIDs that are present in both the
+              # previous and current years
+              shrinkage <- merge(smallPrevious, smallCurrent,
+                                 by = "trackID")
 
-            ## get ratio of current year size to previous year size. Is the
-            # ratio less than or equal to .1?
-            if (nrow(shrinkage) > 0) {
-              shrinkers <- shrinkage$trackID[(shrinkage$Area.y /
-                                                shrinkage$Area.x) <= .1]
-
-              if (length(shrinkers) > 0) { ## if there are any shrinkers...
-                tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
-                                "trackID"] <- NA
-              }
-            }
-
-
-            ## check: for individuals that are dormant (and only if dorm = 1),
-            # then a really tiny plant can't become a really big plant (i.e. a
-            # plant that is really tiny probably can't go dormant)
-            if (dorm >= 1) { ## if the dorm argument is > 0...
-              ## if there are data that survive from year 1 to year 2
+              ## get ratio of current year size to previous year size. Is the
+              # ratio less than or equal to .1?
               if (nrow(shrinkage) > 0) {
-                ## is there a difference of greater than 1 year between any of the
-                # individuals with the same trackID?
-                ## get individuals that have a gap > 1
-                # between current and previous year
-                dormants <- shrinkage[shrinkage$trackID %in%
-                                        which((shrinkage$Year_curr -
-                                                 shrinkage$Year_prev ) > 1),]
-                if (nrow(dormants) > 0) {
-                  ## get individuals that have a 'very small size' in the previous
-                  # year (as long as the size isn't exactly the same from year to
-                  # year--since they are likely then points and have a fixed radius)
-                  dormants <- dormants[round(dormants$Area.x,8) !=
-                                         round(dormants$Area.y,8),]
-                  ## get the trackID of individuals in the previous year that were
-                  # smaller than the 5th percentile of the distribution of sizes
-                  # for this species
-                  smallest <- exp(qnorm(p = .05,
-                                        mean = mean(log(dat$Area)),
-                                        sd = sd(log(dat$Area))))
-                  tooSmallIDs <- dormants[dormants$Area.x < smallest, "trackID"]
+                shrinkers <- shrinkage$trackID[(shrinkage$Area.y /
+                                                  shrinkage$Area.x) <= shrink]
 
-                  ## remove the trackIDs for the 'children' of the 'parent'
-                  # individuals that are too small to have survived dormancy
-                  tempCurrentYear[tempCurrentYear$trackID %in% tooSmallIDs,
-                                  "trackID"] <- NA
+                if (length(shrinkers) > 0) { ## if there are any shrinkers...
+                  tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
+                                  "Suspect"] <- 1
+                }
+              }
+
+              ## check: for individuals that are dormant (and only if dorm = 1),
+              # then a really tiny plant can't become a really big plant (i.e. a
+              # plant that is really tiny probably can't go dormant)
+              if (dorm >= 1) { ## if the dorm argument is > 0...
+                ## if there are data that survive from year 1 to year 2
+                if (nrow(shrinkage) > 0) {
+                  ## is there a difference of greater than 1 year between any of
+                  # the individuals with the same trackID?
+                  ## get individuals that have a gap > 1
+                  # between current and previous year
+                  dormants <- shrinkage[shrinkage$trackID %in%
+                                          which((shrinkage$Year_curr -
+                                                   shrinkage$Year_prev ) > 1),]
+                  if (nrow(dormants) > 0) {
+                    ## get individuals that have a 'very small size' in the
+                    # previous year (as long as the size isn't exactly the same
+                    # from year to year--since they are likely then points and
+                    # have a fixed radius)
+                    dormants <- dormants[round(dormants$Area.x,8) !=
+                                           round(dormants$Area.y,8),]
+                    ## get the trackID of individuals in the previous year that
+                    # were smaller than the 5th percentile of the distribution
+                    # of sizes for this species
+                    smallest <- exp(qnorm(p = dormSize,
+                                          mean = mean(log(dat$Area)),
+                                          sd = sd(log(dat$Area))))
+                    tooSmallIDs <- dormants[dormants$Area.x < smallest,
+                                            "trackID"]
+
+                    ## remove the trackIDs for the 'children' of the 'parent'
+                    # individuals that are too small to have survived dormancy
+                    tempCurrentYear[tempCurrentYear$trackID %in% tooSmallIDs,
+                                    "Suspect"] <- 1
+                  }
                 }
               }
             }
@@ -615,8 +631,8 @@
               ## make a unique trackID for each genetID in the 'orphan' dataset
               orphanIDs <- data.frame(
                 "genetID" = unique(tempCurrentYear[is.na(
-                  tempCurrentYear$trackID)==TRUE, "genetID"]$genetID), ## get the
-                # unique genetIDs of the 'orphans'
+                  tempCurrentYear$trackID)==TRUE, "genetID"]$genetID), ## get
+                # the unique genetIDs of the 'orphans'
                 "trackID" = paste0(unique(
                   tempCurrentYear$sp_code_6), ## get the unique 6-letter species
                   # code
@@ -787,17 +803,17 @@
             tempPreviousYear <- tempCurrentYear
           } ## end of 'if' statement that determines if the tempCurrentYear data
           # exists
-        } ## end of 'if' that determines if the tempPreviousYear data exists
-      } ## end of 'if' statement that determines if gap between inv[i-1] and
+          } ## end of 'if' that determines if the tempPreviousYear data exists
+        } ## end of 'if' statement that determines if gap between inv[i-1] and
       # inv[i] is less than or equal to  dorm+1
-    } ## end of loop i
-  } else if (inv[firstYearIndex] == max(inv)) {
+      } ## end of loop i
+    } else if (inv[firstYearIndex] == max(inv)) {
     ## if there are only observations in the last year of 'inv', then there
     # cannot be any demographic data assigned.
     ## make sure there are 'NA's' in the appropriate columns
     tempPreviousYear[, c('size_tplus1', 'survives_tplus1')] <- NA
     assignOut <- tempPreviousYear
-  }
+    }
   ## populate the 'nearEdge' column
   ## make an empty column
   assignOut$nearEdge <- FALSE
@@ -840,7 +856,8 @@ return(assignOut)
 #                      dorm = 1,
 #                      buff = .05,
 #                      buffGenet = .001,
-#                      clonal =  TRUE)
+#                      clonal =  TRUE,
+#                      flagSuspects = TRUE)
 
 
 # # ggplot(testOutput) +

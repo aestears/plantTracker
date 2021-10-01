@@ -181,6 +181,9 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                      geometry = "geometry",
                      aggByGenet = TRUE,
                      printMessages = TRUE,
+                     flagSuspects = FALSE,
+                     shrink = .1,
+                     dormSize = .05,
                      ...) {
   # argument checks ---------------------------------------------------------
   ## arguments
@@ -436,6 +439,28 @@ values of either FALSE or TRUE for each species with no NAs.")
     stop("The 'printMessages' argument must be a logical value.")
   }
 
+  ## do need to check the 'flagSuspects', 'shrink', and 'dormSize' arguments
+
+  ## check 'flagSuspects' argument
+    if (!is.logical(flagSuspects) | ## flagSuspects must be logical
+        length(flagSuspects)!=1){ ## flagSuspects must be a vector of length = 1
+      stop("'flagSuspects' must be a single logical value that is either
+           FALSE or TRUE.")
+    }
+
+  ## check 'shrink' argument
+  if (is.numeric(shrink) == FALSE | ## is shrink a numeric argument?
+      length(shrink) > 1 ## is shrink longer than one value?
+      ) {
+    stop("'shrink' must be a single numeric value")
+  }
+
+  ## check 'dormSize' argument
+  if (is.numeric(dormSize) == FALSE | ## is dormSize a numeric argument?
+      length(dormSize) > 1 ## is dormSize longer than one value?
+  ) {
+    stop("'dormSize' must be a single numeric value")
+  }
 
   # work --------------------------------------------------------------------
   ## first, break the 'dat' d.f into two pieces, one with columns we need, and

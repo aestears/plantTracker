@@ -214,14 +214,14 @@ that contain data for those overlapping individuals are given the same
 #### *2.1.* Function Arguments
 `trackSpp()` takes the following arguments:  
 
-* `dat` This is the sf data.frame that we've been calling `dat` so far. This 
+* 'dat' This is the sf data.frame that we've been calling `dat` so far. This 
 must be in the correct format (which you can check before-hand using 
 `checkDat()`), but informative error messages will be returned if it is 
 incorrect. It *must* have the columns outlined in Section 1.1, but they can have 
 different names as long as those names are included in this function call 
 (more on that later...).
 
-* `inv` This is the list of quadrat sampling years we've been calling `inv`. If 
+* 'inv' This is the list of quadrat sampling years we've been calling `inv`. If 
 it is not in the correct format or does not contain data for the correct 
 quadrats, then an informative error message will be returned. 
 
@@ -409,23 +409,23 @@ ggplot(data = exampleDatIDs
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
 
-* 'clonal' This is a Boolean argument (0 or 1) that indicates whether you want 
-to allow plants to be clonal or not. In the context of this type of data, 
+* 'clonal' This is a logical argument (TRUE or FALSE) that indicates whether you 
+want to allow plants to be clonal or not. In the context of this type of data, 
 "clonal" means that one genetic individual (or "genet") can be recorded as 
-multiple polygons (or "ramets"). If 'clonal' = 1, then multiple polygons in the 
-same year can be part of the same individual and have the same trackID. If 
-'clonal' = 0, then every polygon in a given year is a unique individual and has 
-a unique trackID. This option can be defined globally for all species present in 
-`dat` by setting 'clonal' equal to 0 or 1 in the `trackSpp()` function call. 
-Alternatively, 'clonal' can be specified uniquely for each species by creating a
-data.frame that contains a 'clonal' argument for each species (analogous to the 
-data.frame for the 'dorm' argument shown in Table 2.1, but with a column called 
-"clonal"). 
+multiple polygons (or "ramets"). If 'clonal' = TRUE, then multiple polygons in 
+the same year can be part of the same individual and have the same trackID. If 
+'clonal' = FALSE, then every polygon in a given year is a unique individual and 
+has a unique trackID. This option can be defined globally for all species 
+present in `dat` by setting 'clonal' equal to FALSE or TRUE in the `trackSpp()` 
+function call. Alternatively, 'clonal' can be specified uniquely for each 
+species by creating a data.frame that contains a 'clonal' argument for each 
+species (analogous to the data.frame for the 'dorm' argument shown in Table 2.1, 
+but with a column called "clonal"). 
 
 The following arguments to `trackSpp()` are only required in certain contexts. 
 
-* 'buffGenet' is a numeric argument that is only required if `clonal = 1` 
-or if 'clonal' is a data.frame that contains at least a single '1' in the 
+* 'buffGenet' is a numeric argument that is only required if `clonal = TRUE` 
+or if 'clonal' is a data.frame that contains at least a single 'TRUE' in the 
 "clonal" column. 'buffGenet' is a numeric value that indicates how close
 polygons of the same species in the same year must be to one another in order to 
 be considered parts of the same genetic individual (ramets of the same genet). 
@@ -438,8 +438,8 @@ uniquely for each species by creating a data.frame that contains a 'buffGenet'
 argument for each species (analogous to the data.frame for the 'dorm' argument 
 shown in Table 2.1, but with a column called "buffGenet").
 
-* aggByGenet' is a logical argument that is only required if `clonal = 1` 
-or if 'clonal' is a data.frame that contains at least a single '1' in the 
+* 'aggByGenet' is a logical argument that is only required if `clonal = TRUE` 
+or if 'clonal' is a data.frame that contains at least a single 'TRUE' in the 
 "clonal" column. This argument determines whether the output data.frame from 
 `trackSpp()` will have a row for every single ramet, or will be aggregated so 
 that each genet is represented by a single row. If `aggByGenet = FALSE`, 
@@ -464,13 +464,68 @@ sure to pass your dataset through the `aggregateByGenet()` function (or
 aggregate to the genet scale using your preferred method) before 
 demographic analysis. 
 
-* `species/site/quad/year/geometry` These arguments only need to be included if 
+* 'species/site/quad/year/geometry' These arguments only need to be included if 
 the columns in `dat` that contain the data for species, site, 
 quadrat, year and geometry of each observation are *different* from the names 
 "Species", "Site", "Quad", "Year, and "geometry".  For example, if the column in 
 your version of `dat` that contains the species identity of each observation is 
 called 'species_names', then the argument `species = "species_names"` must be 
 included in your call to `trackSpp()`. 
+
+* 'printMessages' This is an optional logical argument that determines whether 
+this function returns messages about genet aggregation, as well as messages 
+indicating which year is the last year of sampling in each quadrat and which 
+year(s) come before a gap in sampling that exceeds the 'dorm' argument (and thus 
+which years of data have an 'NA' for "survives_tplus1" and "size_tplus1"). If 
+printMessages = TRUE (the default), then messages are printed. If 
+printMessages = FALSE, then messages are not printed.
+
+* 'flagSuspects' This is an optional logical argument of length 1, indicating 
+whether observations that are 'suspect' will be flagged. The default is
+`flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a column called
+'Suspect' is added to the output data.frame. Any suspect observations get a
+'TRUE' in the 'Suspect' column, while non-suspect observations receive a
+'FALSE'. There are two ways that an observation can be classified as
+'suspect'. First, if two consecutive observations have the same trackID, but
+the observation in year t+1 is less that a certain percentage (defined by the
+`shrink` arg.) of the observation in year t, it is possible that the
+observation in year t+1 is a new recruit and not the same individual. The
+second way an observation can be classified as 'suspect' is if it is very
+small before going dormant. It is unlikely that a very small individual will
+survive dormancy, so it is possible that the function has mistakenly given a
+survival value of '1' to this individual. A 'very small individual' is any
+observation with an area below a certain percentile (specified by 'dormSize')
+of the size distribution for this species, which is generated using all of
+the size data for this species in 'dat'. If you are using the output dataset for 
+demographic analysis, you may want to exclude 'Suspect' observations. If 
+`flagSuspects = FALSE`, then no additional column is added. 
+
+* 'shrink' This is an optional argument that takes a single numeric value. This 
+value is only used when `flagSuspects = TRUE`. When two consecutive observations 
+have the same trackID, and the ratio of size_t+1 to size_t is smaller than the 
+value of `shrink`, the observation in year t gets a 'TRUE' in the 'Suspect' 
+column. For example, `shrink = 0.2`, and an individual that the tracking 
+function has identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year_t and 
+an area of 1.35 cm^2 in year_t+1. The ratio of size_t+1 to size_t is 
+1.35/9 = 0.15, which is smaller than the cutoff specified by `shrink`, so the 
+observation of 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. 
+The default value is `shrink = 0.10`.
+
+* 'dormSize' This is an optional argument that takes a single numeric value. 
+This value is only used when `flagSuspects = TRUE` and `dorm ≥ 1`. An individual 
+is flagged as 'suspect' if it 'goes dormant' and has a size that is less than or 
+equal to the percentile of the size distribution for this species that is 
+designated by `dormSize`. For example, `dormSize = 0.05`, and an individual has 
+a basal area of 0.5 cm^2. The 5th percentile of the distribution of size for 
+this species, which is made using the mean and standard deviation of all 
+observations in 'dat' for the species in question, is 0.6 cm^2. This individual 
+does not have any overlaps in the next year (year_t+1), but does have an overlap 
+in year_t+2. However, because the basal area of this observation is smaller than 
+the 5th percentile of size for this species, the observation in year t will get 
+a 'TRUE' in the 'Suspect' column. It is possible that the tracking function has 
+mistakenly assigned a '1' for survival in year_t, because it is unlikely that 
+this individual is large enough to survive dormancy. The default value is
+`dormSize = .05`.
 
 These are all of the possible arguments to `trackSpp()`! 
 

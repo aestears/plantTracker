@@ -99,7 +99,7 @@ the focal individual and other individuals of the same species).
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == c("CO") &
- grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+ grasslandData$Species \%in\% c("Bouteloua gracilis"),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(dat = dat,
@@ -108,7 +108,7 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(TRUE,FALSE)),
+ "clonal" = c(TRUE)),
  species = "speciesName",
  aggByGenet = TRUE
  )

@@ -135,6 +135,24 @@ dat, inv, dorm , buff , buffGenet , clonal,
 |              |that determines if the function       |         |        |
 |              |returns informative messages.         |         |        |
 +--------------+--------------------------------------+---------+--------+
+| flagSuspects | A logical argument (TRUE or FALSE)   |  No     | FALSE  |
+|              |that indicates whether 'suspect'      |         |        |
+|              |individuals will be flagged.          |         |        |
++--------------+--------------------------------------+---------+--------+
+| shrink       | A numeric value. When two consecutive|  No     |  0.10  |
+|              | observations have the same trackID,  |         |        |
+|              | and the ratio of size_t+1 to size_t  |         |        |
+|              | is smaller than the value of         |         |        |
+|              | 'shrink', the observation in year_t  |         |        |
+|              | gets a 'TRUE' in the 'Suspect' column.|         |        |
++--------------+--------------------------------------+---------+--------+
+| dormSize     | A numeric value. An individual is    |  No     | 0.05   |
+|              | flagged as 'suspect' if it 'goes     |         |        |
+|              |dormant' and has a size that is less  |         |        |
+|              |than or equal to the percentile of the|         |        |
+|              |size distribution for this species    |         |        |
+|              |that is designated by 'dormSize'      |         |        |
++--------------+--------------------------------------+---------+--------+
 
 Throughout this vignette, we'll use a smaller subset of the `grasslandData` and
 `grasslandInventory` data sets that are included in plantTracker for examples.
@@ -394,7 +412,7 @@ We already have data for the 'previous' year (`inv[i-1]`) stored in
 `tempPreviousYear`. Now that we know that the gap between years doesn't
 exceed 'dorm', we can get data from the 'current' year (`inv[i]`). We do
 this by subsetting `dat` for all observations in year `inv[i]`.
-Then, we use `isClonal` to group closely-grouped polygons into genets if
+Then, we use `ifClonal()` to group closely-grouped polygons into genets if
 applicable, and assign genetIDs. This data set is stored in the
 `tempCurrentYear` data.frame. **Proceed to step [3.4.3](#3_4_3).**
 
@@ -904,7 +922,7 @@ exampleSmall <-suppressWarnings(st_intersection(exampleSmall, box))
 exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE))
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
-                     trackID_new = c(1:22))
+                     trackID_new = c(1:19))
 exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$trackID)]
 
 ggplot(data = exampleOut) +

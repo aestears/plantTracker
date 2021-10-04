@@ -40,8 +40,8 @@
 #' allowed to be clonal, and if clonal = FALSE, the species is not allowed to
 #' be clonal.
 #' @param flagSuspects A logical argument of length 1, indicating whether
-#' observation that are 'suspect' will be flagged. The default is
-#' `flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a colunn called
+#' observations that are 'suspect' will be flagged. The default is
+#' `flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a column called
 #' 'Suspect' is added to the output data.frame. Any suspect observations get a
 #' 'TRUE' in the 'Suspect' column, while non-suspect observations receive a
 #' 'FALSE'. There are two ways that an observation can be classified as
@@ -67,7 +67,7 @@
 #' 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
 #' value is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
-#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual cannot be dormant if it
+#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect' if it 'goes dormant' and
 #' has a size that is less than or equal to the percentile of the size
 #' distribution for this species that is designated by `dormSize`. For example,
 #' `dormSize = 0.05`, and an individual has a basal area of 0.5 cm^2. The 5th

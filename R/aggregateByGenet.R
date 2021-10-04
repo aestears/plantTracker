@@ -143,10 +143,13 @@ positive values (or NA).")
   if (is.logical(dat$nearEdge) == FALSE) {
 stop("The 'nearEdge' column in 'dat' must be a logical vector.")
   }
-  ## 'Suspect' column
-  if (is.logical(dat$Suspect) == FALSE) {
-  stop("The 'Suspect' column in 'dat' must be a logical vector.")
-}
+  if ("Suspect" %in% names(dat)) {
+    ## 'Suspect' column
+    if (is.logical(dat$Suspect) == FALSE) {
+      stop("The 'Suspect' column in 'dat' must be a logical vector.")
+    }
+  }
+
 #site ## the name of the column in 'dat' that contains the values for site
 
 #quad ## the name of the column in 'dat' that contains the data for quadrat
@@ -280,7 +283,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
       ## correct the 'age column'
       dat <- st_drop_geometry(dat)
       datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
-                                        'size_tplus1', 'nearEdge', 'Suspect')],
+                                        'size_tplus1', 'nearEdge')],
                             by = list("Site" = dat$Site,
                                       "Quad" = dat$Quad,
                                       "Species" = dat$Species,

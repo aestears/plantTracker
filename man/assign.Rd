@@ -4,7 +4,18 @@
 \alias{assign}
 \title{Tracks genets through time}
 \usage{
-assign(dat, inv, dorm, buff, buffGenet, clonal, ...)
+assign(
+  dat,
+  inv,
+  dorm,
+  buff,
+  buffGenet,
+  clonal,
+  flagSuspects = FALSE,
+  shrink = 0.1,
+  dormSize = 0.05,
+  ...
+)
 }
 \arguments{
 \item{dat}{An sf data.frame of the same format as
@@ -45,6 +56,51 @@ species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
 can be grouped as one individual (genet)). If clonal = TRUE, the species is
 allowed to be clonal, and if clonal = FALSE, the species is not allowed to
 be clonal.}
+
+\item{flagSuspects}{A logical argument of length 1, indicating whether
+observations that are 'suspect' will be flagged. The default is
+\code{flagSuspects = FALSE}. If \code{flagSuspects = TRUE}, then a column called
+'Suspect' is added to the output data.frame. Any suspect observations get a
+'TRUE' in the 'Suspect' column, while non-suspect observations receive a
+'FALSE'. There are two ways that an observation can be classified as
+'suspect'. First, if two consecutive observations have the same trackID, but
+the observation in year t+1 is less that a certain percentage (defined by the
+\code{shrink} arg.) of the observation in year t, it is possible that the
+observation in year t+1 is a new recruit and not the same individual. The
+second way an observation can be classified as 'suspect' is if it is very
+small before going dormant. It is unlikely that a very small individual will
+survive dormancy, so it is possible that the function has mistakenly given a
+survival value of '1' to this individual. A 'very small individual' is any
+observation with an area below a certain percentile (specified by 'dormSize')
+of the size distribution for this species, which is generated using all of
+the size data for this species in 'dat'.}
+
+\item{shrink}{A single numeric value. This value is only used when
+\code{flagSuspects = TRUE}. When two consecutive observations have the same
+trackID, and the ratio of size_t+1 to size_t is smaller than the value of
+\code{shrink}, the observation in year t gets a 'TRUE' in the 'Suspect' column.
+For example, \code{shrink = 0.2}, and an individual that the tracking function has
+identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year t and an area of
+1.35 cm^2 in year t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15,
+which is smaller than the cutoff specified by \code{shrink}, so the observation of
+'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
+value is \code{shrink = 0.10}.}
+
+\item{dormSize}{A single numeric value. This value is only used when
+\code{flagSuspects = TRUE} and \verb{dorm ≥ 1}. An individual is flagged as 'suspect' if it 'goes dormant' and
+has a size that is less than or equal to the percentile of the size
+distribution for this species that is designated by \code{dormSize}. For example,
+\code{dormSize = 0.05}, and an individual has a basal area of 0.5 cm^2. The 5th
+percentile of the distribution of size for this species, which is made using
+the mean and standard deviation of all observations in 'dat' for the species
+in question, is 0.6 cm^2. This individual does not have any overlaps in the
+next year (year t+1), but does have an overlap in year t+2. However, because
+the basal area of this observation is smaller than the 5th percentile of size
+for this species, the observation in year t will get a 'TRUE' in the
+'Suspect' column. It is possible that the tracking function has mistakenly
+assigned a '1' for survival in year t, because it is unlikely that this
+individual is large enough to survive dormancy. The default value is
+\code{dormSize = .05}.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }

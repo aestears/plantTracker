@@ -116,9 +116,9 @@
 #' thus which years of data have an 'NA' for "survives_tplus1" and
 #' "size_tplus1"). If printMessages = TRUE (the default), then messages are
 #' printed. If printMessages = FALSE, then messages are not printed.
-#' #' @param flagSuspects A logical argument of length 1, indicating whether
-#' observation that are 'suspect' will be flagged. The default is
-#' `flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a colunn called
+#' @param flagSuspects A logical argument of length 1, indicating whether
+#' observations that are 'suspect' will be flagged. The default is
+#' `flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a column called
 #' 'Suspect' is added to the output data.frame. Any suspect observations get a
 #' 'TRUE' in the 'Suspect' column, while non-suspect observations receive a
 #' 'FALSE'. There are two ways that an observation can be classified as
@@ -144,7 +144,7 @@
 #' 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
 #' value is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
-#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual cannot be dormant if it
+#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect' if it 'goes dormant' and
 #' has a size that is less than or equal to the percentile of the size
 #' distribution for this species that is designated by `dormSize`. For example,
 #' `dormSize = 0.05`, and an individual has a basal area of 0.5 cm^2. The 5th
@@ -671,26 +671,26 @@ values of either FALSE or TRUE for each species with no NAs.")
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData[grasslandData$Site == "CO"
-                     & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-names(dat)[1]<- "Species_Name"
-names(dat)[8] <- "location"
-#dat <- dat[dat$location != "ungz_5a",]
-#dat <- dat[,c(1:6,8:13)]
-inv <- grasslandInventory
-#inv <- inv[1:5]
-dorm <- 1
-buff <- .05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(TRUE))
-
-testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
-                    buffGenet = buffGenet,
-                    clonal = clonal , species = "Species_Name",
-                    quad = "location", printMessages = FALSE,
-                    flagSuspects = TRUE)
+# dat <- grasslandData[grasslandData$Site == "CO"
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
+# inv <- grasslandInventory
+# #inv <- inv[1:5]
+# dorm <- 1
+# buff <- .05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(TRUE))
+#
+# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
+#                     buffGenet = buffGenet,
+#                     clonal = clonal , species = "Species_Name",
+#                     quad = "location", printMessages = FALSE,
+#                     flagSuspects = TRUE)
 
 
 ### AES make an example in the documentation that specifies all args as numeric,

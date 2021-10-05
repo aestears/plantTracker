@@ -115,8 +115,8 @@ outDat <- trackSpp(dat = dat,
 
  finalDat <- getNeighbors(dat = outDat,
  buff = .15,
- method = 'area',
- compType = 'allSpp',
+ method = 'count',
+ compType = 'oneSpp',
  species = "speciesName")
 
 }

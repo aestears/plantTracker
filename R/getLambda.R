@@ -2,19 +2,19 @@
 #' based on changes in basal cover.
 #'
 #' @description This function calculated the population growth rate (lambda) for
-#' every species in a quadrat. This value is the ratio of basal area in a given
-#' year to basal area in the previous year (basal area in year t+1/ basal area
+#' every species in a quadrat. This value is the ratio of basal area in the next
+#' year to basal area in the current year (basal area in year t+1/ basal area
 #' in year t). A lambda value greater than 1 indicates a population is growing,
 #' while a value less than 1 indicates population decline. Lambda is 'infinity'
-#' when the basal area in year t is 0, and is NA when basal areas in both years
-#' t and t+1 are zero (i.e. when there are no plants present).
+#' when the basal area in year t is 0, and is NA when basal area in year
+#' t is zero (i.e. when there are no plants present in year t).
 #' Note that a lambda value is calculated between of the years when a quadrat
 #' was sampled, even if there is a gap in sampling. For example, a quadrat is
 #' sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A lambda value
 #' will be calculated for 1998-1999 and 2001-2002, which is a transition from
 #' year t to year t+1. However, a lambda value is calculated in the same manner
 #' for 1999-2001, which is actually a transition from year t to year t+2.
-#' You could easily remove these values by subsetting the data.frame returned
+#' You can remove these values by subsetting the data.frame returned
 #' by `getLambda()` for rows when "Year_tplus1"- "Year_t" is equal to 1.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
@@ -193,8 +193,8 @@ getLambda <- function(dat,
 
 # testing -----------------------------------------------------------------
 #
-# dat <- grasslandData[grasslandData$Site == "CO" & grasslandData$Year %in% c(1998:2002),]
-# names(dat)[1] <- "speciesName"
-# inv <- grasslandInventory[unique(dat$Quad)]
-# outDat <- trackSpp(dat = dat, inv = inv, dorm = 1, buff = .05,buffGenet = 0.005,clonal = data.frame("Species" = unique(dat$speciesName),"clonal" = c(1,0)), species = "speciesName",aggregateByGenet = TRUE)
-# getLambda(dat = outDat, inv = inv, species = "speciesName")
+dat <- grasslandData[grasslandData$Site == "CO" & grasslandData$Year %in% c(1998:2002),]
+names(dat)[1] <- "speciesName"
+inv <- grasslandInventory[unique(dat$Quad)]
+outDat <- trackSpp(dat = dat, inv = inv, dorm = 1, buff = .05,buffGenet = 0.005,clonal = data.frame("Species" = unique(dat$speciesName),"clonal" = c(TRUE,FALSE)), species = "speciesName",aggregateByGenet = TRUE)
+getLambda(dat = outDat, inv = inv, species = "speciesName")

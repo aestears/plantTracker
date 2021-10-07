@@ -533,38 +533,8 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## get the basal area for each observation
   dat$basalArea_ramet <- st_area(dat)
 
-  ## make a column that has site_quad_spp. data (called 'key')
-  dat$key <- paste(dat$Site, dat$Quad, dat$Species, sep = "_")
-  ## put data for each unique 'key' goes into an element of a list
-  datList <- list()
-  ## populate the 'list' with a data.frame for that species
-  for (l in 1:length(unique(dat$key))) {
-    datList[[paste(unique(dat$key)[l])]] <- dat[dat$key == unique(dat$key)[l],]
-  }
-
-  ## apply the 'assign' function to each element of the list (each unique
-  # site/quad/spp combo)
-  tic()
-  lapply(X = datList, FUN = function(x) {
-    x <- as.data.frame(x)
-    names(x) <- names(dat)
-    assign(dat = x,
-           inv = inv[[unique(x$Quad)]],
-           dorm = dorm[dorm$Species == unique(x$Species),"dorm"],
-           buffGenet = buffGenet[buffGenet$Species ==
-                                   unique(x$Species),"buffGenet"],
-           buff = buff[buff$Species == unique(x$Species),"buff"],
-           clonal = clonal[clonal$Species == unique(x$Species),"clonal"],
-           flagSuspects = flagSuspects,
-           shrink = shrink,
-           dormSize = dormSize)
-  }
-  )
-  toc()
-# 43.192 sec elapsed
-
   ## get the site(s)
-  tic()
+
   for(i in unique(dat$Site)) { ## i = the name of the site
     if(printMessages==TRUE){
       cat(paste0("Site: ",i, "\n"))
@@ -659,7 +629,7 @@ values of either FALSE or TRUE for each species with no NAs.")
       }
     }
   }
-toc()
+
   ## rejoin the trackSppOut d.f with the 'extra' data stored in 'datStore'
   trackSppOut <- merge(trackSppOut, datStore, by = "indexStore")
 
@@ -700,26 +670,26 @@ toc()
 }
 
 # Testing -----------------------------------------------------------------
-dat <- grasslandData[grasslandData$Site == "CO"
-                     & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
-                     #& grasslandData$Species == "Bouteloua gracilis",]
-names(dat)[1]<- "Species_Name"
-names(dat)[8] <- "location"
-#dat <- dat[dat$location != "ungz_5a",]
-#dat <- dat[,c(1:6,8:13)]
-inv <- grasslandInventory
-#inv <- inv[1:5]
-dorm <- 1
-buff <- .05
-buffGenet <- 0.005
-clonal <- data.frame(Species = unique(dat$Species),
-                     clonal = c(TRUE))
-
-testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
-                    buffGenet = buffGenet,
-                    clonal = clonal , species = "Species_Name",
-                    quad = "location", printMessages = FALSE,
-                    flagSuspects = TRUE)
+# dat <- grasslandData[grasslandData$Site == "CO"
+#                      & grasslandData$Quad %in% c("unun_11","ungz_5a"),]
+#                      #& grasslandData$Species == "Bouteloua gracilis",]
+# names(dat)[1]<- "Species_Name"
+# names(dat)[8] <- "location"
+# #dat <- dat[dat$location != "ungz_5a",]
+# #dat <- dat[,c(1:6,8:13)]
+# inv <- grasslandInventory
+# #inv <- inv[1:5]
+# dorm <- 1
+# buff <- .05
+# buffGenet <- 0.005
+# clonal <- data.frame(Species = unique(dat$Species),
+#                      clonal = c(TRUE))
+#
+# testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
+#                     buffGenet = buffGenet,
+#                     clonal = clonal , species = "Species_Name",
+#                     quad = "location", printMessages = FALSE,
+#                     flagSuspects = TRUE)
 
 
 ### AES make an example in the documentation that specifies all args as numeric,
@@ -731,3 +701,15 @@ testOut <- trackSpp(dat = dat, inv = inv, dorm = dorm, buff = buff,
 # working correctly  (i.e. a random NA in a column, character for dorm, etc.)
 
 ###AES maybe also try to practice on larger subset of data.frame
+        ## find years that exceed the 'dorm' gap
+        # invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
+        # invComp$diff <- invComp$invNext - invComp$inv
+        # gapYears <- invComp[invComp$diff > (dorm + 1) &
+        #                       is.na(invComp$diff) == FALSE,"inv"]
+        # if (length(gapYears) > 0) {
+        #   print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
+        #                " value of 'NA' in the 'survives_tplus1' and",
+        #                " 'size_tplus1' columns because ", gapYears," is the last"
+        #                , " year of sampling in this quadrat before a gap that
+        #                exceeds the 'dorm' argument."))
+        # }

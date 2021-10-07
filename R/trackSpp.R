@@ -144,19 +144,19 @@
 #' 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
 #' value is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
-#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect' if it 'goes dormant' and
-#' has a size that is less than or equal to the percentile of the size
-#' distribution for this species that is designated by `dormSize`. For example,
-#' `dormSize = 0.05`, and an individual has a basal area of 0.5 cm^2. The 5th
-#' percentile of the distribution of size for this species, which is made using
-#' the mean and standard deviation of all observations in 'dat' for the species
-#' in question, is 0.6 cm^2. This individual does not have any overlaps in the
-#' next year (year t+1), but does have an overlap in year t+2. However, because
-#' the basal area of this observation is smaller than the 5th percentile of size
-#' for this species, the observation in year t will get a 'TRUE' in the
-#' 'Suspect' column. It is possible that the tracking function has mistakenly
-#' assigned a '1' for survival in year t, because it is unlikely that this
-#' individual is large enough to survive dormancy. The default value is
+#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect'
+#' if it 'goes dormant' and has a size that is less than or equal to the
+#' percentile of the size distribution for this species that is designated by
+#' `dormSize`. For example `dormSize = 0.05`, and an individual has a basal area
+#' of 0.5 cm^2. The 5th percentile of the distribution of size for this species,
+#' which is made using the mean and standard deviation of all observations in
+#' 'dat' for the species in question, is 0.6 cm^2. This individual does not have
+#' any overlaps in the next year (year t+1), but does have an overlap in year
+#' t+2. However, because the basal area of this observation is smaller than the
+#' 5th percentile of size for this species, the observation in year t will get a
+#' 'TRUE' in the 'Suspect' column. It is possible that the tracking function has
+#' mistakenly assigned a '1' for survival in year t, because it is unlikely that
+#' this individual is large enough to survive dormancy. The default value is
 #' `dormSize = .05`.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
@@ -180,8 +180,8 @@
 #' \item{survives_tplus1}{A Boolean integer indicating whether this individual
 #' survived (1), or died (0) in year *t+1*.}
 #' \item{basalArea_genet}{The size of this entire genet in year *t*, in the same
-#' units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then this
-#' number will be identical to the 'basalArea_ramet' column. }
+#' units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then
+#' this number will be identical to the 'basalArea_ramet' column. }
 #' \item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
 #' This is the size of this ramet in year *t*, in the same units as the 'area'
 #' column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
@@ -297,12 +297,13 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
       }
       ## make the 'buff' arg. into a data.frame to make things easier
       buff <- data.frame("Species" = unique(dat$Species), "buff" = buff)
-      } else if (is.data.frame(buff)) {
+    } else if (is.data.frame(buff)) {
       if (sum(!names(buff) %in% c("Species", "buff")) == 0) {
         if(sum(!unique(dat$Species) %in% buff$Species) > 0 | ## buff must have
            # data for all species
            sum(is.na(dat$buff)) > 0 | ## can't have NA values in buff
-           !is.numeric(buff$buff) | ## can't have non-numeric values for buff$buff
+           !is.numeric(buff$buff) | ## can't have non-numeric values for
+           # buff$buff
            sum(buff$buff < 0) > 0 | ## can't be less than 0
            round(buff$buff) != buff$buff ## must be whole numbers
         ) {
@@ -374,65 +375,10 @@ values of either FALSE or TRUE for each species with no NAs.")
   # units as distances in dat). If multiple values, is subset by spp. before
   # being passed to assign() (and then passed to groupByGenet())
   ## check buffGenet argument
-  ## is the clonal argument 1? (or a data.frame?) If so, then you need a
-  # buffGenet argument.
-  if (is.data.frame(clonal) == TRUE) { ## if the clonal
-    # arg. is a d.f, does it have any arguments that are 1?
-    if (sum(clonal$clonal) > 0) {
-      if (missing(buffGenet)) {
-        stop("The 'buffGenet' argument must have a value.")
-      } else {
-        if (is.numeric(buffGenet) & length(buffGenet == 1)) { ## is the value of
-          # buffGenet a single numeric?
-          if (buffGenet < 0 | ## buffGenet must be greater than or equal to 0
-              buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
-              # must not be larger than the dimensions of the quadrat
-              length(buffGenet)!=1) { ## buffGenet must be a vector of length 1
-            stop("If 'buffGenet' is not specified for every species, it must be
-            a single numeric value that is greater than or equal to 0")
-          }
-          ## make the 'buffGenet' arg. into a data.frame to make things easier
-          buffGenet <- data.frame("Species" = unique(dat$Species),
-                                  "buffGenet" = buffGenet)
-        } else if (is.data.frame(buffGenet)) {
-          if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
-            if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 |##buffGenet
-               # must have data for all species
-               sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in
-               # buffGenet
-               !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric
-               # values for buffGenet$buffGenet
-               sum(buffGenet$buffGenet < 0) > 0 | ## can't be less than 0
-               round(buffGenet$buffGenet) != buffGenet$buffGenet ## must be
-               # whole numbers
-            ) {
-              stop("If the 'buffGenet' argument is specified by species, it must
-              be a data.frame that includes a 'Species' column with a row for
-              every species in 'dat', and a 'buffGenet' column that contains
-              positive, numeric values for each species with no NAs.")
-            }
-          } else {
-            stop("If the 'buffGenet' argument is specifed by species, the column
-            names must be 'Species' and 'buffGenet'")
-          }
-        } else {
-          stop("The 'buffGenet' argument must be either a single numeric value
-          that is greater than or equal to 0, OR a data.frame that has a
-          'Species' column with values for each species in 'dat', and a
-          'buffGenet' column with numeric values for each species.")
-        }
-      }
-      #check aggByGenet
-      if (!is.logical(aggByGenet)) {
-        stop("The 'aggByGenet' argument must be a logical value. TRUE
-        means that every row in the output of trackSpp() represents a unique
-        genetic individual (genet) in a given year. FALSE means that every row
-        in the output of trackSpp() represents a unique stem (ramet) in a given
-        year.")
-      }
-    }
-  } else if (is.logical(clonal) & clonal == TRUE) {  ## if the clonal argument
-    # is one value, is it set to TRUE?
+  ## is the clonal d.f contain at least one value that == TRUE? If so, then you
+  # need a buffGenet argument.
+  # does the clonal arg. have have any arguments that are 1?
+  if (sum(clonal$clonal) > 0) {
     if (missing(buffGenet)) {
       stop("The 'buffGenet' argument must have a value.")
     } else {
@@ -442,46 +388,46 @@ values of either FALSE or TRUE for each species with no NAs.")
             buffGenet > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buffGenet
             # must not be larger than the dimensions of the quadrat
             length(buffGenet)!=1) { ## buffGenet must be a vector of length 1
-          stop("If 'buffGenet' is not specified for every species, it must be a
-          single numeric value that is greater than or equal to 0")
+          stop("If 'buffGenet' is not specified for every species, it must be
+            a single numeric value that is greater than or equal to 0")
         }
         ## make the 'buffGenet' arg. into a data.frame to make things easier
         buffGenet <- data.frame("Species" = unique(dat$Species),
                                 "buffGenet" = buffGenet)
       } else if (is.data.frame(buffGenet)) {
         if (sum(!names(buffGenet) %in% c("Species", "buffGenet")) == 0) {
-          if(sum(!unique(dat$Species) %in% buffGenet$Species) > 0 | ## buffGenet
-             # must have data for all species
-             sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in
-             # buffGenet
-             !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric values
-             # for buffGenet$buffGenet
-             sum(buffGenet$buffGenet < 0) > 0 | ## can't be less than 0
-             round(buffGenet$buffGenet) != buffGenet$buffGenet ## must be whole
-             # numbers
+          ## if the buffGenet d.f contains the correct column names
+          if (sum(!unique(dat$Species) %in% buffGenet$Species) > 0 |
+              ##if buffGenet does not have data for all species
+              sum(is.na(dat$buffGenet)) > 0 | ## can't have NA values in
+              # buffGenet
+              !is.numeric(buffGenet$buffGenet) | ## can't have non-numeric
+              # values for buffGenet$buffGenet
+              sum(buffGenet$buffGenet < 0) > 0 ## can't be less than 0
           ) {
             stop("If the 'buffGenet' argument is specified by species, it must
-            be a data.frame that includes a 'Species' column with a row for
-            every species in 'dat', and a 'buffGenet' column that contains
-            positive, numeric values for each species with no NAs.")
+              be a data.frame that includes a 'Species' column with a row for
+              every species in 'dat', and a 'buffGenet' column that contains
+              positive, numeric values for each species with no NAs.")
           }
         } else {
           stop("If the 'buffGenet' argument is specifed by species, the column
-          names must be 'Species' and 'buffGenet'")
+            names must be 'Species' and 'buffGenet'")
         }
       } else {
         stop("The 'buffGenet' argument must be either a single numeric value
-        that is greater than or equal to 0, OR a data.frame that has a 'Species'
-        column with values for each species in 'dat', and a 'buffGenet' column
-        with numeric values for each species.")
+          that is greater than or equal to 0, OR a data.frame that has a
+          'Species' column with values for each species in 'dat', and a
+          'buffGenet' column with numeric values for each species.")
       }
     }
     #check aggByGenet
     if (!is.logical(aggByGenet)) {
-      stop("The 'aggByGenet' argument must be a logical value. TRUE means
-      that every row in the output of trackSpp() represents a unique genetic
-      individual (genet) in a given year. FALSE means that every row in the
-      output of trackSpp() represents a unique stem (ramet) in a given year.")
+      stop("The 'aggByGenet' argument must be a logical value. TRUE
+        means that every row in the output of trackSpp() represents a unique
+        genetic individual (genet) in a given year. FALSE means that every row
+        in the output of trackSpp() represents a unique stem (ramet) in a given
+        year.")
     }
   } else {
     buffGenet <- NA
@@ -496,16 +442,16 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## do need to check the 'flagSuspects', 'shrink', and 'dormSize' arguments
 
   ## check 'flagSuspects' argument
-    if (!is.logical(flagSuspects) | ## flagSuspects must be logical
-        length(flagSuspects)!=1){ ## flagSuspects must be a vector of length = 1
-      stop("'flagSuspects' must be a single logical value that is either
+  if (!is.logical(flagSuspects) | ## flagSuspects must be logical
+      length(flagSuspects)!=1){ ## flagSuspects must be a vector of length = 1
+    stop("'flagSuspects' must be a single logical value that is either
            FALSE or TRUE.")
-    }
+  }
 
   ## check 'shrink' argument
   if (is.numeric(shrink) == FALSE | ## is shrink a numeric argument?
       length(shrink) > 1 ## is shrink longer than one value?
-      ) {
+  ) {
     stop("'shrink' must be a single numeric value")
   }
 
@@ -543,7 +489,7 @@ values of either FALSE or TRUE for each species with no NAs.")
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
       if(printMessages==TRUE) {
         cat(paste0("-- Quadrat: ",j, "\n"))
-        }
+      }
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
         invQuad <- inv[[j]]
@@ -559,16 +505,20 @@ values of either FALSE or TRUE for each species with no NAs.")
                        dat$Species == k,]
 
         ## get dorm value
-       dormK <- dorm[dorm$Species==k,"dorm"]
+        dormK <- dorm[dorm$Species==k,"dorm"]
 
-      ## get clonal value
-      clonalK <- clonal[clonal$Species==k,"clonal"]
+        ## get clonal value
+        clonalK <- clonal[clonal$Species==k,"clonal"]
 
         ## get buff value
-          buffK <- buff[buff$Species==k,"buff"]
+        buffK <- buff[buff$Species==k,"buff"]
 
         ## get buffGenet value
+        if (is.na(buffGenet) == FALSE) {
           buffGenetK <- buffGenet[buffGenet$Species==k,"buffGenet"]
+        } else {
+          buffGenetK <- NA
+        }
 
         ## put this dataset into the 'assign' function
         datOut <- assign(dat = datSp,
@@ -583,11 +533,16 @@ values of either FALSE or TRUE for each species with no NAs.")
         )
         ## see if the output d.f exists yet (trackSpOut)
         ## if it does exist, then add datOut for the current spp. to the output
-        if (exists("trackSppOut")==TRUE) {
-          trackSppOut <- rbind(trackSppOut, datOut)
-        } else if (exists("trackSppOut")==FALSE) {
-          ## if not, then put datOut into trackSppOut b/c it is the first spp.
+        if (i == unique(dat$Site)[1] & ## if this is the first site
+            ## if this is the first quad in the first site
+            j == unique(dat[dat$Site==i,]$Quad)[1] &
+            ## if this is the first species in the first quad in the first site
+            k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]
+            ) {
           trackSppOut <- datOut
+        } else {
+          ## if not, rbind the datOut to trackSppOut
+          trackSppOut <- rbind(trackSppOut, datOut)
         }
         ## print the name of the species that was just finished
         if (k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]) {
@@ -604,27 +559,28 @@ values of either FALSE or TRUE for each species with no NAs.")
             cat(paste0("; ",k))
           }
         }
-       if (printMessages == TRUE) {
-         ## find years that exceed the 'dorm' gap
-         invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
-         invComp$diff <- invComp$invNext - invComp$inv
-         gapYears <- invComp[invComp$diff > (dormK + 1) &
-                               is.na(invComp$diff) == FALSE,"inv"]
-         if (length(gapYears) > 0) {
-           print(paste0("Also Note: Individuals of the species ",unique(datSp$Species)," in year(s) ", gapYears," have a",
-                        " value of 'NA' in the 'survives_tplus1' and",
-                        " 'size_tplus1' columns because ", gapYears," is the last"
-                        , " year of sampling in this quadrat before a gap that
-                       exceeds the 'dorm' argument for this species."))
-         }
-       }
+        if (printMessages == TRUE) {
+          ## find years that exceed the 'dorm' gap
+          invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
+          invComp$diff <- invComp$invNext - invComp$inv
+          gapYears <- invComp[invComp$diff > (dormK + 1) &
+                                is.na(invComp$diff) == FALSE,"inv"]
+          if (length(gapYears) > 0) {
+            print(paste0("Also Note: Individuals of the species ",
+                         unique(datSp$Species)," in year(s) ", gapYears,
+                         " have a value of 'NA' in the 'survives_tplus1' and",
+                         " 'size_tplus1' columns because ", gapYears," is the"
+                         ," last year of sampling in this quadrat before a gap",
+                         " that exceeds the 'dorm' argument for this species."))
+          }
         }
+      }
       ## notify user of last year of sampling (or last year of sampling before a
       # gap)
       if (printMessages == TRUE) {
-        print(paste0("Note: Individuals in year ", max(invQuad)," have a value ",
-                     "of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns ",
-                     "because ",max(invQuad), " is the last year of sampling in ",
+        print(paste0("Note: Individuals in year ", max(invQuad)," have a value "
+                 ,"of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns ",
+                   "because ",max(invQuad), " is the last year of sampling in ",
                      "this quadrat."))
       }
     }
@@ -643,11 +599,12 @@ values of either FALSE or TRUE for each species with no NAs.")
 
     if (printMessages == TRUE) {
       print(paste0("Note: The output data.frame from this function is shorter",
-    " than your input data.frame because demographic data has been aggregated",
-    " by genet. Because of this, some columns that were present in your",
-    " input data.frame may no longer be present. If you don't want the",
-    " output to be aggregated by genet, include the argument",
-    " 'aggByGenet == FALSE' in your call to trackSpp()."))
+                   " than your input data.frame because demographic data has",
+                   " been aggregated by genet. Because of this, some columns",
+                   " that were present in your input data.frame may no longer",
+                   " be present. If you don't want the output to be aggregated",
+                   " by genet, include the argument 'aggByGenet == FALSE' in",
+                   " your call to trackSpp()."))
     }
   }
 
@@ -701,15 +658,15 @@ values of either FALSE or TRUE for each species with no NAs.")
 # working correctly  (i.e. a random NA in a column, character for dorm, etc.)
 
 ###AES maybe also try to practice on larger subset of data.frame
-        ## find years that exceed the 'dorm' gap
-        # invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
-        # invComp$diff <- invComp$invNext - invComp$inv
-        # gapYears <- invComp[invComp$diff > (dorm + 1) &
-        #                       is.na(invComp$diff) == FALSE,"inv"]
-        # if (length(gapYears) > 0) {
-        #   print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
-        #                " value of 'NA' in the 'survives_tplus1' and",
-        #                " 'size_tplus1' columns because ", gapYears," is the last"
-        #                , " year of sampling in this quadrat before a gap that
-        #                exceeds the 'dorm' argument."))
-        # }
+## find years that exceed the 'dorm' gap
+# invComp <- data.frame(inv = c(NA, invQuad), invNext = c(invQuad, NA))
+# invComp$diff <- invComp$invNext - invComp$inv
+# gapYears <- invComp[invComp$diff > (dorm + 1) &
+#                       is.na(invComp$diff) == FALSE,"inv"]
+# if (length(gapYears) > 0) {
+#   print(paste0("Also Note: Individuals in year(s) ", gapYears," have a",
+#                " value of 'NA' in the 'survives_tplus1' and",
+#                " 'size_tplus1' columns because ", gapYears," is the last"
+#                , " year of sampling in this quadrat before a gap that
+#                exceeds the 'dorm' argument."))
+# }

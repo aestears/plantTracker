@@ -186,10 +186,10 @@
   ## find the first year in the dataset that was actually sampled
   firstDatYear <- min(dat$Year)
   ## find the index of the first year in the quadrat inventory
-  firstYearIndex <- which(inv==firstDatYear)
+  firstYearIndex <- which(inv == firstDatYear)
 
   ## get the dataset for the first year of actually sampling
-  tempPreviousYear <- dat[dat$Year==firstDatYear,]
+  tempPreviousYear <- dat[dat$Year == firstDatYear,]
   ## assign genetIDs to the first year of sampling dataset
   tempPreviousYear <- ifClonal(cloneDat = tempPreviousYear, clonal = clonal,
                               buffGenet = buffGenet)

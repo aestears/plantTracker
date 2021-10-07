@@ -120,7 +120,7 @@
 # ## try running the dataset through trackSpp
 # test <- trackSpp(dat = trees_sf, inv = inv, dorm = 0, buff = .01, clonal = FALSE,
 #                  species = "genspcode", quad =
-#                    "plot", year = "dia_year")
+#                    "plot", year = "dia_year", flagSuspects = TRUE)
 #
 # ## compare the actual to trackSpp data
 #
@@ -140,5 +140,45 @@
 # testBad <- testTest[is.na(testTest$survs_tplus1_ACTUAL) == TRUE &
 #                        is.na(testTest$survives_tplus1) == TRUE
 #                        ,]
+#
 # testTest <- testTest[!(testTest$index %in% testBad$index),]
+#
+# #### COBP test ####
+#
+# # # ## testing using COBP data
+# # load("/Users/Alice/Dropbox/Grad School/Research/Oenothera coloradensis project/Processed_Data/spatial_COBP.RData")
+# #
+# # ## add necessary columns
+# # butterfly$Species <- "Oenothera coloradensis"
+# # ## make a quadrat inventory
+# # cobpInv <- list("C4" = c(2018:2020),
+# #                 "C5" = c(2018:2020),
+# #                 "C8" = c(2018:2020),
+# #                 "D10" = c(2018:2020),
+# #                 "D11" = c(2018:2020),
+# #                 "D7" = c(2018:2020),
+# #                 "S1" = c(2018:2020),
+# #                 "S2" = c(2018:2020),
+# #                 "S3" = c(2018:2020),
+# #                 "S4" = c(2018:2020),
+# #                 "S5" = c(2018:2020),
+# #                 "S6" = c(2018:2020),
+# #                 "S7" = c(2018:2020),
+# #                 "S8" = c(2018:2020),
+# #                 "S9" = c(2018:2020),
+# #                 "U3" = c(2018:2020),
+# #                 "U4" = c(2018:2020),
+# #                 "U6" = c(2018:2020)
+# #               )
+# #
+# # test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .05, buffGenet = .05, clonal = 0, site = "Location", quad = "Plot_ID", aggByGenet = FALSE)
+# #
+# # test$trackID_num <-
+# #   stringr::str_match(string = test$trackID, pattern = "[:digit:]{1,3}$+")
+# #
+# #
+# # mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,], col.regions = "red") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2019,], col.regions = "orange") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2020,], col.regions = "yellow") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018 & butterfly$ID == 1,])
+# #
+# # plot(testTest[testTest$Plot_ID == "S3",]$geometry, col = "grey")
+# # plot(testTest[testTest$Plot_ID == "S3" & testTest$trackID == "OENCOL_2018_10",]$geometry, col = "orange", add = TRUE)
 #

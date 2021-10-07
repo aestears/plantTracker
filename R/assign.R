@@ -631,7 +631,11 @@
               ## check: for individuals that are dormant (and only if dorm = 1),
               # then a really tiny plant can't become a really big plant (i.e. a
               # plant that is really tiny probably can't go dormant)
-              if (dorm >= 1) { ## if the dorm argument is > 0...
+              if (dorm >= 1 & ## if the dorm argument is > 0...
+                  length(unique(round(dat$basalArea_ramet, 5))) > 3 ## if the
+                  # sizes are not all the same (i.e. if the species is  measured
+                  # as polygons, not points)
+                  ) {
                 ## if there are data that survive from year 1 to year 2
                 if (nrow(shrinkage) > 0) {
                   ## is there a difference of greater than 1 year between any of

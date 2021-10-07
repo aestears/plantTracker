@@ -45,13 +45,13 @@ environment by calling `data(grasslandData)` and `data(grasslandInventory)`. You
 can view the documentation for these datasets by calling 
 `?grasslandData` and `?grasslandInventory`. 
 
-Most plantTracker functions require two data objects. The first is a data.frame 
+Most plantTracker functions require two data objects. The first is a data frame 
 that contains the location and metadata for each mapped individual, which we 
 from now on will call `dat`. The second is a list that contains a vector of 
 years in which each quadrat was sampled, which we from now on will cal `inv`. 
 Below are the basic requirements for these data objects.
 
-#### *1.1* The `dat` data.frame must . . .
+#### *1.1* The `dat` data frame must . . .
 
 *  ... be an sf data.frame. More on this below...
 
@@ -214,7 +214,7 @@ that contain data for those overlapping individuals are given the same
 #### *2.1.* Function Arguments
 `trackSpp()` takes the following arguments:  
 
-* 'dat' This is the sf data.frame that we've been calling `dat` so far. This 
+* 'dat' This is the sf data frame that we've been calling `dat` so far. This 
 must be in the correct format (which you can check before-hand using 
 `checkDat()`), but informative error messages will be returned if it is 
 incorrect. It *must* have the columns outlined in Section 1.1, but they can have 
@@ -289,18 +289,18 @@ ggplot(data = exampleSmall) +
   If you'd like to be more specific and perhaps biologically accurate, you can 
   also specify the 'dorm' argument uniquely for each species. For example, it 
   might be that you are confident that your data collectors did not accidentally 
-  'miss' any individuals, and your `dat` data.frame contains observations for 
+  'miss' any individuals, and your `dat` data frame contains observations for 
   shrubs or trees, which are very unlikely to go dormant, and small forbs, which 
   are much more likely to go dormant for one or two years. In order to disallow 
   dormancy for trees and shrubs, but to allow dormancy for forbs, you will 
-  provide a data.frame to the 'dorm' argument instead of a single positive 
+  provide a data frame to the 'dorm' argument instead of a single positive 
   integer value. There will be two columns: 1) a "Species" column that has the 
   species name for each species present in `dat`, and 2) a column called "dorm" 
   that has positive integer values indicating the dormancy you'd like to allow 
-  for each species. Make sure that if you are following the data.frame approach, 
+  for each species. Make sure that if you are following the data frame approach, 
   you must provide a dormancy argument for *every* species that has data in 
-  `dat`. Make sure that the species names in the 'dorm' data.frame are spelled 
-  exactly the same as they are in `dat`. The data.frame should look something 
+  `dat`. Make sure that the species names in the 'dorm' data frame are spelled 
+  exactly the same as they are in `dat`. The data frame should look something 
   like this:
 ```{r echo = FALSE}
 dormDF <- data.frame("Species" = c("tree A", "shrub B", "tree C", "forb D", "forb E", "forb F"),
@@ -418,14 +418,14 @@ the same year can be part of the same individual and have the same trackID. If
 has a unique trackID. This option can be defined globally for all species 
 present in `dat` by setting 'clonal' equal to FALSE or TRUE in the `trackSpp()` 
 function call. Alternatively, 'clonal' can be specified uniquely for each 
-species by creating a data.frame that contains a 'clonal' argument for each 
-species (analogous to the data.frame for the 'dorm' argument shown in Table 2.1, 
+species by creating a data frame that contains a 'clonal' argument for each 
+species (analogous to the data frame for the 'dorm' argument shown in Table 2.1, 
 but with a column called "clonal"). 
 
 The following arguments to `trackSpp()` are only required in certain contexts. 
 
 * 'buffGenet' is a numeric argument that is only required if `clonal = TRUE` 
-or if 'clonal' is a data.frame that contains at least a single 'TRUE' in the 
+or if 'clonal' is a data frame that contains at least a single 'TRUE' in the 
 "clonal" column. 'buffGenet' is a numeric value that indicates how close
 polygons of the same species in the same year must be to one another in order to 
 be considered parts of the same genetic individual (ramets of the same genet). 
@@ -434,13 +434,13 @@ trackID to individuals that are within the 'buffGenet' buffer of each other.
 The value of 'buffGenet' must be greater than or equal to zero, and must be in 
 the same units as the spatial data in `dat`. 'buffGenet' can be a single numeric 
 value which will be applied to all species present in `dat`, or can be specified 
-uniquely for each species by creating a data.frame that contains a 'buffGenet' 
-argument for each species (analogous to the data.frame for the 'dorm' argument 
+uniquely for each species by creating a data frame that contains a 'buffGenet' 
+argument for each species (analogous to the data frame for the 'dorm' argument 
 shown in Table 2.1, but with a column called "buffGenet").
 
 * 'aggByGenet' is a logical argument that is only required if `clonal = TRUE` 
-or if 'clonal' is a data.frame that contains at least a single 'TRUE' in the 
-"clonal" column. This argument determines whether the output data.frame from 
+or if 'clonal' is a data frame that contains at least a single 'TRUE' in the 
+"clonal" column. This argument determines whether the output data frame from 
 `trackSpp()` will have a row for every single ramet, or will be aggregated so 
 that each genet is represented by a single row. If `aggByGenet = FALSE`, 
 then the output is not aggregated. If `aggByGenet = TRUE` (the default 
@@ -454,7 +454,7 @@ included in the output of `trackSpp` if `aggByGenet = TRUE`, since it is
 uncertain if they can be summed across all ramets or are identical across all 
 ramets. For example, if each ramet has a unique character string in a column 
 called "name", there is no easy way to 'sum' the character strings in this 
-column to have one value for each genet. If you want the output data.frame from 
+column to have one value for each genet. If you want the output data frame from 
 `trackSpp()` to have the same columns as your input `dat` data.frame, set the 
 'aggByGenet' argument to FALSE. However, Be Careful, since any demographic 
 analysis should be done with a data.set that has only one row per genet, 
@@ -550,10 +550,10 @@ knitr::kable(head(datTrackSpp))
 
 If you did not allow any species to be clonal (`clonal = 0`) or if 
 `aggByGenet = TRUE` in your call to trackSpp(), then your output
-data.frame will have one row for each genet, and is ready for demographic 
-analysis! If your output data.frame is *not* yet aggregated by genet 
+data frame will have one row for each genet, and is ready for demographic 
+analysis! If your output data frame is *not* yet aggregated by genet 
 (i.e. you set the 'aggByGenet' argument to FALSE), then you need to 
-transform your data.frame so that each genet is represented by only one row of 
+transform your data frame so that each genet is represented by only one row of 
 data. You can use the `aggregateByGenet()` function from plantTracker (see this 
 function's documentation for guidance), or your own method of choice. 
 
@@ -686,10 +686,10 @@ ggplot(datComp) +
 ```
 Below are the arguments in the `getNeighbors()` function. 
 
-* `dat` An sf data.frame in which each row represents data for a unique 
+* `dat` An sf data frame in which each row represents data for a unique 
 individual organism in a unique year. The sf geometry for each row must be 
 either 'MULTIPOLYGON' or 'POLYGON' geometry. In addition to a 'geometry' column, 
-this data.frame must have columns that contain data indicating the site, 
+this data frame must have columns that contain data indicating the site, 
 quadrat, site, and year of each observation. There also must be a column that 
 contains a unique identifying value for each genet in each year. If `dat` is 
 coming directly from trackSpp()`, this column will be called 'trackID'.  
@@ -722,7 +722,7 @@ each observation is called 'species_names', then the argument
 
 #### *3.2.* Function Outputs 
 
-The output of `getNeighbors()` is an sf data.frame that is identical to the 
+The output of `getNeighbors()` is an sf data frame that is identical to the 
 input `dat`, but with an additional column called 'neighbors', which contains 
 either an integer value indicating the number of individuals within the buffer 
 area, or a decimal less that 1 that indicates the proportion of the buffer area

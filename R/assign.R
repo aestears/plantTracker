@@ -137,6 +137,7 @@
   }
 
   ## work -------------------------------------------------------------------
+  dat <- sf::st_as_sf(x = dat, sf_column_name = "geometry")
   ## add columns to the 'dat' dataset needed for output from assign()
   dat$trackID <- as.character(NA)
   dat$age <- as.integer(NA)

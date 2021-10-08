@@ -430,7 +430,8 @@ values of either FALSE or TRUE for each species with no NAs.")
         year.")
     }
   } else {
-    buffGenet <- NA
+    buffGenet <- data.frame("Species" = unique(dat$Species),
+                            "buffGenet" = NA)
     aggByGenet <- FALSE
   }
 
@@ -514,7 +515,7 @@ values of either FALSE or TRUE for each species with no NAs.")
         buffK <- buff[buff$Species==k,"buff"]
 
         ## get buffGenet value
-        if (is.na(buffGenet) == FALSE) {
+        if (is.na(buffGenet$buffGenet) == FALSE) {
           buffGenetK <- buffGenet[buffGenet$Species==k,"buffGenet"]
         } else {
           buffGenetK <- NA

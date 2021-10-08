@@ -72,7 +72,8 @@ site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
 quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
 quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44\% of the
 occupied basal area in quadrat 1 in 2005 is occupied by species A
-("percent_basalArea" = 44).
+("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
+column if the "quad_basalArea" for that species and year is 0.
 }
 \description{
 This function calculates the total basal area for each species

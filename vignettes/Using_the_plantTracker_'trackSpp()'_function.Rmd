@@ -4,7 +4,7 @@ author: "Alice Stears"
 date: 29 September 2021
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using the plantTracker 'trackSpp()' function}
+  %\VignetteIndexEntry{Using_the_plantTracker_'trackSpp()'_function}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
-library(devtools)
-load_all()
+# library(devtools)
+# load_all()
 ```
 
 ## Introduction
@@ -583,8 +583,8 @@ have no matches in the 1924 data, then they get a '0' in the
 one year. We then call these individuals 'dead ghosts.' Any observations
 that are sent to this step, but that were observed in a year that is
 greater than 1 + 'dorm' years ago, become 'dead ghosts.' The 'dead
-ghosts' are added to the output data.frame. **The 'ghosts' are saved for
-the next step, which is **[3.4.13](#3_4_13)**
+ghosts' are added to the output data.frame. **The 'ghosts' are saved for the next step, which is [3.4.13](#3_4_13)**
+
 
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 3.4: A visualization of the 'dormancy' scenario described above. The observation in 1922 has no overlap with any observation in 1923 (panels 1 and 2). However, if 'dorm' is greater than or equal to 1, we can save the 1922 observation as a 'ghost' (illustrated with a dotted border in panel 2). When compared to observations in 1924, there is an overlap! If 'dorm' = 1 (or more), then the observation in 1922 will get a '1' in the 'survives_tplus1' column. If 'dorm' = 0, then the observation in 1922 will get a '0' for survival, and the observation in 1924 will be a new recruit. "}
 exampleSmall <- exampleDat[exampleDat$Species == "Heteropogon contortus" & exampleDat$Year %in% c(1922, 1923, 1924),]
@@ -898,8 +898,7 @@ ggplot(data = exampleOut) +
 **The `ghosts` data frame is sent to step [3.4.6.](#3_4_6)** All of the
 observations in the `parents` data frame get a '1' in the
 'survives_tplus1' column, and the total genet area of their 'child' is
-put into the 'size_tplus1' column. Then, **the `parents` data frame is
-sent to step **[3.4.12](#3_4_12)** All of the observations in the `children`
+put into the 'size_tplus1' column. Then, **the `parents` data frame is sent to step [3.4.12](#3_4_12)** All of the observations in the `children`
 data frame get a '0' in the 'recruit' column, the age column is
 populated with 1 + the age of their parent. The observations in the
 `orphans` data frame get a '1' in the 'recruit' column and a '1' in the
@@ -949,7 +948,7 @@ The data.frames returned by the `assign()` function are the exact same length as
 the input data frames. This means that, even though trackIDs and demographic 
 data are assigned on the genet level, each 'observation', or ramet, has its own 
 row of data. If the `trackSpp()` argument 'aggByGenet' = TRUE, the output data 
-set is passed through the `aggregateByGenet` function from plantTracker. This 
+set is passed through the `aggregateByGenet()` function from plantTracker. This 
 aggregates the data set so that each genet in each year is represented by only 
 one row of data. The polygons for each ramet are combined into one spatial 
 object using the `st_union` function from the 'sf' package. The resulting data 
@@ -965,7 +964,7 @@ genet level. If your input data frame has data in additional columns that can be
 aggregated and that you want to keep with the demographic data, I recommend 
 using 'aggByGenet' = FALSE. If you want to ultimately aggregate the demographic 
 data by genet, you can use the `sf::aggregate` function on your own, or modify 
-the code for the `aggregateByGenet` function to include your additional columns. 
+the code for the `aggregateByGenet()` function to include your additional columns. 
 If you have set 'clonal' = FALSE for all species in your input data.frame, I 
 also recommend using 'aggByGenet' = FALSE, since your results will already be on 
 the genet scale! 

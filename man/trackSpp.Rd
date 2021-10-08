@@ -156,19 +156,19 @@ which is smaller than the cutoff specified by \code{shrink}, so the observation 
 value is \code{shrink = 0.10}.}
 
 \item{dormSize}{A single numeric value. This value is only used when
-\code{flagSuspects = TRUE} and \verb{dorm ≥ 1}. An individual is flagged as 'suspect' if it 'goes dormant' and
-has a size that is less than or equal to the percentile of the size
-distribution for this species that is designated by \code{dormSize}. For example,
-\code{dormSize = 0.05}, and an individual has a basal area of 0.5 cm^2. The 5th
-percentile of the distribution of size for this species, which is made using
-the mean and standard deviation of all observations in 'dat' for the species
-in question, is 0.6 cm^2. This individual does not have any overlaps in the
-next year (year t+1), but does have an overlap in year t+2. However, because
-the basal area of this observation is smaller than the 5th percentile of size
-for this species, the observation in year t will get a 'TRUE' in the
-'Suspect' column. It is possible that the tracking function has mistakenly
-assigned a '1' for survival in year t, because it is unlikely that this
-individual is large enough to survive dormancy. The default value is
+\code{flagSuspects = TRUE} and \verb{dorm ≥ 1}. An individual is flagged as 'suspect'
+if it 'goes dormant' and has a size that is less than or equal to the
+percentile of the size distribution for this species that is designated by
+\code{dormSize}. For example \code{dormSize = 0.05}, and an individual has a basal area
+of 0.5 cm^2. The 5th percentile of the distribution of size for this species,
+which is made using the mean and standard deviation of all observations in
+'dat' for the species in question, is 0.6 cm^2. This individual does not have
+any overlaps in the next year (year t+1), but does have an overlap in year
+t+2. However, because the basal area of this observation is smaller than the
+5th percentile of size for this species, the observation in year t will get a
+'TRUE' in the 'Suspect' column. It is possible that the tracking function has
+mistakenly assigned a '1' for survival in year t, because it is unlikely that
+this individual is large enough to survive dormancy. The default value is
 \code{dormSize = .05}.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
@@ -194,8 +194,8 @@ accurately determine whether or not it is a new recruit in year \emph{t}.}
 \item{survives_tplus1}{A Boolean integer indicating whether this individual
 survived (1), or died (0) in year \emph{t+1}.}
 \item{basalArea_genet}{The size of this entire genet in year \emph{t}, in the same
-units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then this
-number will be identical to the 'basalArea_ramet' column. }
+units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then
+this number will be identical to the 'basalArea_ramet' column. }
 \item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
 This is the size of this ramet in year \emph{t}, in the same units as the 'area'
 column in 'dat'. If the 'clonal' argument = FALSE , then this number will be

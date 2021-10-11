@@ -140,6 +140,12 @@ getNeighbors <- function (dat, buff, method,
   trackIDdefaultName <- "trackID"
   ## change the name of the 'trackID' column to have the default column name
   names(dat)[names(dat) == trackIDuserName] <- trackIDdefaultName
+  ## make sure the trackID col is in the correct format
+  if (sum(is.na(dat$trackID)) != 0) { ## make sure that there are no NAs in
+    # the trackID col.
+    stop("The column in 'dat' that contains trackID information cannot have any
+         NA values")
+  }
 
   ## check other args.
   #buff
@@ -239,10 +245,12 @@ per year.")
 
 
   ## make an empty column in 'dat' to contain the output neighborhood data
-  dat$neighbors <- NA
+  mergedat$neighbors <- NA
 
   ## put a buffer around each of the trackIDs in the entire data.frame
-  datBuffTemp <- sf::st_buffer(x = dat, dist = buff)
+  dat <- merge(dat, buff, by = "Species")
+
+  datBuffTemp <- sf::st_buffer(x = dat, dist = dat$buff)
 
   ## subtract the focal individuals from the buffered dataset
   tempBuffGeometry <- mapply(FUN = sf::st_difference,

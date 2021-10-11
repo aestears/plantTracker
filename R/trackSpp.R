@@ -515,7 +515,7 @@ values of either FALSE or TRUE for each species with no NAs.")
         buffK <- buff[buff$Species==k,"buff"]
 
         ## get buffGenet value
-        if (is.na(buffGenet$buffGenet) == FALSE) {
+        if (sum(is.na(buffGenet$buffGenet)) == 0) {
           buffGenetK <- buffGenet[buffGenet$Species==k,"buffGenet"]
         } else {
           buffGenetK <- NA

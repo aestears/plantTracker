@@ -17,9 +17,13 @@
 #' @param dat An sf data.frame. Each row must represent a unique individual
 #' organism in a unique year. This argument can be a data.frame that is returned
 #' by the \code{\link{trackSpp}} function.
-#' @param buff A numeric value. This indicates the distance (in the same units
-#' as the spatial data in 'dat') around each focal individual within which you
-#' want to look for competitors.
+#' @param buff A numeric value that is greater than or equal to zero. This
+#' indicates the distance (in the same units as the spatial data in 'dat')
+#' around each focal individual within which you want to look for competitors.
+#' OR buff can be a data.frame with the columns "Species" and "buff". This
+#' data.frame must have a row for each unique species present in 'dat', with
+#' species name as a character string in the "Species" column, and a numeric
+#' value in the 'buff' column you'd like to use for that species.
 #' @param method A character string, either 'count' or 'area'. This argument
 #' determines which metric of competition will be calculated.
 #' If method = 'count', then the number of other individuals within the buffer
@@ -139,19 +143,45 @@ getNeighbors <- function (dat, buff, method,
 
   ## check other args.
   #buff
-  if (missing(buff)) {
-    stop("The 'buff' argument must have a value. This value idicates the buff
-of the 'local neighborhood' around the focal individual, and must be a single
-numeric value that is in the same units as the spatial attributes  of 'dat'.")
-  } else if (!is.numeric(buff) |  ## buff must be a  numeric integer
-             buff < 0 | ## buff must be greater than or equal to 0
-             length(buff)!=1 | ## buff must be a vector of length 1
-             sum(buff > sf::st_bbox(dat)[3:4]) > 0 ) { ##  must not be larger
-    # than the largest values of the boundary box of 'dat' (an approximate way
-    # of checking whether 'buff' and 'dat' have the same units)
-    stop("'buff' must be a single numeric value that is greater than zero, and
-    in the same units as the spatial attributes of 'dat' (i.e. in cm if the area
-    of individuals in 'dat' is recorded in cm^2")
+  if(missing(buff)) {
+    stop("The 'buff' argument must have a value.")
+  } else {
+    if (is.numeric(buff) & length(buff) == 1) { ## is the value of buff a single
+      # numeric value?
+      if (buff < 0 | ## buff must be greater than or equal to 0
+          buff > max(st_bbox(dat)[c("xmax", "ymax")]) | ## buff must
+          # not be larger than the dimensions of the quadrat
+          length(buff)!=1) { ## buff must be a vector of length 1
+        stop("If 'buff' is not specified for every species, it must be a single
+        numeric value that is greater than or equal to 0")
+      }
+      ## make the 'buff' arg. into a data.frame to make things easier
+      buff <- data.frame("Species" = unique(dat$Species), "buff" = buff)
+    } else if (is.data.frame(buff)) {
+      if (sum(!names(buff) %in% c("Species", "buff")) == 0) {
+        if(sum(!unique(dat$Species) %in% buff$Species) > 0 | ## buff must have
+           # data for all species
+           sum(is.na(dat$buff)) > 0 | ## can't have NA values in buff
+           !is.numeric(buff$buff) | ## can't have non-numeric values for
+           # buff$buff
+           sum(buff$buff < 0) > 0 | ## can't be less than 0
+           round(buff$buff) != buff$buff ## must be whole numbers
+        ) {
+          stop("If the 'buff' argument is specified by species, it must be a
+          data.frame that includes a 'Species' column with a row for every
+          species in 'dat', and a 'buff' column that contains positive, numeric
+          values for each species with no NAs.")
+        }
+      } else {
+        stop("If the 'buff' argument is specifed by species, the column names
+        must be 'Species' and 'buff'")
+      }
+    } else {
+      stop("The 'buff' argument must be either a single numeric value that is
+      greater than or equal to 0, OR a data.frame that has a 'Species' column
+      with values for each species in 'dat', and a 'buff' column with numeric
+      values for each species.")
+    }
   }
 
   #method

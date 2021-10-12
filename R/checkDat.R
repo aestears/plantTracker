@@ -190,7 +190,8 @@ checkDat <- function (dat, inv = NULL,
   ## check the 'Year' column
   if (is.null(dat$Year) == FALSE) { ## does the 'Year' column exist?
     if (sum(is.na(dat$Year)) != 0 | ## cannot have 'NA' values for Year
-        !is.integer(dat$Year) ## must be an integer vector
+        (!is.integer(dat$Year) &
+        !is.numeric(dat$Year))## must be an integer vector
     ) {
       stop("The 'Year' column must be an integer column with no 'NA's.")
     }
@@ -381,7 +382,6 @@ vector of years in which that quadrat was sampled."))
 #   "Site = ",
 #   "Quad = quadrat",
 #   "Year = Year",
-#   "sp_code_6 = sp_code_6",
 #   "geometry = geometry")
 #
 # checkDat(dat, inv,  quad = "location", year = "YeAr", reformatDat = TRUE)

@@ -9,18 +9,18 @@ outDat <- trackSpp(dat = dat,
                    buff = .05,
                    buffGenet = 0.005,
                    clonal = data.frame("Species" = unique(dat$speciesName),
-                                       "clonal" = c(1,0)),
+                                       "clonal" = c(TRUE,FALSE)),
                    species = "speciesName",
-                   aggregateByGenet = FALSE
-                   )
+                   aggByGenet = FALSE
+)
 ## get a test aggregateByGenet() output
 testDat <- aggregateByGenet(dat = outDat,
-                     species = 'speciesName')
+                            species = 'speciesName')
 ## test that the resulting d.f has no non-unique genets
 test_that("result has no non-unique genets", {
-expect_equal(nrow(testDat), nrow(
-  unique(testDat[,c("Site", "Quad", "Year", "speciesName", "trackID")]
-  )
+  expect_equal(nrow(testDat), nrow(
+    unique(testDat[,c("Site", "Quad", "Year", "speciesName", "trackID")]
+    )
   )
   )
 }

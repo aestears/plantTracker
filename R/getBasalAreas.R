@@ -7,7 +7,7 @@
 #' that is occupied by a given species ("percent total basal area"). If you'd
 #' like to ultimately calculate the population growth rate (lambda) for each
 #' species, you can use the \code{\link{getLambda}} function directly, which
-#' takes raw species occurence data (like in 'dat' here) and returns lambda
+#' takes raw species occurrence data (like in 'dat' here) and returns lambda
 #' values for each species and quadrat.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
@@ -59,7 +59,8 @@
 #' quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
 #' quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44% of the
 #' occupied basal area in quadrat 1 in 2005 is occupied by species A
-#' ("percent_basalArea" = 44).
+#' ("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
+#' column if the "quad_basalArea" for that species and year is 0.
 #'
 #' @seealso [getLambda()], which uses this function to calculate basal areas and
 #' ultimately return population growth rates (lambdas) for each species in
@@ -78,11 +79,11 @@
 #'  buff = .05,
 #'  buffGenet = 0.005,
 #'  clonal = data.frame("Species" = unique(dat$speciesName),
-#'  "clonal" = c(1,0)),
+#'  "clonal" = c(TRUE,FALSE)),
 #'  species = "speciesName",
-#'  aggregateByGenet = TRUE
+#'  aggByGenet = TRUE
 #'  )
-#' getBasalAreas(dat = outDat,
+#' getBasalAreas(dat = outDat, inv = inv,
 #' species = "speciesName")
 getBasalAreas <- function(dat,
                           inv,
@@ -184,6 +185,8 @@ getBasalAreas <- function(dat,
   ## calculate percentBasalArea
   datArea$percent_basalArea <- (datArea$absolute_basalArea /
                                   datArea$quad_basalArea)*100
+  ## change NaN values to NA (happen if the quad_basalArea is 0)
+  datArea[is.nan(datArea$percent_basalArea)==TRUE,"percent_basalArea"] <- NA
 
   ## revert the names of the output data.frame to the names that the user input
   ## re-name the appropriate columns in the output data.frame with the

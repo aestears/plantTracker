@@ -16,7 +16,11 @@ trackSpp(
   quad = "Quad",
   year = "Year",
   geometry = "geometry",
-  aggregateByGenet = TRUE,
+  aggByGenet = TRUE,
+  printMessages = TRUE,
+  flagSuspects = FALSE,
+  shrink = 0.1,
+  dormSize = 0.05,
   ...
 )
 }
@@ -38,8 +42,8 @@ all of the years in which that quadrat (or other unique spatial area) was
 sampled.}
 
 \item{dorm}{A numeric vector of length 1, indicating the number of years
-these species is allowed to go dormant, i.e. be absent from the map but be
-considered the same individual when it reappears. This must be an integer
+these species are allowed to go dormant, i.e. be absent from the map but be
+considered the same individual when they reappear. This must be an integer
 greater than or equal to 0. OR dorm can be a data.frame with
 the columns "Species" and "dorm". This data.frame must have a row for each
 unique species present in 'dat', with species name as a character string in
@@ -60,7 +64,7 @@ genet.}
 \item{buffGenet}{A numeric vector of length 1 that is greater than or equal
 to zero, indicating how close (in the same units as spatial values in 'dat')
 polygons must be to one another in the same year to be grouped as a genet
-(if 'clonal' argument = 1). OR buffGenet can be a data.frame with
+(if 'clonal' argument = TRUE). OR buffGenet can be a data.frame with
 the columns "Species" and "buffGenet". This data.frame must have a row for
 each unique species present in 'dat', with species name as a character string
 in the "Species" column, and a numeric value greater than or equal to 0 in
@@ -69,40 +73,42 @@ be to one another to be considered the same genet. This argument is passed to
 the \code{\link{groupByGenet}} function, which is used inside the
 \code{\link{assign}} function.}
 
-\item{clonal}{A numeric Boolean vector of length 1, indicating whether a
+\item{clonal}{A logical vector of length 1, indicating whether a
 species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
-can be grouped as one individual (genet)). OR clonal can be a data.frame with
-the columns "Species" and "clonal". This data.frame must have a row for each
-unique species present in 'dat', with species name as a character string in
-the "Species" column, and a Boolean value in the 'clonal' column indicating
-whether that species is allowed to be clonal (1) or not (0).}
+can be grouped as one individual (genet)). If clonal = TRUE, the species is
+allowed to be clonal, and if clonal = FALSE, the species is not allowed to
+be clonal. OR clonal can be a data.frame with the columns "Species" and
+"clonal". This data.frame must have a row for each unique species present in
+'dat', with species name as a character string in the "Species" column, and a
+logical value in the 'clonal' column indicating whether that species is
+allowed to be clonal (TRUE) or not (FALSE).}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Species" (default value is 'Species').}
 
 \item{site}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains site name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Site" (default value is 'Site').}
 
 \item{quad}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains quadrat name data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "Quad" (default is 'Quad').}
 
 \item{year}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains data for year of sampling. It
-is unnecessary to include a value for this argument if the column name is
+is unnecessary to provide a value for this argument if the column name is
 "Year" (default is 'Year').}
 
 \item{geometry}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains sf geometry data. It is
-unnecessary to include a value for this argument if the column name is
+unnecessary to provide a value for this argument if the column name is
 "geometry" (default is 'geometry').}
 
-\item{aggregateByGenet}{A logical argument that determines whether the output
+\item{aggByGenet}{A logical argument that determines whether the output
 of \code{\link[=trackSpp]{trackSpp()}} will be aggregated by genet. If the value is TRUE
 (the default), then each unique trackID in each year will be represented by
 only one row in the output data.frame (each genet gets only one row). This
@@ -111,6 +117,59 @@ then each unique trackID in each year may be represented by multiple rows in
 the data (each ramet gets a row). Note that if the value is TRUE, then some
 columns of the input data.frame 'dat' will be dropped. If you do not wish
 this to happen, then you can aggregate the data.frame to genet by hand.}
+
+\item{printMessages}{A logical argument that determines whether this
+function returns messages about genet aggregation, as well as messages
+indicating which year is the last year of sampling in each quadrat and which
+year(s) come before a gap in sampling that exceeds the 'dorm' argument (and
+thus which years of data have an 'NA' for "survives_tplus1" and
+"size_tplus1"). If printMessages = TRUE (the default), then messages are
+printed. If printMessages = FALSE, then messages are not printed.}
+
+\item{flagSuspects}{A logical argument of length 1, indicating whether
+observations that are 'suspect' will be flagged. The default is
+\code{flagSuspects = FALSE}. If \code{flagSuspects = TRUE}, then a column called
+'Suspect' is added to the output data.frame. Any suspect observations get a
+'TRUE' in the 'Suspect' column, while non-suspect observations receive a
+'FALSE'. There are two ways that an observation can be classified as
+'suspect'. First, if two consecutive observations have the same trackID, but
+the observation in year t+1 is less that a certain percentage (defined by the
+\code{shrink} arg.) of the observation in year t, it is possible that the
+observation in year t+1 is a new recruit and not the same individual. The
+second way an observation can be classified as 'suspect' is if it is very
+small before going dormant. It is unlikely that a very small individual will
+survive dormancy, so it is possible that the function has mistakenly given a
+survival value of '1' to this individual. A 'very small individual' is any
+observation with an area below a certain percentile (specified by 'dormSize')
+of the size distribution for this species, which is generated using all of
+the size data for this species in 'dat'.}
+
+\item{shrink}{A single numeric value. This value is only used when
+\code{flagSuspects = TRUE}. When two consecutive observations have the same
+trackID, and the ratio of size_t+1 to size_t is smaller than the value of
+\code{shrink}, the observation in year t gets a 'TRUE' in the 'Suspect' column.
+For example, \code{shrink = 0.2}, and an individual that the tracking function has
+identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year t and an area of
+1.35 cm^2 in year t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15,
+which is smaller than the cutoff specified by \code{shrink}, so the observation of
+'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
+value is \code{shrink = 0.10}.}
+
+\item{dormSize}{A single numeric value. This value is only used when
+\code{flagSuspects = TRUE} and \verb{dorm ≥ 1}. An individual is flagged as 'suspect'
+if it 'goes dormant' and has a size that is less than or equal to the
+percentile of the size distribution for this species that is designated by
+\code{dormSize}. For example \code{dormSize = 0.05}, and an individual has a basal area
+of 0.5 cm^2. The 5th percentile of the distribution of size for this species,
+which is made using the mean and standard deviation of all observations in
+'dat' for the species in question, is 0.6 cm^2. This individual does not have
+any overlaps in the next year (year t+1), but does have an overlap in year
+t+2. However, because the basal area of this observation is smaller than the
+5th percentile of size for this species, the observation in year t will get a
+'TRUE' in the 'Suspect' column. It is possible that the tracking function has
+mistakenly assigned a '1' for survival in year t, because it is unlikely that
+this individual is large enough to survive dormancy. The default value is
+\code{dormSize = .05}.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
@@ -135,11 +194,11 @@ accurately determine whether or not it is a new recruit in year \emph{t}.}
 \item{survives_tplus1}{A Boolean integer indicating whether this individual
 survived (1), or died (0) in year \emph{t+1}.}
 \item{basalArea_genet}{The size of this entire genet in year \emph{t}, in the same
-units as the 'area' column in 'dat.' If the 'clonal' argument = 0, then this
-number will be identical to the 'basalArea_ramet' column. }
-\item{basalArea_ramet}{This is only included if 'aggregateByGenet' = FALSE.
+units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then
+this number will be identical to the 'basalArea_ramet' column. }
+\item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
 This is the size of this ramet in year \emph{t}, in the same units as the 'area'
-column in 'dat'. If the 'clonal' argument = 0 , then this number will be
+column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
 identical to the 'basalArea_genet' column.}
 \item{nearEdge}{A logical value indicating whether this individual is within
 a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
@@ -154,7 +213,7 @@ This function is a wrapper function that applies the \code{\link{assign}}
 function across multiple species, quadrats, or sites. For each species and
 quadrat, \code{\link[=trackSpp]{trackSpp()}} loads a spatially referenced data.frame ('dat'), and
 then uses the \code{\link{groupByGenet}} function to assign genetIDs to
-polygons (if 'clonal' = 1) such that polygons that form the same genet have
+polygons (if 'clonal' = TRUE) such that polygons that form the same genet have
 the same genetID. A buffer of a distance defined by 'buff' is applied around
 each genet polygon. Then, the spatial data for each genet from the current
 year (year \emph{t}) is compared to individuals in the next year (year \emph{t+1}).
@@ -184,9 +243,9 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 
 }
@@ -194,7 +253,7 @@ outDat <- trackSpp(dat = dat,
 \code{\link[=assign]{assign()}}, which is used inside the \code{\link[=trackSpp]{trackSpp()}} function.
 \code{\link[=trackSpp]{trackSpp()}} applies the \code{\link[=assign]{assign()}} function over multiple species and
 quadrats, and uses the \code{\link[=aggregateByGenet]{aggregateByGenet()}} function to aggregate the
-demographic results by genet (if 'aggregateByGenet' = TRUE). The \code{\link[=assign]{assign()}}
+demographic results by genet (if 'aggByGenet' = TRUE). The \code{\link[=assign]{assign()}}
 function uses the \code{\link[=groupByGenet]{groupByGenet()}} function to group ramets into genets
-(if 'clonal' argument = 1).
+(if 'clonal' argument = TRUE).
 }

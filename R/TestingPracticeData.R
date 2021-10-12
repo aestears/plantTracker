@@ -65,14 +65,15 @@
 # # add a column for site
 # trees_sf$Site <- "laSelva"
 #
-# # ## test w/ a plot
-# # ggplot(data = trees_sf[trees_sf$plot == "L1",]) +
-# #   geom_sf(aes(col = as.factor(dia_year))) +
-# #   facet_wrap(~plot) +
-# #   theme_classic()
+# ## test w/ a plot
+# ggplot(data = trees_sf[trees_sf$plot == "L1" & trees_sf$dia_year %in% c(1997:2002),]) +
+#   geom_sf(aes(col = as.factor(dia_year))) +
+#   facet_wrap(~dia_year) +
+#   theme_classic() +
+#   scale_colour_discrete(guide = "none")
 #
 # ## get survival information
-# ## assing an arbitrary index to each row in 'trees'
+# ## assign an arbitrary index to each row in 'trees'
 # trees_sf$index <- 1:nrow(trees_sf)
 # trees_no_sf <- st_drop_geometry(trees_sf)
 # ## put an NA for survival
@@ -119,7 +120,7 @@
 # ## try running the dataset through trackSpp
 # test <- trackSpp(dat = trees_sf, inv = inv, dorm = 0, buff = .01, clonal = FALSE,
 #                  species = "genspcode", quad =
-#                    "plot", year = "dia_year")
+#                    "plot", year = "dia_year", flagSuspects = TRUE)
 #
 # ## compare the actual to trackSpp data
 #
@@ -137,7 +138,159 @@
 #                    ,]
 #
 # testBad <- testTest[is.na(testTest$survs_tplus1_ACTUAL) == TRUE &
-#                        is.na(testTest$survives_tplus1) == TRUE
+#                        is.na(testTest$survives_tplus1) == TRUE &
+#                       testTest$dia_year != 2018
 #                        ,]
+#
 # testTest <- testTest[!(testTest$index %in% testBad$index),]
 #
+# ### values for ms ###
+# ## % of surv. assignments that were correct
+# (77062 - 6)/77062
+# # 99.99%
+#
+# ## no. of trackID's assigned
+# # actual no.
+# length(unique(trees_no_sf$plot_treeid))
+# # 5212
+# # fxn. no.
+# length(unique(paste0(test$trackID, "_",test$plot)))
+# # 5212
+#
+# ## no. of recruits/quad/year
+# # actual no.
+# for (i in 1:length(unique(trees$plot))) {
+#   ## get data for just one plot
+#   temp <- trees[trees$plot == unique(trees$plot)[i],]
+#   ## make sure it is in sequential order
+#   temp <- temp[order(temp$dia_year),]
+#
+#   ## find the year when a tree was first observed
+#   ## first, find which are duplicates, then remove them
+#   temp <- temp[!duplicated(temp$plot_treeid),]
+#   temp$recruit_true <- 1
+#
+#   if (i == 1) {
+#     recruitOut <- temp
+#   } else {
+#     recruitOut <- rbind(recruitOut, temp)
+#   }
+# }
+# # remove values for 1997, since we can't know if it was really a recruit then
+# recruitOut <- recruitOut[recruitOut$dia_year != 1997,]
+# recruitOut <- aggregate(x = recruitOut$recruit_true, by =
+#                           list("plot" = recruitOut$plot,
+#                                "genspcode" = recruitOut$genspcode,
+#                                "dia_year" = recruitOut$dia_year),
+#                         FUN = sum)
+#
+# # fxn. no.
+# test_recruits <- getRecruits(dat = test, byGenet = TRUE, species = "genspcode", quad =
+#               "plot", year = "dia_year")
+# # compare
+# testRecs <- merge(recruitOut, test_recruits, by = c("plot", "dia_year", "genspcode"))
+# testRecs$diff <- testRecs$x - testRecs$recruits
+# unique(testRecs$diff)
+# # no differences!
+#
+# #### COBP test ####
+#
+# # ## testing using COBP data
+# load("/Users/Alice/Dropbox/Grad School/Research/Oenothera coloradensis project/Processed_Data/spatial_COBP.RData")
+#
+# ## add necessary columns
+# butterfly$Species <- "Oenothera coloradensis"
+# names(butterfly)[10] <- "survives_tplus1_actual"
+# ## make a quadrat inventory
+# cobpInv <- list("C4" = c(2018:2020),
+#                 "C5" = c(2018:2020),
+#                 "C8" = c(2018:2020),
+#                 "D10" = c(2018:2020),
+#                 "D11" = c(2018:2020),
+#                 "D7" = c(2018:2020),
+#                 "S1" = c(2018:2020),
+#                 "S2" = c(2018:2020),
+#                 "S3" = c(2018:2020),
+#                 "S4" = c(2018:2020),
+#                 "S5" = c(2018:2020),
+#                 "S6" = c(2018:2020),
+#                 "S7" = c(2018:2020),
+#                 "S8" = c(2018:2020),
+#                 "S9" = c(2018:2020),
+#                 "U3" = c(2018:2020),
+#                 "U4" = c(2018:2020),
+#                 "U6" = c(2018:2020)
+#               )
+#
+# test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .02, clonal = FALSE, site = "Location", quad = "Plot_ID", aggByGenet = FALSE, flagSuspects = TRUE, shrink = .2)
+#
+# test$trackID_num <-
+#   stringr::str_match(string = test$trackID, pattern = "[:digit:]{1,3}$+")
+#
+#
+# mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,], col.regions = "red") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2019,], col.regions = "orange") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2020,], col.regions = "yellow") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018 & butterfly$ID == 1,])
+#
+# plot(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,]$geometry, col = "red")
+#
+#
+# ## find 'bad' assignments
+# # first, remove obs. from the last year
+# testGood <- test[test$Year != 2020,]
+# testGood$surv_diff <- testGood$survives_tplus1 - testGood$survives_tplus1_actual
+# testGood[testGood$surv_diff==-1 & is.na(testGood$surv_diff) == FALSE,]
+# testGood[testGood$Suspect == TRUE,]
+#
+# ### values for ms ###
+# ## % of surv. assignments that were correct
+# nrow(test[is.na(test$survives_tplus1_actual) == TRUE &
+#        is.na(test$survives_tplus1) == TRUE,]) # 1628 got NA for both real and fake surv.
+# sum(test$surv_diff == 0, na.rm = TRUE) # 2908
+# table(testGood$surv_diff)
+# (2908 + 1628) / nrow(test)
+#
+# # 86.61%
+#
+# ## no. of trackID's assigned
+# # actual no.
+# length(unique(paste0(test$ID, "_",test$Plot_ID)))
+# # 3140
+# # fxn. no.
+# length(unique(paste0(test$trackID, "_",test$Plot_ID)))
+# # 2775
+#
+# ## no. of recruits/quad/year
+# # actual no.
+# test$names <- paste(test$Plot_ID,test$ID, sep = "_")
+# for (i in 1:length(unique(test$Plot_ID))) {
+#   ## get data for just one plot
+#   temp <- test[test$Plot_ID == unique(test$Plot_ID)[i],]
+#   ## make sure it is in sequential order
+#   temp <- temp[order(temp$Year),]
+#
+#   ## find the year when a tree was first observed
+#   ## first, find which are duplicates, then remove them
+#   temp <- temp[!duplicated(temp$names),]
+#   temp$recruit_true <- 1
+#
+#   if (i == 1) {
+#     recruitOut <- temp
+#   } else {
+#     recruitOut <- rbind(recruitOut, temp)
+#   }
+# }
+# # remove values for 2018, since we can't know if it was really a recruit then
+# recruitOut <- recruitOut[recruitOut$Year != 2018,]
+# recruitOut <- aggregate(x = recruitOut$recruit_true, by =
+#                           list("Plot_ID" = recruitOut$Plot_ID ,
+#                                "Species" = recruitOut$Species ,
+#                                "Year" = recruitOut$Year),
+#                         FUN = sum)
+#
+# # fxn. no.
+# test_recruits <- getRecruits(dat = test, byGenet = TRUE, quad = "Plot_ID", site = "Location")
+# # compare
+# testRecs <- merge(recruitOut, test_recruits, by = c("Plot_ID", "Year", "Species"))
+# testRecs$diff <- testRecs$x - testRecs$recruits
+# unique(testRecs$diff)
+# testRecs$percRight <- testRecs$recruits / testRecs$x
+# # 76.94% correct

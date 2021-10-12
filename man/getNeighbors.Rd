@@ -23,9 +23,13 @@ getNeighbors(
 organism in a unique year. This argument can be a data.frame that is returned
 by the \code{\link{trackSpp}} function.}
 
-\item{buff}{A numeric value. This indicates the distance (in the same units
-as the spatial data in 'dat') around each focal individual within which you
-want to look for competitors.}
+\item{buff}{A numeric value that is greater than or equal to zero. This
+indicates the distance (in the same units as the spatial data in 'dat')
+around each focal individual within which you want to look for competitors.
+OR buff can be a data.frame with the columns "Species" and "buff". This
+data.frame must have a row for each unique species present in 'dat', with
+species name as a character string in the "Species" column, and a numeric
+value in the 'buff' column you'd like to use for that species.}
 
 \item{method}{A character string, either 'count' or 'area'. This argument
 determines which metric of competition will be calculated.
@@ -99,7 +103,7 @@ the focal individual and other individuals of the same species).
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == c("CO") &
- grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+ grasslandData$Species \%in\% c("Bouteloua gracilis"),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(dat = dat,
@@ -108,15 +112,15 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 
  finalDat <- getNeighbors(dat = outDat,
  buff = .15,
- method = 'area',
- compType = 'allSpp',
+ method = 'count',
+ compType = 'oneSpp',
  species = "speciesName")
 
 }

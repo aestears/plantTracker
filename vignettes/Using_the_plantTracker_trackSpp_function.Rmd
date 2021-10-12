@@ -4,7 +4,7 @@ author: "Alice Stears"
 date: 29 September 2021
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Using_the_plantTracker_'trackSpp()'_function}
+  %\VignetteIndexEntry{Using_the_plantTracker_trackSpp_function}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -24,8 +24,8 @@ knitr::opts_chunk$set(
 library(PlantTracker)
 library(ggplot2)
 library(sf)
-# library(devtools)
-# load_all()
+library(devtools)
+load_all()
 ```
 
 ## Introduction
@@ -273,7 +273,7 @@ figDat_2AG <- aggregate(x = figDat_2,
             buffGenet = figDat_2$buffGenet),
           FUN = mean,
           do_union = TRUE) 
-figDat_2AG <- st_buffer(figDat_2AG[,c("Species", "genetID","buffGenet","geometry")],.05)
+figDat_2AG <- st_buffer(figDat_2AG[,c("Species", "genetID","buffGenet","geometry")],.02)
 figDat_2AG$buffGenet <- "'buffGenet'=.01"
 figDat_2AG$Species <- "grouped"
 
@@ -297,7 +297,7 @@ figDat <- rbind(figDat, figDat_2, figDat_3, figDat_2AG, figDat_3AG)
 figDat$buffGenet <- factor(figDat$buffGenet, levels = c("'clonal'=FALSE", "'buffGenet'=.01", "'buffGenet'=.05"), ordered = TRUE)
 
 ggplot(figDat) +
-  geom_sf(data = figDat[figDat$Species == "grouped",], aes(fill = genetID, alpha = .2), lty = 3) +
+  geom_sf(data = figDat[figDat$Species == "grouped",], aes(fill = genetID), alpha = .2, color = "grey80") +
   geom_sf(data = figDat[figDat$Species == "Heteropogon contortus",], aes(fill = genetID)) + 
   #geom_sf_text(aes(label = genetID), nudge_x = .05) +
   geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
@@ -806,7 +806,7 @@ If the 'flagSuspects' argument is set to `FALSE`, proceed directly to
 step **[3.4.11](#3_4_11)**. 
 If the 'flagSuspects' argument is set to `TRUE`, the following checks take 
 place. The first check identifies and flags any individuals in the previous year 
-that became substantially smaller in the current year. For example, there is are 
+that became substantially smaller in the current year. For example, there are 
 two overlapping observations in consecutive years that the function has given 
 the same trackID. The observation in the previous year has a basal area of 20 
 cm$^2$, and the observation in the current year has a basal area of 1.5 cm$^2$. 
@@ -999,8 +999,8 @@ If 'printMessages' = FALSE, then no messages will be returned.
 ## *5.* Examples
 Here are the trackID assignments for 4 years of observations of 
 *Heteropogon contortus* from a subset of the SG2 quadrat near Tucson, Arizona. 
-The `trackSpp` function here uses 'dorm' = 1, clonal = TRUE, buff = 0.05 and 
-buffGenet = 0.01.  
+The `trackSpp` function here uses 'dorm' = 1, 'clonal' = TRUE, 'buff' = 0.05 and 
+'buffGenet' = 0.01.  
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.1: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 exampleSmall <- exampleDat[exampleDat$Species == "Heteropogon contortus" &
                            exampleDat$Year %in% c(1922:1925),]

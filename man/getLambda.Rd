@@ -8,6 +8,7 @@ based on changes in basal cover.}
 getLambda(
   dat,
   inv,
+  method = "area",
   species = "Species",
   quad = "Quad",
   site = "Site",
@@ -32,6 +33,12 @@ type for each individual observation.}
 name in 'dat', and the contents of that list element is a numeric vector of
 all of the years in which that quadrat (or other unique spatial area) was
 sampled.}
+
+\item{method}{A single character argument that determines the method for
+calculating lambda. The default value is "area", which means that lambda is
+calculated by comparing total basal area for a given species in year t+1 to
+year t. If 'method' = "count", then lambda is calculated by comparing total
+number of individuals for a given species in year t+1 to year t.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
@@ -76,19 +83,20 @@ from year t to year t+1.}
 }
 \description{
 This function calculated the population growth rate (lambda) for
-every species in a quadrat. This value is the ratio of basal area in the next
-year to basal area in the current year (basal area in year t+1/ basal area
-in year t). A lambda value greater than 1 indicates a population is growing,
-while a value less than 1 indicates population decline. Lambda is 'infinity'
-when the basal area in year t is 0, and is NA when basal area in year
-t is zero (i.e. when there are no plants present in year t).
-Note that a lambda value is calculated between of the years when a quadrat
-was sampled, even if there is a gap in sampling. For example, a quadrat is
-sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A lambda value
-will be calculated for 1998-1999 and 2001-2002, which is a transition from
-year t to year t+1. However, a lambda value is calculated in the same manner
-for 1999-2001, which is actually a transition from year t to year t+2.
-You can remove these values by subsetting the data.frame returned
+every species in a quadrat. This value is the ratio of basal area or number
+of individuals in the next year to basal area or number of individuals in the
+current year (basal area in year t+1/ basal area in year t). A lambda value
+greater than 1 indicates a population is growing, while a value less than 1
+indicates population decline. Lambda is 'infinity' when the basal area or
+number of individuals in year t is 0, and is NA when basal area or number of
+individuals in year t is zero (i.e. when there are no plants present in year
+t). Note that a lambda value is calculated between of the years when a
+quadrat was sampled, even if there is a gap in sampling. For example, a
+quadrat is sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A
+lambda value will be calculated for 1998-1999 and 2001-2002, which is a
+transition from year t to year t+1. However, a lambda value is calculated in
+the same manner for 1999-2001, which is actually a transition from year t to
+year t+2. You can remove these values by subsetting the data.frame returned
 by \code{getLambda()} for rows when "Year_tplus1"- "Year_t" is equal to 1.
 }
 \examples{
@@ -106,7 +114,7 @@ outDat <- trackSpp(dat = dat,
  species = "speciesName",
  aggByGenet = TRUE
  )
-getLambda(dat = outDat, inv = inv,
+getLambda(dat = outDat, inv = inv, method = "area",
 species = "speciesName")
 }
 \seealso{

@@ -6,11 +6,13 @@
 \usage{
 getBasalAreas(
   dat,
+  inv,
   species = "Species",
   quad = "Quad",
   site = "Site",
   year = "Year",
-  geometry = "geometry"
+  geometry = "geometry",
+  ...
 )
 }
 \arguments{
@@ -24,6 +26,11 @@ contain a unique identification for each research site (default name is
 (default name is "Quad"), year of data collection (default name is "Year"),
 and an s.f 'geometry' column that contains a polygon or multipolygon data
 type for each individual observation.}
+
+\item{inv}{A named list. The name of each element of the list is a quadrat
+name in 'dat', and the contents of that list element is a numeric vector of
+all of the years in which that quadrat (or other unique spatial area) was
+sampled.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
@@ -49,6 +56,8 @@ is unnecessary to include a value for this argument if the column name is
 the name of the column in 'dat' that contains sf geometry data. It is
 unnecessary to include a value for this argument if the column name is
 "geometry" (default is 'geometry').}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
 \code{\link[=getBasalAreas]{getBasalAreas()}} returns a data.frame with the columns "Site",
@@ -63,14 +72,19 @@ site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
 quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
 quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44\% of the
 occupied basal area in quadrat 1 in 2005 is occupied by species A
-("percent_basalArea" = 44).
+("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
+column if the "quad_basalArea" for that species and year is 0.
 }
 \description{
 This function calculates the total basal area for each species
 present in a quadrat for each year of data collection. Both the absolute
 basal area (in the same units of area as the input data.frame) is returned,
 as well as the percentage of the total occupied basal area in the quadrat
-that is occupied by a given species ("percent total basal area").
+that is occupied by a given species ("percent total basal area"). If you'd
+like to ultimately calculate the population growth rate (lambda) for each
+species, you can use the \code{\link{getLambda}} function directly, which
+takes raw species occurrence data (like in 'dat' here) and returns lambda
+values for each species and quadrat.
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == "CO" &
@@ -83,10 +97,15 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
-getBasalAreas(dat = outDat,
+getBasalAreas(dat = outDat, inv = inv,
 species = "speciesName")
+}
+\seealso{
+\code{\link[=getLambda]{getLambda()}}, which uses this function to calculate basal areas and
+ultimately return population growth rates (lambdas) for each species in
+each quadrat.
 }

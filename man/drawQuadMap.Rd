@@ -13,7 +13,8 @@ drawQuadMap(
   quad = "Quad",
   year = "Year",
   geometry = "geometry",
-  trackID = "trackID"
+  trackID = "trackID",
+  ...
 )
 }
 \arguments{
@@ -69,6 +70,8 @@ unnecessary to include a value for this argument if the column name is
 the column in 'dat' that contains unique identifiers for each genet. It is
 unnecessary to include a value for this argument if the column name is
 "trackID" (default is 'trackID')}
+
+\item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \value{
 This function returns a multipanel plot where each panel shows a map
@@ -92,9 +95,9 @@ outDat <- trackSpp(dat = dat,
  buff = .05,
  buffGenet = 0.005,
  clonal = data.frame("Species" = unique(dat$speciesName),
- "clonal" = c(1,0)),
+ "clonal" = c(TRUE,FALSE)),
  species = "speciesName",
- aggregateByGenet = TRUE
+ aggByGenet = TRUE
  )
 drawQuadMap(dat = outDat,
 type = "bySpecies",

@@ -1,7 +1,7 @@
 Package: PlantTracker
 Title: Extract Demographic Data from Quadrat Maps
 Version: 0.0.0.9000
-Date: 2021-05-20
+Date: 2021-09-20
 Authors@R: 
     person(given = "Alice",
            family = "Stears",

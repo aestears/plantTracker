@@ -623,7 +623,8 @@
                                                   shrinkage$Area.x) <= shrink]
 
                 if (length(shrinkers) > 0) { ## if there are any shrinkers...
-                  tempCurrentYear[tempCurrentYear$trackID %in% shrinkers,
+                  ## flag the observation in the PREVIOUS year
+                  tempPreviousYear[tempPreviousYear$trackID %in% shrinkers,
                                   "Suspect"] <- TRUE
                 }
               }
@@ -661,9 +662,9 @@
                     tooSmallIDs <- dormants[dormants$Area.x < smallest,
                                             "trackID"]
 
-                    ## remove the trackIDs for the 'children' of the 'parent'
-                    # individuals that are too small to have survived dormancy
-                    tempCurrentYear[tempCurrentYear$trackID %in% tooSmallIDs,
+                    ## flag individuals in the PREVIOUS year
+                    # that are likely too small to have survived dormancy
+                    tempPreviousYear[tempPreviousYear$trackID %in% tooSmallIDs,
                                     "Suspect"] <- TRUE
                   }
                 }

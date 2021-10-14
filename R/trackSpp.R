@@ -1,32 +1,35 @@
 #' Tracks genets through time for multiple species and sites
 #'
-#' @description This function tracks individual plants in a mapped quadrat
-#' through time to generate a demographic data dataset that includes survival
-#' and growth.
+#' @description This function tracks individual plants in mapped quadrats
+#' through time to generate a demographic dataset that includes survival
+#' and growth for each individual.
 #'
 #' @details
-#' This function is a wrapper function that applies the \code{\link{assign}}
-#' function across multiple species, quadrats, or sites. For each species and
-#' quadrat, [trackSpp()] loads a spatially referenced data.frame ('dat'), and
-#' then uses the \code{\link{groupByGenet}} function to assign genetIDs to
-#' polygons (if 'clonal' = TRUE) such that polygons that form the same genet have
-#' the same genetID. A buffer of a distance defined by 'buff' is applied around
-#' each genet polygon. Then, the spatial data for each genet from the current
-#' year (year *t*) is compared to individuals in the next year (year *t+1*).
-#' Then [trackSpp()] calculates the amount of overlapping area between polygons
-#' of each year *t* genet and polygons of each year *t+1* genet (using
+#' This is a wrapper function that applies \code{\link{assign}} across multiple
+#' species, quadrats, and sites. For each species and quadrat, [trackSpp()]
+#' loads a spatially referenced data.frame ('dat'), and then uses the
+#' \code{\link{groupByGenet}} function to assign genetIDs to polygons (if
+#' 'clonal' = TRUE) such that polygons that form the same genet have the same
+#' genetID. A buffer of a distance defined by 'buff' is applied around each
+#' genet polygon. Then, the spatial data for each genet from the current year
+#' (year `t`) is compared to individuals in the next year (year `t+1`). Then
+#' [trackSpp()] calculates the amount of overlapping area between polygons
+#' of each year `t` genet and polygons of each year `t+1` genet (using
 #' \code{\link[sf]{st_intersection}}). If there is unambiguous overlap between a
-#' 'parent' genet from year *t* and a 'child' genet from year *t+1*, then that
+#' 'parent' genet from year `t` and a 'child' genet from year `t+1`, then that
 #' 'child' gets the same identifying trackID as the parent. If there is a 'tie,'
 #' where more than one parent overlaps the same child or more than one child
 #' overlaps the same parent, the parent-child pair with the greatest amount of
-#' overlap receives the same trackID. Polygons in year *t+1* that do not have a
+#' overlap receives the same trackID. Polygons in year `t+1` that do not have a
 #' parent are given new trackIDs and are identified as new recruits. If dormancy
-#' is not allowed, then polygons in year *t* that do not have child polygons get
+#' is not allowed, then polygons in year `t` that do not have child polygons get
 #' a '0' in the 'survival' column. If dormancy is allowed, parent polygons
 #' without child polygons are stored as 'ghosts' and are then compared to data
-#' from year *t+1+i* to find potential child polygons, where *i*='dorm'
-#' argument.
+#' from year `t+1+i` to find potential child polygons, where `i`='dorm'
+#' argument. For a more detailed description of the [trackSpp()] function, see
+#' the vignette:
+#' \code{vignette("Using_the_plantTracker_trackSpp_function",
+#' package = "plantTracker")}
 #'
 #' @param dat An sf data.frame of the same format as
 #' \code{\link{grasslandData}}. It must have columns that contain a unique
@@ -34,52 +37,50 @@
 #' (default name is "Species"), quadrat identifier (default name is "Quad"),
 #' year of data collection (default name is "Year") and an s.f 'geometry' column
 #' that contains a polygon or multipolygon data type for each
-#' individual observation.
-#' This function will add columns called "basalArea_ramet", "trackID",
-#' "age", "size_tplus1", "recruit," "nearEdge," and "survives_tplus1", so 'dat'
-#' should not contain columns with these names.
-#' @param inv A named list. The name of each element of the list is a quadrat
-#' name in 'dat', and the contents of that list element is a numeric vector of
-#' all of the years in which that quadrat (or other unique spatial area) was
-#' sampled.
-#' @param dorm A numeric vector of length 1, indicating the number of years
-#' these species are allowed to go dormant, i.e. be absent from the map but be
-#' considered the same individual when they reappear. This must be an integer
-#' greater than or equal to 0. OR dorm can be a data.frame with
+#' individual observation. This function will add columns called
+#' "basalArea_ramet", "trackID", "age", "size_tplus1", "recruit," "nearEdge,"
+#' and "survives_tplus1", so 'dat' should not contain columns with these names.
+#' @param inv A named list of the same format as
+#' \code{\link{grasslandInventory}}. The name of each element of the list is a
+#' quadrat name in 'dat', and the contents of that list element is a numeric
+#' vector of all of the years in which that quadrat (or other unique spatial
+#' area) was sampled.
+#' @param dorm A numeric vector of length 1, indicating the number of years an
+#' individual of these species is allowed to go dormant, i.e. be absent from the
+#' map but be considered the same individual when it reappears. This must be an
+#' integer greater than or equal to 0. *OR* dorm can be a data.frame with
 #' the columns "Species" and "dorm". This data.frame must have a row for each
 #' unique species present in 'dat', with species name as a character string in
 #' the "Species" column, and a numeric value greater than or equal to 0 in the
-#' 'dorm' column that indicates the number of years this species is allowed to
+#' 'dorm' column that indicates the number of years each species is allowed to
 #' go dormant.
 #' @param buff A numeric vector of length 1 that is greater than or equal to
 #' zero, indicating how far (in the same units as spatial values in 'dat') a
-#' polygon can move from year \code{i} to year \code{i}+1 and still be
-#' considered the same individual. OR buff can be a data.frame with
+#' polygon can move from year `i` to year `i+1` and still be
+#' considered the same individual. *OR* buff can be a data.frame with
 #' the columns "Species" and "buff". This data.frame must have a row for each
 #' unique species present in 'dat', with species name as a character string in
-#' the "Species" column, and a numeric value in the 'buff' column that indicates
-#' how far a polygon can move from year to year and still be considered the same
-#' genet.
+#' the "Species" column, and a numeric value in the 'buff' column specifying the
+#' 'buff' argument for each species.
 #' @param buffGenet A numeric vector of length 1 that is greater than or equal
 #' to zero, indicating how close (in the same units as spatial values in 'dat')
 #' polygons must be to one another in the same year to be grouped as a genet
-#' (if 'clonal' argument = TRUE). OR buffGenet can be a data.frame with
+#' (if 'clonal' argument = TRUE). *OR* buffGenet can be a data.frame with
 #' the columns "Species" and "buffGenet". This data.frame must have a row for
 #' each unique species present in 'dat', with species name as a character string
 #' in the "Species" column, and a numeric value greater than or equal to 0 in
-#' the 'buffGenet' column that indicates how close polygons of that species must
-#' be to one another to be considered the same genet. This argument is passed to
-#' the \code{\link{groupByGenet}} function, which is used inside the
-#' \code{\link{assign}} function.
+#' the 'buffGenet' specifying the 'buffGenet' argument for each species. This
+#' argument is passed to the \code{\link{groupByGenet}} function, which is used
+#' inside the \code{\link{assign}} function.
 #' @param clonal A logical vector of length 1, indicating whether a
 #' species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
 #' can be grouped as one individual (genet)). If clonal = TRUE, the species is
 #' allowed to be clonal, and if clonal = FALSE, the species is not allowed to
-#' be clonal. OR clonal can be a data.frame with the columns "Species" and
+#' be clonal. *OR* clonal can be a data.frame with the columns "Species" and
 #' "clonal". This data.frame must have a row for each unique species present in
 #' 'dat', with species name as a character string in the "Species" column, and a
-#' logical value in the 'clonal' column indicating whether that species is
-#' allowed to be clonal (TRUE) or not (FALSE).
+#' logical value in the 'clonal' specifying the 'clonal' argument for
+#' each species.
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to provide a value for this argument if the column name is
@@ -102,12 +103,12 @@
 #' "geometry" (default is 'geometry').
 #' @param aggByGenet A logical argument that determines whether the output
 #' of [trackSpp()] will be aggregated by genet. If the value is TRUE
-#' (the default), then each unique trackID in each year will be represented by
-#' only one row in the output data.frame (each genet gets only one row). This
-#' prepares the dataset for most demographic analyses. If the value is FALSE,
-#' then each unique trackID in each year may be represented by multiple rows in
-#' the data (each ramet gets a row). Note that if the value is TRUE, then some
-#' columns of the input data.frame 'dat' will be dropped. If you do not wish
+#' (the default), then each unique trackID (or genet) in each year will be
+#' represented by only one row in the output data.frame. This prepares the
+#' dataset for most demographic analyses. If the value is FALSE, then each
+#' unique trackID in each year may be represented by multiple rows in the data
+#' (each ramet gets a row). Note that if the value is TRUE, then some columns
+#' present in the input data.frame 'dat' will be dropped. If you do not wish
 #' this to happen, then you can aggregate the data.frame to genet by hand.
 #' @param printMessages A logical argument that determines whether this
 #' function returns messages about genet aggregation, as well as messages
@@ -115,7 +116,7 @@
 #' year(s) come before a gap in sampling that exceeds the 'dorm' argument (and
 #' thus which years of data have an 'NA' for "survives_tplus1" and
 #' "size_tplus1"). If printMessages = TRUE (the default), then messages are
-#' printed. If printMessages = FALSE, then messages are not printed.
+#' printed. If printMessages = FALSE, messages are not printed.
 #' @param flagSuspects A logical argument of length 1, indicating whether
 #' observations that are 'suspect' will be flagged. The default is
 #' `flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a column called
@@ -123,26 +124,27 @@
 #' 'TRUE' in the 'Suspect' column, while non-suspect observations receive a
 #' 'FALSE'. There are two ways that an observation can be classified as
 #' 'suspect'. First, if two consecutive observations have the same trackID, but
-#' the observation in year t+1 is less that a certain percentage (defined by the
-#' `shrink` arg.) of the observation in year t, it is possible that the
-#' observation in year t+1 is a new recruit and not the same individual. The
-#' second way an observation can be classified as 'suspect' is if it is very
-#' small before going dormant. It is unlikely that a very small individual will
-#' survive dormancy, so it is possible that the function has mistakenly given a
-#' survival value of '1' to this individual. A 'very small individual' is any
-#' observation with an area below a certain percentile (specified by 'dormSize')
-#' of the size distribution for this species, which is generated using all of
-#' the size data for this species in 'dat'.
+#' the basal area of the observation in year `t+1` is less that a certain
+#' percentage (defined by the `shrink` arg.) of the basal area of the
+#' observation in year `t`, it is possible that the observation in year `t+1` is
+#' a new recruit and not the same individual. The second way an observation can
+#' be classified as 'suspect' is if it is very small before going dormant. It is
+#' unlikely that a very small individual will survive dormancy, so it is
+#' possible that the function has mistakenly given a survival value of '1' to
+#' this individual. A 'very small individual' is any observation with an area
+#' below a certain percentile (specified by 'dormSize') of the size distribution f
+#' or this species, which is generated using all of the size data for this
+#' species in 'dat'.
 #' @param shrink A single numeric value. This value is only used when
 #' `flagSuspects = TRUE`. When two consecutive observations have the same
-#' trackID, and the ratio of size_t+1 to size_t is smaller than the value of
-#' `shrink`, the observation in year t gets a 'TRUE' in the 'Suspect' column.
+#' trackID, and the ratio of size `t+1` to size `t` is smaller than the value of
+#' `shrink`, the observation in year `t` gets a 'TRUE' in the 'Suspect' column.
 #' For example, `shrink = 0.2`, and an individual that the tracking function has
-#' identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year t and an area of
-#' 1.35 cm^2 in year t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15,
-#' which is smaller than the cutoff specified by `shrink`, so the observation of
-#' 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
-#' value is `shrink = 0.10`.
+#' identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year `t` and an area
+#' of 1.35 cm^2 in year `t+1`. The ratio of size `t+1` to size `t` is
+#' 1.35/9 = 0.15, which is smaller than the cutoff specified by `shrink`, so the
+#' observation of BOUGRA_1992_5' in year `t` gets a 'TRUE' in the 'Suspect'
+#' column. The default value is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
 #' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect'
 #' if it 'goes dormant' and has a size that is less than or equal to the
@@ -151,13 +153,13 @@
 #' of 0.5 cm^2. The 5th percentile of the distribution of size for this species,
 #' which is made using the mean and standard deviation of all observations in
 #' 'dat' for the species in question, is 0.6 cm^2. This individual does not have
-#' any overlaps in the next year (year t+1), but does have an overlap in year
-#' t+2. However, because the basal area of this observation is smaller than the
+#' any overlaps in the next year (year `t+1`), but does have an overlap in year
+#' `t+2`. However, because the basal area of this observation is smaller than the
 #' 5th percentile of size for this species, the observation in year t will get a
 #' 'TRUE' in the 'Suspect' column. It is possible that the tracking function has
-#' mistakenly assigned a '1' for survival in year t, because it is unlikely that
-#' this individual is large enough to survive dormancy. The default value is
-#' `dormSize = .05`.
+#' mistakenly assigned a '1' for survival in year `t`, because it is unlikely
+#' that this individual is large enough to survive dormancy. The default value
+#' is `dormSize = .05`.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return An sf data.frame with the same columns as 'dat,' but with the
@@ -166,24 +168,24 @@
 #' \item{trackID}{A unique value for each individual genet, consisting of the
 #' 6-letter species code, the year in which this individual was recruited, and a
 #' unique index number, all separated by a "_".}
-#' \item{age}{An integer indicating the age of this individual in year *t*.
+#' \item{age}{An integer indicating the age of this individual in year `t`.
 #' Values of NA indicate that an accurate age cannot be calculated because this
 #' individual was observed either in the first year of sampling or in a year
 #' following a gap in sampling, so the exact year of recruitment is not known.}
-#' \item{size_tplus1}{The  size of this **genet** in year *t+1*, in the same
+#' \item{size_tplus1}{The  size of this **genet** in year `t+1`, in the same
 #' units as the 'area' column in 'dat'.}
 #' \item{recruit}{A Boolean integer indicating whether this individual is a new
-#' recruit in year *t* (1), or existed in a previous year (0). Values of NA
+#' recruit in year `t` (1), or existed in a previous year (0). Values of NA
 #' indicate that this individual was observed either in the first year of
 #' sampling or in a year following a gap in sampling, so it is not possible to
-#' accurately determine whether or not it is a new recruit in year *t*.}
+#' accurately determine whether or not it is a new recruit in year `t`.}
 #' \item{survives_tplus1}{A Boolean integer indicating whether this individual
-#' survived (1), or died (0) in year *t+1*.}
-#' \item{basalArea_genet}{The size of this entire genet in year *t*, in the same
+#' survived (1), or died (0) in year `t+1`.}
+#' \item{basalArea_genet}{The size of this entire genet in year `t`, in the same
 #' units as the 'area' column in 'dat.' If the 'clonal' argument = FALSE, then
 #' this number will be identical to the 'basalArea_ramet' column. }
 #' \item{basalArea_ramet}{This is only included if 'aggByGenet' = FALSE.
-#' This is the size of this ramet in year *t*, in the same units as the 'area'
+#' This is the size of this ramet in year `t`, in the same units as the 'area'
 #' column in 'dat'. If the 'clonal' argument = FALSE , then this number will be
 #' identical to the 'basalArea_genet' column.}
 #' \item{nearEdge}{A logical value indicating whether this individual is within

@@ -1,7 +1,7 @@
-#' Calculated lambda, the population growth rate, for each species in a quadrat
+#' Calculates lambda, the population growth rate, for each species in a quadrat
 #' based on changes in basal cover.
 #'
-#' @description This function calculated the population growth rate (lambda) for
+#' @description This function calculates the population growth rate (lambda) for
 #' every species in a quadrat. This value is the ratio of basal area or number
 #' of individuals in the next year to basal area or number of individuals in the
 #' current year (basal area in year t+1/ basal area in year t). A lambda value
@@ -13,10 +13,11 @@
 #' quadrat was sampled, even if there is a gap in sampling. For example, a
 #' quadrat is sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A
 #' lambda value will be calculated for 1998-1999 and 2001-2002, which is a
-#' transition from year t to year t+1. However, a lambda value is calculated in
-#' the same manner for 1999-2001, which is actually a transition from year t to
-#' year t+2. You can remove these values by subsetting the data.frame returned
-#' by `getLambda()` for rows when "Year_tplus1"- "Year_t" is equal to 1.
+#' transition from year `t` to year `t+1`. However, a lambda value is calculated
+#' in the same manner for 1999-2001, which is actually a transition from year
+#' `t` to year `t+2`. You can remove these values by subsetting the data.frame
+#' returned by `getLambda()` for rows when "Year_tplus1"- "Year_t" is equal
+#' to 1.
 #'
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
@@ -28,15 +29,17 @@
 #' (default name is "Quad"), year of data collection (default name is "Year"),
 #' and an s.f 'geometry' column that contains a polygon or multipolygon data
 #' type for each individual observation.
-#' @param inv A named list. The name of each element of the list is a quadrat
-#' name in 'dat', and the contents of that list element is a numeric vector of
-#' all of the years in which that quadrat (or other unique spatial area) was
-#' sampled.
+#' @param inv A named list in the same format as \code{\link{grasslandData}}.
+#' The name of each element of the list is a quadrat name in 'dat', and the
+#' contents of that list element is a numeric vector of all of the years in
+#' which that quadrat (or other unique spatial area) was sampled.
 #' @param method A single character argument that determines the method for
 #' calculating lambda. The default value is "area", which means that lambda is
 #' calculated by comparing total basal area for a given species in year t+1 to
 #' year t. If 'method' = "count", then lambda is calculated by comparing total
-#' number of individuals for a given species in year t+1 to year t.
+#' number of individuals for a given species in year t+1 to year t. If each
+#' individual in 'dat' is mapped as a point, it is best to use
+#' 'method' = "count".
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
@@ -75,6 +78,8 @@
 #' @seealso [getBasalAreas()], used internally in this function, which
 #' calculates absolute and relative basal areas for each species in each quadrat
 #' for each year of sampling.
+#'
+#' @import sf
 #'
 #' @export
 #'

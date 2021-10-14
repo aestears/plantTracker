@@ -1,13 +1,13 @@
 #' Tracks genets through time
 #'
-#' @description This function tracks individual plants through time, but only of
-#'  one species in one quadrat. It is designed for use within the
+#' @description This function tracks individual plants through time, but only
+#' for one species in one quadrat. It is designed for use within the
 #'  \code{\link{trackSpp}} function, and is not intended for use on its own.
 #'
 #' @details see \code{\link{trackSpp}} for details of arguments and usage.
 #'
 #' @param dat An sf data.frame of the same format as
-#' \code{\link{grasslandData}}. 'dat' can contain data for only one species in
+#' \code{\link{grasslandData}}. 'dat' must contain data for only one species in
 #' one quadrat. It must have columns that contain a unique
 #' identification for each research site (default name is "Site"), species name
 #' (default name is "Species"), quadrat identifier (default name is "Quad"),
@@ -26,7 +26,7 @@
 #' greater than or equal to 0.
 #' @param buff A numeric vector of length 1 that is greater than or equal to
 #' zero, indicating how far (in the same units as spatial values in 'dat') a
-#' polygon can move from year \code{i} to year \code{i}+1 and still be
+#' polygon can move from year \code{t} to year \code{t+1} and still be
 #' considered the same individual.
 #' @param buffGenet A numeric vector of length 1 that is greater than or equal
 #' to zero, indicating how close (in the same units as spatial values in 'dat')
@@ -36,7 +36,7 @@
 #' \code{\link{assign}} function.
 #' @param clonal A logical argument of length 1, indicating whether this
 #' species is allowed to be clonal or not (i.e. if multiple polygons (ramets)
-#' can be grouped as one individual (genet)). If clonal = TRUE, the species is
+#' can be grouped into one individual (genet)). If clonal = TRUE, the species is
 #' allowed to be clonal, and if clonal = FALSE, the species is not allowed to
 #' be clonal.
 #' @param flagSuspects A logical argument of length 1, indicating whether
@@ -46,41 +46,43 @@
 #' 'TRUE' in the 'Suspect' column, while non-suspect observations receive a
 #' 'FALSE'. There are two ways that an observation can be classified as
 #' 'suspect'. First, if two consecutive observations have the same trackID, but
-#' the observation in year t+1 is less that a certain percentage (defined by the
-#' `shrink` arg.) of the observation in year t, it is possible that the
-#' observation in year t+1 is a new recruit and not the same individual. The
-#' second way an observation can be classified as 'suspect' is if it is very
-#' small before going dormant. It is unlikely that a very small individual will
-#' survive dormancy, so it is possible that the function has mistakenly given a
-#' survival value of '1' to this individual. A 'very small individual' is any
-#' observation with an area below a certain percentile (specified by 'dormSize')
-#' of the size distribution for this species, which is generated using all of
-#' the size data for this species in 'dat'.
+#' the basal area of the observation in year \code{t+1} is less that a certain
+#' percentage (defined by the `shrink` arg.) of the basal area of the
+#' observation in year t, it is possible that the observation in year \code{t+1}
+#' is a new recruit and not the same individual. The second way an observation
+#' can be classified as 'suspect' is if it is very small before going dormant.
+#' It is unlikely that a very small individual will survive dormancy, so it is
+#' possible that the function has mistakenly given a survival value of '1' to
+#' this individual. A 'very small individual' is any observation with an area
+#' below a certain percentile (specified by 'dormSize') of the size distribution
+#' for this species, which is generated using all of the size data for this
+#' species in 'dat'.
 #' @param shrink A single numeric value. This value is only used when
 #' `flagSuspects = TRUE`. When two consecutive observations have the same
 #' trackID, and the ratio of size_t+1 to size_t is smaller than the value of
-#' `shrink`, the observation in year t gets a 'TRUE' in the 'Suspect' column.
-#' For example, `shrink = 0.2`, and an individual that the tracking function has
-#' identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in year t and an area of
-#' 1.35 cm^2 in year t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15,
-#' which is smaller than the cutoff specified by `shrink`, so the observation of
-#' 'BOUGRA_1992_5' in year t gets a 'TRUE' in the 'Suspect' column. The default
-#' value is `shrink = 0.10`.
+#' `shrink`, the observation in year \code{t} gets a 'TRUE' in the 'Suspect'
+#' column. For example, `shrink = 0.2`, and an individual that the tracking
+#' function has identified as 'BOUGRA_1992_5' has an area of 9 cm^2 in
+#' year \code{t} and an area of 1.35 cm^2 in year \code{t+1}. The ratio of
+#' size \code{t+1} to size \code{t} is 1.35/9 = 0.15, which is smaller than the
+#' cutoff specified by `shrink`, so the observation of BOUGRA_1992_5' in year
+#' \code{t} gets a 'TRUE' in the 'Suspect' column. The default value
+#' is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
-#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect' if it 'goes dormant' and
-#' has a size that is less than or equal to the percentile of the size
-#' distribution for this species that is designated by `dormSize`. For example,
-#' `dormSize = 0.05`, and an individual has a basal area of 0.5 cm^2. The 5th
-#' percentile of the distribution of size for this species, which is made using
-#' the mean and standard deviation of all observations in 'dat' for the species
-#' in question, is 0.6 cm^2. This individual does not have any overlaps in the
-#' next year (year t+1), but does have an overlap in year t+2. However, because
-#' the basal area of this observation is smaller than the 5th percentile of size
-#' for this species, the observation in year t will get a 'TRUE' in the
-#' 'Suspect' column. It is possible that the tracking function has mistakenly
-#' assigned a '1' for survival in year t, because it is unlikely that this
-#' individual is large enough to survive dormancy. The default value is
-#' `dormSize = .05`.
+#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect'
+#' if it 'goes dormant' and has a size that is less than or equal to the
+#' percentile of the size distribution for this species that is designated by
+#' `dormSize`. For example, `dormSize = 0.05`, and the focal individual has a
+#' basal area of 0.5 cm^2. The 5th percentile of the distribution of size for
+#' this species, which is made usingthe mean and standard deviation of all
+#' observations in 'dat' for the species in question, is 0.6 cm^2. This
+#' individual does not have any overlaps in thenext year (year \code{t+1}), but
+#' does have an overlap in year \code{t+2}. However, because the basal area of
+#' this observation is smaller than the 5th percentile of size for this species,
+#' the observation in year \code{t} will get a 'TRUE' in the 'Suspect' column.
+#' It is possible that the tracking function has mistakenly assigned a '1' for
+#' survival in year t, because it is unlikely that this individual is large
+#' enough to survive dormancy. The default value is `dormSize = .05`.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @seealso [trackSpp()], which is a wrapper for the [assign()] function that

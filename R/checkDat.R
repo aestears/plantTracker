@@ -2,11 +2,12 @@
 #' @description A function that both checks and prepares a data.frame for use in
 #' the \code{\link{trackSpp}} function.
 #'
-#' @details This function is used internally in \code{\link{trackSpp}} to check
-#' the 'dat' and 'inv' arguments and ensure that they are in the correct format
-#' with the correct column names. [checkDat()] can also be used independently
-#' to check that a data.frame is in the correct format and contains the correct
-#' data to be used in the [trackSpp()] function.
+#' @details This function is used internally in \code{\link{trackSpp}} and other
+#' plantTracker functions to check the 'dat' and 'inv' arguments and ensure that
+#' they are in the correct format with the correct column names. [checkDat()]
+#' can also be used independently to check that a data.frame is in the correct
+#' format and contains the correct data to be used in the [trackSpp()] or other
+#' plantTracker functions.
 #'
 #' @param dat An sf data.frame of the same format as
 #' \code{\link{grasslandData}}. It must have columns that contains a unique
@@ -15,10 +16,11 @@
 #' year of data collection (default name is "Year") and an s.f 'geometry' column
 #' that contains a polygon or multipolygon data type for each
 #' individual observation.
-#' @param inv A named list. The name of each element of the list is a quadrat
-#' name in 'dat', and the contents of that list element is a numeric vector of
-#' all of the years in which that quadrat (or other unique spatial area) was
-#' sampled.
+#' @param inv A named list in the same format
+#' as \code{\link{grasslandInventory}}. This argument is optional. The name of
+#' each element of the list is a quadrat name in 'dat', and the contents of that
+#' list element is a numeric vector of all of the years in which that quadrat
+#' (or other unique spatial area) was sampled.
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is
 #' unnecessary to include a value for this argument if the column name is
@@ -39,7 +41,6 @@
 #' the name of the column in 'dat' that contains sf geometry data. It is
 #' unnecessary to include a value for this argument if the column name is
 #' "geometry" (default is 'geometry').
-#'
 #' @param reformatDat A TRUE/FALSE argument. If 'FALSE', which is the default
 #' value, then [checkDat()] prints a message that says the 'dat' and 'inv'
 #' datasets are ready for use in the [trackSpp()] function. This message
@@ -47,10 +48,10 @@
 #' function call for these datasets.
 #' If 'TRUE', [checkDat()] returns a list with three elements: a version of
 #' 'dat' that has been checked for errors and is ready to be input directly into
-#' the [trackSpp()] or [assign()] functions, a version of 'inv' that is checked
-#' are ready for input into [trackSpp()] or [assign()], and a character vector
-#' called 'userColNames' that has all of the user-defined column names that were
-#' used in the original version of 'dat'.
+#' the  \code{\link{trackSpp}} or  \code{\link{assign}} functions, a version of
+#' 'inv' that is checked and ready for input into [trackSpp()] or [assign()],
+#' and a character vector called 'userColNames' that has all of the user-defined
+#' column names that were used in the original version of 'dat'.
 #'
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'

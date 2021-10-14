@@ -25,12 +25,15 @@ contain a unique identification for each research site (default name is
 "Site"), species name (default name is "Species"), quadrat identifier
 (default name is "Quad"), year of data collection (default name is "Year"),
 and an s.f 'geometry' column that contains a polygon or multipolygon data
-type for each individual observation.}
+type for each individual observation. This function should only be used if
+the individuals in 'dat' were mapped as polygons that are representative of
+their actual basal area, i.e. were not mapped as points.}
 
-\item{inv}{A named list. The name of each element of the list is a quadrat
-name in 'dat', and the contents of that list element is a numeric vector of
-all of the years in which that quadrat (or other unique spatial area) was
-sampled.}
+\item{inv}{A named list in the same format as
+\code{\link{grasslandInventroy}}The name of each element of the list is a
+quadrat name in 'dat', and the contents of that list element is a numeric
+vector of all of the years in which that quadrat (or other unique spatial
+area) was sampled.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is
@@ -64,7 +67,7 @@ unnecessary to include a value for this argument if the column name is
 "Quad", "Year" and "Species". No two rows will have the same values for all
 four of these columns. The column "absolute_basalArea" has the area of the
 quadrat that is occupied by a species in a given unique site/quadrat/year
-combination. This is in the same units as the area for area in 'dat'.
+combination. This is in the same units as the area in 'dat'.
 "quad_basalArea" gives the combined basal area of all plants in a given
 site/quadrat/year. "percent_basalArea" gives the percentage of occupied basal
 area within a quadrat that is occupied by each species in a given
@@ -84,7 +87,10 @@ that is occupied by a given species ("percent total basal area"). If you'd
 like to ultimately calculate the population growth rate (lambda) for each
 species, you can use the \code{\link{getLambda}} function directly, which
 takes raw species occurrence data (like in 'dat' here) and returns lambda
-values for each species and quadrat.
+values for each species and quadrat for each transition in the dataset.
+This function should only be used if the individuals in 'dat' were mapped as
+polygons that are representative of their actual basal area, i.e. were not
+mapped as points.
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == "CO" &

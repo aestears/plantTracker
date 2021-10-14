@@ -2,7 +2,7 @@
 % Please edit documentation in R/groupByGenet.R
 \name{groupByGenet}
 \alias{groupByGenet}
-\title{Assign genetIDs to grouped ramet polygons}
+\title{Group polygon observations together into a 'genet' based on proximity}
 \usage{
 groupByGenet(dat, buffGenet, ...)
 }
@@ -14,12 +14,12 @@ intended use, this dataset should be of the format described in
 only 'geometry' data, but it is \emph{strongly} recommended that other columns
 specified in \code{\link{grasslandData}} are included.}
 
-\item{buffGenet}{A numeric argument indicating the maximum distance
+\item{buffGenet}{A numeric argument indicating half of the maximum distance
 between individual ramets (polygons) that the function will group together as
 one genet. Note that this argument is in the same units that are used in the
 'dat' argument. For example, if buffGenet = 0.005 and we use the
 \code{\link{grasslandData}} (in which measurements are in meters), then
-polygons that are 0.005 m (0.5 cm) apart or less will be grouped as a genet.}
+polygons that are 0.01 m (1 cm) apart or less will be grouped as a genet.}
 
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
@@ -29,17 +29,19 @@ rows in 'dat.' Each element \code{i} in the output is the genetID for the
 \code{i}th row in 'dat'.
 }
 \description{
-This function assigns a unique 'genetID' to polygons if they are within a
-user-defined distance from one another.
+This function assigns a unique 'genetID' to polygons if they are
+within a user-defined distance from one another. Each ramet is still
+represented by a single row of data, but all ramets of the same genet have
+the same 'genetID'.
 }
 \details{
-If polygons are 'grouped,' they are given the same number in the 'genetID'
-column. This assignment is made using network analysis to group together
-polygons that are closest to one another. In the context of
-\pkg{plantTracker}, this function was designed to group ramets together into
-one genet, which is a genetically distinct individual. This function was
-designed for use within the \code{\link{assign}} function (and then the
-\code{\link{trackSpp}} function), but can be used independently.
+If polygons are 'grouped,' they are given the same number in the
+'genetID' column. This assignment is made using network analysis to group
+together polygons that are closest to one another. In the context of
+\pkg{plantTracker}, this function was designed to group ramets (vegetative
+clones) together into one genet (genetically distinct individual). This
+function was designed for use within the \code{\link{assign}} function (and
+then the \code{\link{trackSpp}} function), but can be used independently.
 }
 \examples{
 dat <- grasslandData[grasslandData$Site=="CO" &

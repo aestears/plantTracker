@@ -17,11 +17,11 @@ aggregateByGenet(
 \arguments{
 \item{dat}{An sf data.frame. Typically this is a data.frame that has been
 returned from the \code{\link[=trackSpp]{trackSpp()}} function, although 'dat' can be any sf
-data.frame of plant demographic data in which genet has a unique value
-associated with it (what we call here a 'trackID'). If 'dat' already only has
+data.frame of plant demographic data in which each genet is given unique
+identifying value (what we call here a 'trackID'). If 'dat' already only has
 one row for each unique trackID in each unique year (i.e. there are no
 vegetative individuals--no ramets), then the output of \code{\link[=aggregateByGenet]{aggregateByGenet()}}
-will have the same number of rows as 'dat'. If 'dat' (in some cases) has
+will have the same number of rows as 'dat'. If 'dat' has
 multiple rows (each of which is a ramet) for the same trackID in the same
 year, then the output of \code{\link[=aggregateByGenet]{aggregateByGenet()}} will have fewer rows than the
 input 'dat' data.frame. 'dat' MUST have columns called 'basalArea_genet',
@@ -63,13 +63,14 @@ This function aggregates a data.frame by unique trackIDs so that
 each row represents a genet (unique genetic individual) in a given year.
 }
 \details{
-This function is a plantTracker-specific, user-friendly wrapper
-for the 'aggregate' function. This function was designed for use within the
-\code{\link{trackSpp}} function, but can be also called independently by the
-user. The function is designed to take a data.frame of the same format that
-is returned by \code{\link[=trackSpp]{trackSpp()}}, but it can be used to aggregate any dataset by
-genet (or some other unique identifier), as long as there is a column that
-identifies each distinct individual.
+This function is a \pkg{plantTracker}-specific, user-friendly
+wrapper for the 'aggregate' function. This function was designed for use
+within the \code{\link{trackSpp}} function, but can be also called
+independently by the user. The function is designed to take a data.frame of
+the same format that is returned by \code{\link[=trackSpp]{trackSpp()}}, but it can be used to
+aggregate any dataset by genet (or some other unique identifier), as long as
+there is a column that identifies genet (or unique identifier) identity for
+each observation.
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == c("CO") &
@@ -92,6 +93,4 @@ species = 'speciesName')
 }
 \seealso{
 This function is called inside the \code{\link[=trackSpp]{trackSpp()}} function.
-
-#'@import sf
 }

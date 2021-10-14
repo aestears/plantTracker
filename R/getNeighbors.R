@@ -1,6 +1,8 @@
-#' getNeighbors
-#' @description This function calculates an approximate metric of competition
-#' for each distinct individual in a mapped dataset. It is intended for use on
+#' Calculates local neighborhood density around each individual in a
+#' mapped dataset
+#'
+#' @description This function calculates the density of individuals around
+#' each distinct individual in a mapped dataset. It is intended for use on
 #' a dataset that has been returned by the \code{\link{trackSpp}} function, but
 #' will work with any sf data.frame where each individual row represents a
 #' distinct individual (genet) in a unique year.
@@ -11,12 +13,17 @@
 #' that is occupied by other individuals. [getNeighbors] can calculate
 #' either interspecific competition (between the focal individual and all other
 #' individuals within the buffer area) or intraspecific competition (between
-#' the focal individual and other individuals of the same species).
-#'
+#' the focal individual and other individuals of the same species within the
+#' buffer area).
 #'
 #' @param dat An sf data.frame. Each row must represent a unique individual
 #' organism in a unique year. This argument can be a data.frame that is returned
-#' by the \code{\link{trackSpp}} function.
+#' by the \code{\link{trackSpp}} function. It must have columns that contain a
+#' unique identification for each research site (default name is "Site"),
+#' species name (default name is "Species"), quadrat identifier (default name is
+#' "Quad"), year of data collection (default name is "Year"), genet identity
+#' (default name is "trackID"), and an s.f 'geometry' column that contains a
+#' polygon or multipolygon data type for each individual observation.
 #' @param buff A numeric value that is greater than or equal to zero. This
 #' indicates the distance (in the same units as the spatial data in 'dat')
 #' around each focal individual within which you want to look for competitors.
@@ -26,10 +33,14 @@
 #' value in the 'buff' column you'd like to use for that species.
 #' @param method A character string, either 'count' or 'area'. This argument
 #' determines which metric of competition will be calculated.
-#' If method = 'count', then the number of other individuals within the buffer
+#' If 'method' = 'count', then the number of other individuals within the buffer
 #' will be returned in the 'neighbors' column. If method = 'area', then the
 #' proportion of the buffer area that is occupied by other individuals will be
-#' returned in the 'neighbors' column.
+#' returned in the 'neighbors' column. If the data in 'dat' was mapped initially
+#' as points, it is best to use 'method' = 'count'. If the data was mapped as
+#' polygons that are representative of individual basal area, using
+#' 'method' = 'area' is likely a more accurate represntation of the crowding the
+#' focal individual is experiencing.
 #' @param compType A character string, either 'allSpp' or 'oneSpp'.
 #' If compType = 'allSpp', then a competition metric is calculated that
 #' considers all individuals around the focal individual, regardless of species
@@ -39,7 +50,7 @@
 #'  competition).
 #' @param trackID An optional character string argument. Indicates the name of
 #' the column in 'dat' that contains a value that uniquely identifies each
-#' individual/genet.It is unnecessary to include a value for this argument if
+#' individual/genet. It is unnecessary to include a value for this argument if
 #' the column name is 'trackID' (the default value is 'trackID').
 #' @param species An optional character string argument. Indicates
 #' the name of the column in 'dat' that contains species name data. It is

@@ -5,8 +5,8 @@
 \alias{grasslandInventory}
 \title{A dataset indicating sampling years for the grasslandData example dataset}
 \format{
-A list with 8 items, each of which is a quadrat included in the
-grasslandData dataset.
+A named list with 8 items, each of which if named for a quadrat
+included in the grasslandData dataset.
 \describe{
 \item{ungz_5a}{An integer vector indicating the years in which quadrat
 ungz_5a was mapped.}

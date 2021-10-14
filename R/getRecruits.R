@@ -12,10 +12,10 @@
 #' @param dat An sf data.frame in which each row represents a unique polygon
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. A
 #' data.frame returned by \code{\link{trackSpp}} can be put directly into this
-#' function. dat' must have columns that contain a unique identification for
+#' function. 'dat' must have columns that contain a unique identification for
 #' each research site (default name is "Site"), species name (default name is
 #' "Species"), quadrat identifier (default name is "Quad"), year of data
-#' collection (default name is "Year"), , a unique identifier for each genet
+#' collection (default name is "Year"), a unique identifier for each genet
 #' (default name is 'trackID'), and an s.f 'geometry' column that contains a
 #' polygon or multipolygon data type for each individual observation.
 #' @param byGenet A logical argument. `TRUE` indicates that a new genet will be
@@ -49,7 +49,7 @@
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return This function returns a table with columns for site, quadrat,
-#' species name, year, and number of recruits
+#' species name, year, and number of recruits.
 #'
 #' @export
 #'

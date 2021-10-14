@@ -30,11 +30,11 @@ each genet (default name is 'trackID') and an s.f 'geometry' column that
 contains a polygon or multipolygon data type for each individual observation.}
 
 \item{type}{A character argument indicating how the plots returned by
-\code{drawQuadMap()} will be color coded. If \code{type = "bySpecies"}, then each
-species is drawn with a unique color. If \code{type = "bytrackID"}, then each
-trackID is drawn with a unique color. The default value is "bySpecies".}
+\code{drawQuadMap()} will be color coded. If \code{type = "bySpecies"}, then
+observations are color-coded by species. If \code{type = "bytrackID"}, then
+observations are color-coded by trackID. The default value is "bySpecies".}
 
-\item{addBuffer}{A logical argument indicating whether the \code{drawQuadMap()}
+\item{addBuffer}{A logical argument indicating whether \code{drawQuadMap()}
 will draw a small buffer around each polygon in the returned maps to make the
 observations more visible. This is particularly useful for observations that
 were originally mapped as points, which are hard to see when plotted in their
@@ -78,6 +78,9 @@ This function returns a multipanel plot where each panel shows a map
 of the quadrat in a unique year. Panels are arranged in chronological order,
 and plots are color-coded either by species or trackID (unique
 genet identifier).
+
+#' @seealso \code{\link[=trackSpp]{trackSpp()}}, which can be used to assign trackIDs
+to observaitons.
 }
 \description{
 This function creates maps of a quadrat over time, color-coded

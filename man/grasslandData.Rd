@@ -8,15 +8,14 @@
 An sf data frame with 10405 rows and 15 variables:
 \describe{
 \item{Species}{A character string indicating the specific epithet for this
-observation. As long as all values in the column are consistent, the ideal
-formats are the 1) the latin binomial separated by a space (i.e.
-"Bouteloua gracilis"), 2) the latin binomial separated by an underscore
-(i.e. "Bouteloua_gracilis"), or 3) a species code consisting of the first
-'n' letters of each element of the latin binomial
-(i.e. "BOUGRA" or "BOGR"). }
+observation. The ideal formats are the 1) the latin binomial separated by
+a space (i.e. "Bouteloua gracilis"), 2) the latin binomial separated by an
+underscore (i.e. "Bouteloua_gracilis"), or 3) a species code consisting of
+the first n' letters of each element of the latin binomial (i.e. "BOUGRA"
+or "BOGR"). Whichever format is used, it must be used for all rows.}
 \item{Clone}{An integer vector. (1) indicates that this individual is a
 clone (genet). (0) indicates that this individual is not a clone. NA
-indicates that this data was not recorded. }
+indicates that this data was not recorded.}
 \item{Seedling}{An integer vector indicating whether this observation was a
 seedling (1), or not (0). This data was not collected for many
 observations, which have an NA in this column. }
@@ -53,7 +52,7 @@ assigned an area of 2.46e-05 m^2. For individuals mapped as polygons, the
 value in this column indicates the basal area of that plant.}
 \item{geometry}{The sf geometry of class "MULTIPOLYGON" for
 this observation. The location of this polygon indicates the plant's
-location in a 1m x 1m square. If the plant was mapped as a polygon,
+location in a 1 m x 1 m square. If the plant was mapped as a polygon,
 the area of this polygon indicates the basal area of that plant.}
 ...
 }
@@ -69,6 +68,6 @@ grasslandData
 }
 \description{
 An example dataset that contains data from mapped plant chart quadrats. Each
-row is an observation of one unique plant.
+row is an observation of one plant.
 }
 \keyword{datasets}

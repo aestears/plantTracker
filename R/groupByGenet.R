@@ -1,15 +1,17 @@
-#' Assign genetIDs to grouped ramet polygons
+#' Group polygon observations together into a 'genet' based on proximity
 #'
-#' This function assigns a unique 'genetID' to polygons if they are within a
-#' user-defined distance from one another.
+#' @description This function assigns a unique 'genetID' to polygons if they are
+#' within a user-defined distance from one another. Each ramet is still
+#' represented by a single row of data, but all ramets of the same genet have
+#' the same 'genetID'.
 #'
-#' If polygons are 'grouped,' they are given the same number in the 'genetID'
-#' column. This assignment is made using network analysis to group together
-#' polygons that are closest to one another. In the context of
-#' \pkg{plantTracker}, this function was designed to group ramets together into
-#' one genet, which is a genetically distinct individual. This function was
-#' designed for use within the \code{\link{assign}} function (and then the
-#' \code{\link{trackSpp}} function), but can be used independently.
+#' @details If polygons are 'grouped,' they are given the same number in the
+#' 'genetID' column. This assignment is made using network analysis to group
+#' together polygons that are closest to one another. In the context of
+#' \pkg{plantTracker}, this function was designed to group ramets (vegetative
+#' clones) together into one genet (genetically distinct individual). This
+#' function was designed for use within the \code{\link{assign}} function (and
+#' then the \code{\link{trackSpp}} function), but can be used independently.
 #'
 #' @param dat An sf object that contains polygons to be grouped. Typically
 #' should include data only for one species, one quadrat, and one year. For
@@ -17,12 +19,12 @@
 #' \code{\link{grasslandData}}. This function will run if 'dat' contains
 #' only 'geometry' data, but it is *strongly* recommended that other columns
 #' specified in \code{\link{grasslandData}} are included.
-#' @param buffGenet A numeric argument indicating the maximum distance
+#' @param buffGenet A numeric argument indicating half of the maximum distance
 #' between individual ramets (polygons) that the function will group together as
 #' one genet. Note that this argument is in the same units that are used in the
 #' 'dat' argument. For example, if buffGenet = 0.005 and we use the
 #' \code{\link{grasslandData}} (in which measurements are in meters), then
-#' polygons that are 0.005 m (0.5 cm) apart or less will be grouped as a genet.
+#' polygons that are 0.01 m (1 cm) apart or less will be grouped as a genet.
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return A numeric vector of unique genetIDs that is as long as the number of

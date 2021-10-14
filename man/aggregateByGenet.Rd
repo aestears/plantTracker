@@ -63,7 +63,7 @@ This function aggregates a data.frame by unique trackIDs so that
 each row represents a genet (unique genetic individual) in a given year.
 }
 \details{
-This function is a PlantTracker-specific, user-friendly wrapper
+This function is a plantTracker-specific, user-friendly wrapper
 for the 'aggregate' function. This function was designed for use within the
 \code{\link{trackSpp}} function, but can be also called independently by the
 user. The function is designed to take a data.frame of the same format that

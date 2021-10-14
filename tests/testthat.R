@@ -1,4 +1,4 @@
 library(testthat)
-library(PlantTracker)
+library(plantTracker)
 
-test_check("PlantTracker")
+test_check("plantTracker")

@@ -245,7 +245,7 @@ per year.")
 
 
   ## make an empty column in 'dat' to contain the output neighborhood data
-  mergedat$neighbors <- NA
+  dat$neighbors <- NA
 
   ## put a buffer around each of the trackIDs in the entire data.frame
   dat <- merge(dat, buff, by = "Species")

@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
-library(PlantTracker)
+library(plantTracker)
 library(ggplot2)
 library(sf)
 # library(devtools)
@@ -533,7 +533,7 @@ These are all of the possible arguments to `trackSpp()`!
 Below is an example of what the output of `trackSpp()` might look like, using 
 the example `dat` and `inv` data we've used so far. 
 ```{r}
-datTrackSpp <- PlantTracker::trackSpp(dat = dat, inv = inv,
+datTrackSpp <- plantTracker::trackSpp(dat = dat, inv = inv,
          dorm = 1,
          buff = .05,
          buffGenet = .005,
@@ -731,7 +731,7 @@ that is occupied by competitors.
 Here's an example of a `getNeighbors()` function call using the resulting data 
 from the example in section *2.2*, as well as the resulting data.frame:  
 ```{r}
-datNeighbors <- PlantTracker::getNeighbors(dat = datTrackSpp,
+datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
              buff = .15,
              method = "area",
              compType = "allSpp")

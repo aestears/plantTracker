@@ -193,8 +193,8 @@
 # unique(testRecs$diff)
 # # no differences!
 #
-# #### COBP test ####
-#
+# # #### COBP test ####
+# #
 # # ## testing using COBP data
 # load("/Users/Alice/Dropbox/Grad School/Research/Oenothera coloradensis project/Processed_Data/spatial_COBP.RData")
 #
@@ -222,43 +222,67 @@
 #                 "U6" = c(2018:2020)
 #               )
 #
-# test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = .02, clonal = FALSE, site = "Location", quad = "Plot_ID", aggByGenet = FALSE, flagSuspects = TRUE, shrink = .2)
-#
-# test$trackID_num <-
-#   stringr::str_match(string = test$trackID, pattern = "[:digit:]{1,3}$+")
-#
+# test <- trackSpp(dat = butterfly, inv = cobpInv, dorm = 0, buff = 1, clonal = FALSE, site = "Location", quad = "Plot_ID", aggByGenet = FALSE, flagSuspects = TRUE, shrink = .3)
 #
 # mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,], col.regions = "red") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2019,], col.regions = "orange") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2020,], col.regions = "yellow") + mapview(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018 & butterfly$ID == 1,])
 #
-# plot(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,]$geometry, col = "red")
+# ggplot(dat = test[test$Plot_ID == "D10" &
+#                     test$trackID %in% c("OENCOL_2018_1","OENCOL_2018_2","OENCOL_2018_3","OENCOL_2018_4","OENCOL_2018_5" ),]) +
+#   geom_sf(aes(color = Year, fill = trackID), alpha = .5)
 #
+# plot(butterfly[butterfly$Plot_ID == "D10" & butterfly$Year == 2018,]$geometry,
+#      col = "red")
+#
+# test$surv_diff <- test$survives_tplus1 - test$survives_tplus1_actual
+# test$bigNames <- paste(test$Plot_ID, test$trackID, test$Year, sep = "_")
 #
 # ## find 'bad' assignments
 # # first, remove obs. from the last year
 # testGood <- test[test$Year != 2020,]
 # testGood$surv_diff <- testGood$survives_tplus1 - testGood$survives_tplus1_actual
+# testGood_1 <- testGood[testGood$surv_diff == 0,]
+# testGood_2 <- testGood[is.na(testGood$survives_tplus1) == TRUE &
+#                          is.na(testGood$survives_tplus1_actual) == TRUE,]
+# testGood <- rbind(testGood_1, testGood_2)
 # testGood[testGood$surv_diff==-1 & is.na(testGood$surv_diff) == FALSE,]
 # testGood[testGood$Suspect == TRUE,]
 #
+# testBad <- test[test$Year != 2020 &
+#                   !(test$bigNames %in% testGood$bigNames), ]
+#
+#
+# ## view some 'bad' obs
+# ggplot() +
+#   #geom_sf(dat = test[test$Plot_ID == "D10" & test$Year == 2018,], alpha = .5) +
+#   geom_sf(dat = test[test$Plot_ID == "D10" & test$trackID == "OENCOL_2018_40",], aes(fill = Year), alpha = .5) +
+#   geom_sf(dat = test[test$Plot_ID == "D10" & test$ID == 112,],
+#           aes(color = Year), fill = NA, alpha = .1, lty = 2)
+#
+#
+# ## remove 'suspect' observations
+# ## remove observations from the last year, since they aren't helpful here
+# testBest <- test[test$Year != 2020,]
+#
 # ### values for ms ###
 # ## % of surv. assignments that were correct
-# nrow(test[is.na(test$survives_tplus1_actual) == TRUE &
-#        is.na(test$survives_tplus1) == TRUE,]) # 1628 got NA for both real and fake surv.
-# sum(test$surv_diff == 0, na.rm = TRUE) # 2908
-# table(testGood$surv_diff)
-# (2908 + 1628) / nrow(test)
-#
-# # 86.61%
+# nrow(testBest[is.na(testBest$survives_tplus1_actual) == TRUE &
+#        is.na(testBest$survives_tplus1) == TRUE,]) # 0 got NA for both real
+# # and fake surv.
+# sum(testBest$surv_diff == 0, na.rm = TRUE) # 2705
+# table(testBest$surv_diff)
+# (3587) / nrow(testBest)
+# # 99.3%
 #
 # ## no. of trackID's assigned
 # # actual no.
-# length(unique(paste0(test$ID, "_",test$Plot_ID)))
-# # 3140
+# length(unique(paste0(testBest$ID, "_",testBest$Plot_ID)))
+# # 2650
 # # fxn. no.
-# length(unique(paste0(test$trackID, "_",test$Plot_ID)))
-# # 2775
+# length(unique(paste0(testBest$trackID, "_",testBest$Plot_ID)))
+# # 2641
+#  # (99.66% accuracy)
 #
-# ## no. of recruits/quad/year
+# ## no. of recruits/quad/year (use 'test' d.f, which contains the 2020 data)
 # # actual no.
 # test$names <- paste(test$Plot_ID,test$ID, sep = "_")
 # for (i in 1:length(unique(test$Plot_ID))) {
@@ -293,4 +317,5 @@
 # testRecs$diff <- testRecs$x - testRecs$recruits
 # unique(testRecs$diff)
 # testRecs$percRight <- testRecs$recruits / testRecs$x
-# # 76.94% correct
+# mean(testRecs$percRight)
+# # 99.8% correct

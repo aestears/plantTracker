@@ -115,7 +115,7 @@
     # fxn), is a  subset of the 'cloneDat' argument from the 'assign()' fxn
     ## clonal = inherits from the 'clonal' argument in the 'assign()' fxn
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
-    # is input into the PlantTracker::groupByGenet() fxn
+    # is input into the plantTracker::groupByGenet() fxn
     if(clonal == TRUE) {
       cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)

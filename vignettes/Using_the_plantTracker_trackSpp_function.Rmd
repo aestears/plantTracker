@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
-library(PlantTracker)
+library(plantTracker)
 library(ggplot2)
 library(sf)
-library(devtools)
-load_all()
+# library(devtools)
+# load_all()
 ```
 
 ## Introduction
@@ -766,7 +766,7 @@ ggplot(data = exampleSmall) +
 
 exampleSmall$Site <- "AZs"
 exampleSmall$Quad <- "SG2"
-exampleOut <- PlantTracker::trackSpp(dat = exampleSmall[exampleSmall$buff == "no",], inv = list("SG2" = c(1922, 1923)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE)
+exampleOut <- plantTracker::trackSpp(dat = exampleSmall[exampleSmall$buff == "no",], inv = list("SG2" = c(1922, 1923)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE)
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
                      trackID_new = c(1:32))
@@ -1014,7 +1014,7 @@ box <- st_polygon(pl)
 exampleSmall <-suppressWarnings(st_intersection(exampleSmall, box))
 
 ## get trackIDs 
-exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE))
+exampleOut <- suppressMessages(plantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .01, aggByGenet = TRUE, printMessages = FALSE))
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
                      trackID_new = c(1:19))
@@ -1050,7 +1050,7 @@ Here is that same data subset, but run through `trackSpp()` using a buffGenet
 value of .05
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.2: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 ## get trackIDs 
-exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .05, aggByGenet = TRUE, printMessages = FALSE))
+exampleOut <- suppressMessages(plantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = TRUE, dorm = 1, buffGenet = .05, aggByGenet = TRUE, printMessages = FALSE))
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
                      trackID_new = c(1:length(unique(exampleOut$trackID))))
@@ -1087,7 +1087,7 @@ Here it is again, but run through `trackSpp()` using clonal = FALSE
 ```{r echo = FALSE, fig.width=7, fig.align = 'left', fig.cap = "Figure 5.3: Here are the trackID assignments over 4 years of data. Each trackID is shown as a different color and has a different number.", warning = FALSE}
 
 ## get trackIDs 
-exampleOut <- suppressMessages(PlantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = FALSE, dorm = 1, aggByGenet = TRUE, printMessages = FALSE))
+exampleOut <- suppressMessages(plantTracker::trackSpp(dat = exampleSmall, inv = list("SG2" = c(1922:1925)), buff = .05, clonal = FALSE, dorm = 1, aggByGenet = TRUE, printMessages = FALSE))
 
 labels <- data.frame(trackID = unique(exampleOut$trackID), 
                      trackID_new = c(1:length(unique(exampleOut$trackID))))

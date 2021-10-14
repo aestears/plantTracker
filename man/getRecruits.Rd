@@ -75,7 +75,7 @@ This function calculates the number of new plant recruits of
 each species in each quadrat in each year. The input data must already
 contain a column indicating whether each observation is classified as a
 recruit or not. This recruit status can be generated from the
-\code{\link{trackSpp}} function in \code{PlantTracker}, or can be information that
+\code{\link{trackSpp}} function in \code{plantTracker}, or can be information that
 was collected in the field. This function includes an option that determines
 whether each ramet of a clonal species is considered an individual recruit,
 or if the entire genet is considered a single recruit.

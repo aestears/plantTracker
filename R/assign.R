@@ -262,7 +262,7 @@
           assignOut <- tempPreviousYear
         }
 
-        ## get data from year i and put in 'tempPreviousYear'
+        ## get data from year i and put in 'tempPrevioiusYear'
         tempPreviousYear <- dat[dat$Year==inv[i],]
 
         ## determine if the tempPreviousYear data.frame has any data
@@ -304,7 +304,7 @@
         } ## end of 'if' that determines if there is data in year i
         ## end of 'if' that determines what to do if the gap between years
         # exceeds the dormancy argument
-      } else { ## if the gap between years (inv[i] - inv[i-1] <= (dorm+1))
+    } else { ## if the gap between years (inv[i] - inv[i-1] <= (dorm+1))
         # does NOT exceed the dormancy argument
         ## 'tempPreviousYear' is the sf data.frame of the 'current' year
         ## need to get the sf data.frame of the 'next' year (year 'i')
@@ -721,7 +721,16 @@
               # parent (as long as the parent doesn't have an NA--was recruited
               # in a year when we couldn't know when it was recruited)
               if (inv[i] - inv[i-1] <= 1) {
-                children$recruit <- 0
+                children$recruit <- parents[match(children$trackID,
+                                                  parents$trackID),]$recruit
+                ## if the parent is an 'NA', the child also gets an 'NA', but if
+                # the parent is a '1', the child gets a '0'. If the parent is a
+                # '0', then the child gets a '0'
+                if (nrow(children[children$recruit==1 &
+                                  is.na(children$recruit) == FALSE,]) > 0) {
+                  children[children$recruit==1 &
+                             is.na(children$recruit) == FALSE,]$recruit <- 0
+                }
               } else {
                 children$recruit <- NA
               }

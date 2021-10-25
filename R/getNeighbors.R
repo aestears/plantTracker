@@ -147,16 +147,25 @@ getNeighbors <- function (dat, buff, method,
   dat <- checkedDat$dat
 
   ## check/change trackID arg.
-  trackIDuserName <- paste0(trackID,"_USER")
-  trackIDdefaultName <- "trackID"
-  ## change the name of the 'trackID' column to have the default column name
-  names(dat)[names(dat) == trackIDuserName] <- trackIDdefaultName
-  ## make sure the trackID col is in the correct format
-  if (sum(is.na(dat$trackID)) != 0) { ## make sure that there are no NAs in
-    # the trackID col.
-    stop("The column in 'dat' that contains trackID information cannot have any
-         NA values")
+  ## does dat have a column called 'trackID'?
+  if (sum(names(dat) %in% paste0(trackID,"_USER")) > 0) {
+    trackIDuserName <- paste0(trackID,"_USER")
+    trackIDdefaultName <- "trackID"
+    ## change the name of the 'trackID' column to have the default column name
+    names(dat)[names(dat) == trackIDuserName] <- trackIDdefaultName
+    ## make sure the trackID col is in the correct format
+    if (sum(is.na(dat$trackID)) != 0) { ## make sure that there are no NAs in
+      # the trackID col.
+      stop("The column in 'dat' that contains trackID information cannot have
+      any NA values")
+    }
+  } else {
+    stop("The 'dat' argument must have a column that contains a unique
+         identifier for each genetic individual (i.e. a 'trackID'). This column
+         must have the same name that you specified in the 'trackID' argument in
+         this function call.  ")
   }
+
 
   ## check other args.
   #buff
@@ -263,10 +272,16 @@ per year.")
 
   datBuffTemp <- sf::st_buffer(x = dat, dist = dat$buff)
 
+
   ## subtract the focal individuals from the buffered dataset
-  tempBuffGeometry <- mapply(FUN = sf::st_difference,
-                             x = sf::st_geometry(datBuffTemp),
-                             y = sf::st_geometry(dat))
+  tempBuffGeometry <- list()
+  for (i in 1:nrow(dat)) {
+   tempBuffGeometry[i] <- suppressWarnings(
+     sf::st_difference(x = datBuffTemp[i,],y = dat[i,])$geometry)
+  }
+  #tempBuffGeometry <- mapply(FUN = sf::st_difference,
+                             #x = datBuffTemp$geometry,
+                             #y = dat$geometry)
 
   ## replace datBuffTemp geometry with the 'new' geometry ('tempBuffGeometry')
   datBuff <- sf::st_set_geometry(x = datBuffTemp,
@@ -277,36 +292,7 @@ per year.")
                                  value = sf::st_intersection(
                                    sf::st_as_sfc(sf::st_bbox(dat)), datBuff))
 
-  ## set up the progress bar
-  if (method == 'count' & compType == 'oneSpp') {
-    progress_bar = utils::txtProgressBar(min = 0,
-                                  max = nrow(unique(
-                                    sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                                                "Year",
-                                                                "Species")]))),
-                                  style = 1, char="=")
-
-    temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                               "Year", "Species")]))
-    temp <- temp[order(temp$Site, temp$Quad, temp$Year),]
-    rownames(temp) <- 1:nrow(temp)
-  }
-  if (method == 'count' & compType == 'allSpp') {
-    progress_bar = utils::txtProgressBar(min = 0,
-                                  max = nrow(unique(
-                                    sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                                                "Year")]))),
-                                  style = 1, char="=")
-
-    temp <- unique(sf::st_drop_geometry(dat[,c("Site", "Quad",
-                                               "Year")]))
-    temp <- temp[order(temp$Site, temp$Quad, temp$Year),]
-    rownames(temp) <- 1:nrow(temp)
-  }
-
   if (method == 'count') {
-    ## initiate the progress bar
-    print("Progress:")
     for (i in unique(dat$Site)) { ## loop through each site
       for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
         # quadrat
@@ -446,10 +432,9 @@ per year.")
                                    "Year" = tempAreas2$Year,
                                    "index" = tempAreas2$index),
                          FUN = function (x) sum(sf::st_area(x)))
-
       ## proportionalize the area--divide the area of the 'neighbors' by the
       # area of the buffer
-      ## make sure the do d.fs are in the same order (sort by index col.)
+      ## make sure the two d.fs are in the same order (sort by index col.)
       datBuff <- datBuff[order(datBuff$index),]
       temp3 <- temp3[order(temp3$index),]
       ## calculate area of neighbors as a proportion of buffered area
@@ -462,6 +447,8 @@ per year.")
   }
 
   outputDat <-  dat
+  ## remove the 'buff' column
+  outputDat <- outputDat[,names(outputDat)!= "buff"]
 
   # output ------------------------------------------------------------------
   ## prepare the output

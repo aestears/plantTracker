@@ -1,8 +1,7 @@
 ## get example data
 dat <- grasslandData[grasslandData$Site == c("AZ") &
                        grasslandData$Species %in% c("Bouteloua rothrockii",
-                                                    "Calliandra eriophylla") &
-                       grasslandData$Quad == "SG4",]
+                                                    "Calliandra eriophylla"),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(
@@ -18,17 +17,13 @@ outDat <- trackSpp(
   species = "speciesName",
   aggByGenet = TRUE
 )
-maps <- drawQuadMap(
-  dat = outDat,
-  type = "bySpecies",
-  addBuffer = FALSE,
-  species = "speciesName"
-)
 
-## test that output is a list with 'rect' and 'text' elements
-test_that("output is a plot", {
-  expect_true(object = is.list(maps) &
-                (sum(c("rect","text") %in% names(maps)) == 2)
-                )
-}
+lambdas <- getLambda(dat = dat, inv = inv, method = "area",
+                     species = "speciesName")
+
+## tests
+test_that("lambda calcs. are correct", {
+  expect_equal(object = lambdas$absolute_basalArea_tplus1/lambdas$absolute_basalArea_t,
+               expected = lambdas$lambda)
+  }
 )

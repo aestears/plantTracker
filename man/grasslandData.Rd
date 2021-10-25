@@ -3,9 +3,11 @@
 \docType{data}
 \name{grasslandData}
 \alias{grasslandData}
-\title{Chart Quadrat Dataset for grassland species in CO, MT, KS, and AZ}
+\title{Chart Quadrat Dataset for grassland species in MT and AZ
+An example dataset that contains data from mapped plant chart quadrats. Each
+row is an observation of one plant.}
 \format{
-An sf data frame with 10405 rows and 15 variables:
+An sf data frame with 1242 rows and 15 variables:
 \describe{
 \item{Species}{A character string indicating the specific epithet for this
 observation. The ideal formats are the 1) the latin binomial separated by
@@ -32,8 +34,6 @@ whether the observation was originally mapped as a 'point' or a 'polygon'.}
 \item{Site}{A character string indicating the sampling location of this
 observation. In this dataset, this value is either:
 \itemize{
-\item {CO} (Central Plains Experimental Range, Nunn, Colorado)
-\item {KS} (University Pasture, Hays, Kansas)
 \item {AZ} (Santa Rita Experimental Range, Tucson, AZ)
 \item {MT} (Fort Keogh Livestock and Range Research Laboratory,
 Miles City, MT)}}
@@ -58,15 +58,14 @@ the area of this polygon indicates the basal area of that plant.}
 }
 }
 \source{
-\url{http://dx.doi.org/10.1890/13-0121.1} \cr
 \url{http://dx.doi.org/10.1890/11-2200.1} \cr
-\url{https://doi.org/10.1890/0012-9658(2007)88[2673:LMQFKP]2.0.CO;2} \cr
 \url{https://doi.org/10.6084/m9.figshare.c.3304113.v1}
 }
 \usage{
 grasslandData
 }
 \description{
+Chart Quadrat Dataset for grassland species in MT and AZ
 An example dataset that contains data from mapped plant chart quadrats. Each
 row is an observation of one plant.
 }

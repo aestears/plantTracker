@@ -1,6 +1,7 @@
 ## get example data
-dat <- grasslandData[grasslandData$Site == "CO" &
-                       grasslandData$Year %in% c(1998:2002), ]
+dat <- grasslandData[grasslandData$Site == c("AZ") &
+                       grasslandData$Species %in% c("Bouteloua rothrockii",
+                                                    "Calliandra eriophylla"),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(
@@ -20,3 +21,8 @@ areas <- getBasalAreas(dat = outDat, inv = inv,
               species = "speciesName")
 
 ## tests
+test_that("percent basal area is absolute/quad basal area", {
+  expect_equal(object = (areas$absolute_basalArea/areas$quad_basalArea)*100,
+               expected = areas$percent_basalArea)
+  }
+)

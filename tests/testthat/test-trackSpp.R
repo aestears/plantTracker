@@ -1,9 +1,8 @@
 ## get a test data.frame
 dat <- grasslandData[grasslandData$Site == c("AZ") &
-                       grasslandData$Species %in% c("Bouteloua rothrockii") &
-                       grasslandData$Quad == "SG4",]
-inv <- grasslandInventory[["SG4"]]
-outDat <- assign(
+                       grasslandData$Species %in% c("Bouteloua rothrockii") ,]
+inv <- grasslandInventory
+outDat <- trackSpp(
   dat = dat,
   inv = inv,
   dorm = 1,
@@ -20,7 +19,7 @@ test_that("individual area is not larger than the quadrat area", {
     MARGIN = 1,
     FUN = function(x)
       expect_lte(
-        object = x$Area,
+        object = x$basalArea_genet,
         expected =
           sf::st_bbox(outDat)["xmax"] * sf::st_bbox(outDat)["ymax"]
       )
@@ -41,10 +40,9 @@ test_that("output data has required column names", {
       "recruit",
       "survives_tplus1",
       "basalArea_genet",
-      "basalArea_ramet",
       "geometry",
       "nearEdge"
     ) %in% names(outDat)
   ),
-  expected = 13)
+  expected = 12)
 })

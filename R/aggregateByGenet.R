@@ -144,7 +144,7 @@ positive values (or NA).")
   if (is.logical(dat$nearEdge) == FALSE) {
 stop("The 'nearEdge' column in 'dat' must be a logical vector.")
   }
-  if ("Suspect" %in% names(dat)) {
+if ("Suspect" %in% names(dat)) {
     ## 'Suspect' column
     if (is.logical(dat$Suspect) == FALSE) {
       stop("The 'Suspect' column in 'dat' must be a logical vector.")
@@ -220,7 +220,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                             do_union = TRUE,
                             FUN = sum)
       ## rename the 'basalArea_ramet' column
-      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
       ## correct the 'age column'
       dat <- st_drop_geometry(dat)
       datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
@@ -249,7 +249,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                             do_union = TRUE,
                             FUN = sum)
       ## rename the 'basalArea_ramet' column
-      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
       ## correct the 'age column'
       dat <- st_drop_geometry(dat)
       datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
@@ -280,7 +280,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                             do_union = TRUE,
                             FUN = sum)
       ## rename the 'basalArea_ramet' column
-      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
       ## correct the 'age column'
       dat <- st_drop_geometry(dat)
       datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',
@@ -309,7 +309,7 @@ that give the name of the columns in 'dat' that contain these data types." ))
                             do_union = TRUE,
                             FUN = sum)
       ## rename the 'basalArea_ramet' column
-      names(datOut_1)[names(datOut_1)=="x"] <- 'basalArea_genet'
+      names(datOut_1)[names(datOut_1)=="basalArea_ramet"] <- 'basalArea_genet'
       ## correct the 'age column'
       dat <- st_drop_geometry(dat)
       datOut_2 <- aggregate(x = dat[,c( 'recruit', 'survives_tplus1', 'age',

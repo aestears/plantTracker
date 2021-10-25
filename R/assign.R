@@ -785,10 +785,10 @@
               ## is 'i' the last year of sampling? If not, then do the
               # following:
               if (inv[i] != max(inv)) {
-                ## check that these individuals can be 'ghosts' in the current year
-                # (if the gap between the year of their observation and year i+1
-                # is greater than the dormancy argument (+1), then) they are not
-                # ghosts, and get a 0 for survival
+                ## check that these individuals can be 'ghosts' in the current
+                # year (if the gap between the year of their observation and
+                # year i+1 is greater than the dormancy argument (+1), then)
+                # they are not ghosts, and get a 0 for survival
                 ghosts <- ghostsTemp[((inv[i+1] - ghostsTemp$Year) <=
                                         (dorm + 1)),]
                 ## put the 'ghosts' that exceed the dormancy argument into their
@@ -850,15 +850,16 @@
               assignOut <- rbind(parents, deadGhosts)
             }
 
-            ## if this is the last year of sampling, put the 'tempCurrentYear' data
-            # into the 'assignOut' d.f, but only after making sure that they
-            # have an 'NA' in the 'survives_tplus1' and 'size_tplus1' columns
+            ## if this is the last year of sampling, put the 'tempCurrentYear'
+            # data into the 'assignOut' d.f, but only after making sure that
+            # they have an 'NA' in the 'survives_tplus1' and
+            # 'size_tplus1' columns
             if (inv[i] == max(inv)) {
               assignOut <- rbind(assignOut, tempCurrentYear)
             }
 
-            ## assign the data from the current i (tempCurrentYear) to be the past
-            # year data (tempPreviousYear) for the next i
+            ## assign the data from the current i (tempCurrentYear) to be the
+            # past year data (tempPreviousYear) for the next i
             tempPreviousYear <- tempCurrentYear
           } ## end of 'if' statement that determines if the tempCurrentYear data
           # exists

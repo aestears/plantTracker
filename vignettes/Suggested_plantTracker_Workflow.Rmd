@@ -164,11 +164,10 @@ the format of years in `dat` (i.e. if year is a four-digit number in `dat`, then
 it must be a four-digit number in `inv`). 
 
 Here is an example of an `inv` argument that corresponds to the example `dat` 
-argument above. The quadrats that have data in `dat` are "ungz_5a", "unun_11", 
-"SG2", and "SG4",  so there are elements in `inv` that 
-correspond to each of these quadrats. 
+argument above. The quadrats that have data in `dat` are "SG2" and "SG4",  so 
+there are elements in `inv` that correspond to each of these quadrats. 
 ```{r echo=FALSE, fig.align='center'}
-(inv <- grasslandInventory[c("ungz_5a", "unun_11", "SG2", "SG4")])
+(inv <- grasslandInventory[c( "SG2", "SG4")])
 ```
 **Figure 1.2**: An example of the `inv` argument
 

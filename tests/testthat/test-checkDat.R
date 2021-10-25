@@ -1,7 +1,7 @@
 ## get a test data.frame
-dat <- grasslandData[grasslandData$Site == c("CO") &
-                       grasslandData$Species %in% c("Bouteloua gracilis",
-                                                    "Lepidium densiflorum") , ]
+dat <- grasslandData[grasslandData$Site == c("AZ") &
+                       grasslandData$Species %in% c("Bouteloua rothrockii",
+                                                    "Calliandra eriophylla"),]
 inv <- grasslandInventory[unique(dat$Quad)]
 names(dat)[c(1, 9)] <- c("speciesName", "date")
 

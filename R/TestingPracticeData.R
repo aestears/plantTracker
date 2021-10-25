@@ -119,73 +119,101 @@
 #
 # ## try running the dataset through trackSpp
 # test <- trackSpp(dat = trees_sf, inv = inv, dorm = 0, buff = .01, clonal = FALSE,
-#                  species = "genspcode", quad =
-#                    "plot", year = "dia_year", flagSuspects = TRUE)
-#
+#                  species = "genspcode", quad = "plot", year = "dia_year",
+#                  flagSuspects = TRUE, shrink = .5)
 # ## compare the actual to trackSpp data
 #
 # ## same number of individual trackIDs as unique plot_treeids?
 # ## make trackIDs include plot info
 # test$uniqueID <- paste0(test$plot,"_",test$trackID)
-# length(unique(test$uniqueID))
-# length(unique(test$plot_treeid))
+# ## remove obs. that are flagged as 'suspect'
+# testBest <- test
 #
-# test$survDiff <- test$survives_tplus1 - test$survs_tplus1_ACTUAL
+# length(unique(testBest$uniqueID))
+# length(unique(testBest$plot_treeid))
 #
-# testTest <- test[is.na(test$survDiff) == TRUE |
-#                    test$survDiff == 1 |
-#                    test$survDiff == (-1)
+# testBest$survDiff <- testBest$survives_tplus1 - testBest$survs_tplus1_ACTUAL
+#
+# testTest <- testBest[is.na(testBest$survDiff) == TRUE |
+#                    testBest$survDiff == 1 |
+#                    testBest$survDiff == (-1)
 #                    ,]
 #
-# testBad <- testTest[is.na(testTest$survs_tplus1_ACTUAL) == TRUE &
-#                        is.na(testTest$survives_tplus1) == TRUE &
-#                       testTest$dia_year != 2018
-#                        ,]
+# testBad <- testBest[!((is.na(testBest$survs_tplus1_ACTUAL)==TRUE & is.na(testBest$survives_tplus1)==TRUE) |
+#                       (testBest$survs_tplus1_ACTUAL == 1 & testBest$survives_tplus1 == 1) |
+#                       (testBest$survs_tplus1_ACTUAL == 0 & testBest$survs_tplus1_ACTUAL == 0))
+#                     ,]
 #
 # testTest <- testTest[!(testTest$index %in% testBad$index),]
 #
 # ### values for ms ###
 # ## % of surv. assignments that were correct
-# (77062 - 6)/77062
-# # 99.99%
+# nrow(testBest[(is.na(testBest$survs_tplus1_ACTUAL)==TRUE & is.na(testBest$survives_tplus1)==TRUE) |
+#            (testBest$survs_tplus1_ACTUAL == 1 & testBest$survives_tplus1 == 1) |
+#            (testBest$survs_tplus1_ACTUAL == 0 & testBest$survs_tplus1_ACTUAL == 0)
+#          ,])
+# (77059)/nrow(testBest)
+# # 99.99% (only 3 are wrong)
+# ## why are they wrong? : trees are extremely close together, and the assignment chose the wrong 'child'
+# mapview(trees_sf[trees_sf$plot_treeid=="P5325",])
+# ggplot() +
+#   geom_sf(data = st_buffer(trees_sf[trees_sf$plot == "L5" & trees_sf$genspcode == "WARSCOCC" & trees_sf$dia_year == 2012,], .1), col = "red") +
+#   geom_sf_text(label = trees_sf[trees_sf$plot == "L5" & trees_sf$genspcode == "WARSCOCC" & trees_sf$dia_year == 2012,]$plot_treeid) +
+#   geom_sf(data = st_buffer(trees_sf[trees_sf$plot == "L5" & trees_sf$genspcode == "WARSCOCC" & trees_sf$dia_year == 2013,], .1), col = "orange") +
+#   xlim(c(50,60)) +
+#   ylim(c(0,10))
+#
+#   mapview(trees_sf[trees_sf$plot == "L5" & trees_sf$genspcode == "WARSCOCC" & trees_sf$dia_year == 2002,], col.regions = "orange")
 #
 # ## no. of trackID's assigned
 # # actual no.
 # length(unique(trees_no_sf$plot_treeid))
 # # 5212
 # # fxn. no.
-# length(unique(paste0(test$trackID, "_",test$plot)))
+# length(unique(paste0(testBest$trackID, "_",testBest$plot)))
 # # 5212
 #
 # ## no. of recruits/quad/year
 # # actual no.
-# for (i in 1:length(unique(trees$plot))) {
-#   ## get data for just one plot
-#   temp <- trees[trees$plot == unique(trees$plot)[i],]
-#   ## make sure it is in sequential order
-#   temp <- temp[order(temp$dia_year),]
+# testBest$recruit_actual <- NA
+# ## make sure data are in sequential order
+# testBest <- testBest[order(testBest$dia_year),]
+# ## find the year when a tree was first observed
+# ## first, find which are NOT duplicates; also find the
+# # observations that were taken in 1997--the first year
+# recruitIndex <- testBest[!duplicated(testBest$plot_treeid) &
+#                            testBest$dia_year != 1997,]$index
+# ## give the recruits a '1' for actual recruit value
+# testBest[testBest$index %in% recruitIndex,"recruit_actual"] <- 1
+# ## get the plot_treeids of the recruits
+# noRecruitIDs <- unique(testBest[testBest$index %in% recruitIndex,]$plot_treeid)
+# ##
+# testBest[testBest$plot_treeid %in% noRecruitIDs &
+#            !(testBest$index %in% recruitIndex),"recruit_actual"] <- 0
+# ## remove those obs. from 1997 (give them an 'NA')
+# testBest[testBest$dia_year == 1997, "recruit_actual"] <- NA
+# badIDs <- testBest[testBest$dia_year == 1997, ]$plot_treeid
+# testBest[testBest$plot_treeid %in% badIDs,"recruit_actual"] <- NA
 #
-#   ## find the year when a tree was first observed
-#   ## first, find which are duplicates, then remove them
-#   temp <- temp[!duplicated(temp$plot_treeid),]
-#   temp$recruit_true <- 1
+# ## compare assigned 'recruit' to 'recruit_true'
+# testBest$recDiff <- testBest$recruit_actual - testBest$recruit
+# testBest[testBest$recruit == 0 & testBest$recruit_actual == 0 &
+#            is.na(testBest$recruit) == FALSE &
+#            is.na(testBest$recruit_actual) == FALSE, "recDiff"] <- 0
+# #16120
+# testBest[testBest$recruit == 1 & testBest$recruit_actual == 1 &
+#            is.na(testBest$recruit) == FALSE &
+#            is.na(testBest$recruit_actual) == FALSE, "recDiff"] <- 0
+# #1663
+# testBest[is.na(testBest$recruit) &
+#            is.na(testBest$recruit_actual), "recDiff"] <- 0
+# #59254
 #
-#   if (i == 1) {
-#     recruitOut <- temp
-#   } else {
-#     recruitOut <- rbind(recruitOut, temp)
-#   }
-# }
-# # remove values for 1997, since we can't know if it was really a recruit then
-# recruitOut <- recruitOut[recruitOut$dia_year != 1997,]
-# recruitOut <- aggregate(x = recruitOut$recruit_true, by =
-#                           list("plot" = recruitOut$plot,
-#                                "genspcode" = recruitOut$genspcode,
-#                                "dia_year" = recruitOut$dia_year),
-#                         FUN = sum)
+# testBest[is.na(testBest$recDiff), "recDiff"] <- 9999
+#
 #
 # # fxn. no.
-# test_recruits <- getRecruits(dat = test, byGenet = TRUE, species = "genspcode", quad =
+# test_recruits <- getRecruits(dat = testBest, byGenet = TRUE, species = "genspcode", quad =
 #               "plot", year = "dia_year")
 # # compare
 # testRecs <- merge(recruitOut, test_recruits, by = c("plot", "dia_year", "genspcode"))
@@ -200,7 +228,7 @@
 #
 # ## add necessary columns
 # butterfly$Species <- "Oenothera coloradensis"
-# names(butterfly)[10] <- "survives_tplus1_actual"
+# names(butterfly)[9] <- "survives_tplus1_actual"
 # ## make a quadrat inventory
 # cobpInv <- list("C4" = c(2018:2020),
 #                 "C5" = c(2018:2020),
@@ -238,84 +266,94 @@
 #
 # ## find 'bad' assignments
 # # first, remove obs. from the last year
-# testGood <- test[test$Year != 2020,]
+# testGood <- test[test$Suspect == FALSE,]
 # testGood$surv_diff <- testGood$survives_tplus1 - testGood$survives_tplus1_actual
-# testGood_1 <- testGood[testGood$surv_diff == 0,]
-# testGood_2 <- testGood[is.na(testGood$survives_tplus1) == TRUE &
-#                          is.na(testGood$survives_tplus1_actual) == TRUE,]
-# testGood <- rbind(testGood_1, testGood_2)
-# testGood[testGood$surv_diff==-1 & is.na(testGood$surv_diff) == FALSE,]
-# testGood[testGood$Suspect == TRUE,]
+# testGood <- testGood[testGood$surv_diff == 0 |
+#                         (is.na(testGood$survives_tplus1) == TRUE &
+#                            is.na(testGood$survives_tplus1_actual) == TRUE) ,]
 #
-# testBad <- test[test$Year != 2020 &
-#                   !(test$bigNames %in% testGood$bigNames), ]
+# testBad <- test[!(test$index %in% testGood$index), ]
 #
 #
 # ## view some 'bad' obs
-# ggplot() +
+# ggplotly(ggplot() +
 #   #geom_sf(dat = test[test$Plot_ID == "D10" & test$Year == 2018,], alpha = .5) +
-#   geom_sf(dat = test[test$Plot_ID == "D10" & test$trackID == "OENCOL_2018_40",], aes(fill = Year), alpha = .5) +
-#   geom_sf(dat = test[test$Plot_ID == "D10" & test$ID == 112,],
-#           aes(color = Year), fill = NA, alpha = .1, lty = 2)
+#   geom_sf(dat = st_buffer(test[test$Plot_ID == "D7" & test$trackID == "OENCOL_2019_70",], 2),colour = "red", alpha = .5) +
+#   geom_sf(dat = test[test$Plot_ID == "D7" & test$ID == 220,],
+#           aes(fill = Year), colour = NA, alpha = .9) +
+#   theme_classic())
 #
+# ggplotly(ggplot(dat = test[test$Plot_ID == "C5" & (test$ID %in%  c(74, 174) | test$trackID == "OENCOL_2018_18"),]) +
+#            geom_sf(aes(fill = Year), colour = NA, alpha = .9) +
+#            geom_sf_text(aes(label = trackID)) +
+#            geom_sf_text(aes(label = ID), nudge_y = .5) +
+#            theme_classic())
 #
 # ## remove 'suspect' observations
 # ## remove observations from the last year, since they aren't helpful here
-# testBest <- test[test$Year != 2020,]
+# testBest <- test[test$Suspect == FALSE,]
 #
 # ### values for ms ###
 # ## % of surv. assignments that were correct
 # nrow(testBest[is.na(testBest$survives_tplus1_actual) == TRUE &
-#        is.na(testBest$survives_tplus1) == TRUE,]) # 0 got NA for both real
+#        is.na(testBest$survives_tplus1) == TRUE,]) # 1634 got NA for both real
 # # and fake surv.
-# sum(testBest$surv_diff == 0, na.rm = TRUE) # 2705
+# sum(testBest$surv_diff == 0, na.rm = TRUE) # 3591
 # table(testBest$surv_diff)
-# (3587) / nrow(testBest)
-# # 99.3%
+# (1634 + 3591) / nrow(testBest)
+# # 99.6%
+#
+# ## for some, assigns a small plant the same trackID, even when it's likely a new
+# # seedling that was close to the parent plant
+# ## others, for indivdiuals that are super close together, the function picks the wrong one for the next year
 #
 # ## no. of trackID's assigned
 # # actual no.
 # length(unique(paste0(testBest$ID, "_",testBest$Plot_ID)))
-# # 2650
+# # 3146
 # # fxn. no.
 # length(unique(paste0(testBest$trackID, "_",testBest$Plot_ID)))
-# # 2641
-#  # (99.66% accuracy)
+# # 3128
+#  # (99.4% accuracy)
 #
 # ## no. of recruits/quad/year (use 'test' d.f, which contains the 2020 data)
 # # actual no.
-# test$names <- paste(test$Plot_ID,test$ID, sep = "_")
-# for (i in 1:length(unique(test$Plot_ID))) {
-#   ## get data for just one plot
-#   temp <- test[test$Plot_ID == unique(test$Plot_ID)[i],]
-#   ## make sure it is in sequential order
-#   temp <- temp[order(temp$Year),]
+# ## no. of recruits/quad/year
+# # actual no.
+# testBest$recruit_actual <- NA
+# testBest$medName <- paste0(testBest$Plot_ID,"_",testBest$ID)
+# ## make sure data are in sequential order
+# testBest <- testBest[order(testBest$Year),]
+# ## find the year when a plant was first observed
+# ## first, find which are NOT duplicates; also find the
+# # observations that were taken in 2018--the first year
+# recruitIndex <- testBest[!duplicated(testBest$medName) &
+#                            testBest$Year != 2018,]$index
+# ## give the recruits a '1' for actual recruit value
+# testBest[testBest$index %in% recruitIndex,"recruit_actual"] <- 1
+# ## get the plot_treeids of the recruits
+# noRecruitIDs <- unique(testBest[testBest$index %in% recruitIndex,]$medName)
+# ##
+# testBest[testBest$medName %in% noRecruitIDs &
+#            !(testBest$index %in% recruitIndex),"recruit_actual"] <- 0
+# ## remove those obs. from 2018 (give them an 'NA')
+# testBest[testBest$Year == 2018, "recruit_actual"] <- NA
+# badIDs <- testBest[testBest$Year == 2018, ]$medName
+# testBest[testBest$medName %in% badIDs,"recruit_actual"] <- NA
 #
-#   ## find the year when a tree was first observed
-#   ## first, find which are duplicates, then remove them
-#   temp <- temp[!duplicated(temp$names),]
-#   temp$recruit_true <- 1
+# ## compare assigned 'recruit' to 'recruit_true'
+# testBest$recDiff <- NA
+# testBest[testBest$recruit == 0 & testBest$recruit_actual == 0 &
+#            is.na(testBest$recruit) == FALSE &
+#            is.na(testBest$recruit_actual) == FALSE, "recDiff"] <- 0
+# #687
+# testBest[testBest$recruit == 1 & testBest$recruit_actual == 1 &
+#            is.na(testBest$recruit) == FALSE &
+#            is.na(testBest$recruit_actual) == FALSE, "recDiff"] <- 0
+# #1521
+# testBest[is.na(testBest$recruit) &
+#            is.na(testBest$recruit_actual), "recDiff"] <- 0
+# #3013
 #
-#   if (i == 1) {
-#     recruitOut <- temp
-#   } else {
-#     recruitOut <- rbind(recruitOut, temp)
-#   }
-# }
-# # remove values for 2018, since we can't know if it was really a recruit then
-# recruitOut <- recruitOut[recruitOut$Year != 2018,]
-# recruitOut <- aggregate(x = recruitOut$recruit_true, by =
-#                           list("Plot_ID" = recruitOut$Plot_ID ,
-#                                "Species" = recruitOut$Species ,
-#                                "Year" = recruitOut$Year),
-#                         FUN = sum)
+# testBest[is.na(testBest$recDiff), "recDiff"] <- 9999
 #
-# # fxn. no.
-# test_recruits <- getRecruits(dat = test, byGenet = TRUE, quad = "Plot_ID", site = "Location")
-# # compare
-# testRecs <- merge(recruitOut, test_recruits, by = c("Plot_ID", "Year", "Species"))
-# testRecs$diff <- testRecs$x - testRecs$recruits
-# unique(testRecs$diff)
-# testRecs$percRight <- testRecs$recruits / testRecs$x
-# mean(testRecs$percRight)
-# # 99.8% correct

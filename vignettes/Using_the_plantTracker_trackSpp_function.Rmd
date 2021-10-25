@@ -866,9 +866,9 @@ exampleOut[exampleOut$Year == 1922 &
 exampleOut[exampleOut$Year == 1922 & 
              is.na(exampleOut$survives_tplus1) == TRUE, "status"] <- "ghosts"
 exampleOut[exampleOut$Year == 1923 & 
-             exampleOut$recruit == 0, "status"] <- "children"
+             is.na(exampleOut$recruit), "status"] <- "children"
 exampleOut[exampleOut$Year == 1923 & 
-             exampleOut$recruit == 1, "status"] <- "orphan"
+             exampleOut$recruit == 1 & !is.na(exampleOut$recruit), "status"] <- "orphan"
 
 ggplot(data = exampleOut) +
   geom_sf(aes(fill = status)) +

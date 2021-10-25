@@ -26,7 +26,7 @@
 #' the individuals in 'dat' were mapped as polygons that are representative of
 #' their actual basal area, i.e. were not mapped as points.
 #' @param inv A named list in the same format as
-#' \code{\link{grasslandInventroy}}The name of each element of the list is a
+#' \code{\link{grasslandInventory}}The name of each element of the list is a
 #' quadrat name in 'dat', and the contents of that list element is a numeric
 #' vector of all of the years in which that quadrat (or other unique spatial
 #' area) was sampled.

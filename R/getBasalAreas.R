@@ -75,8 +75,8 @@
 #' @export
 #'
 #' @examples
-#' dat <- grasslandData[grasslandData$Site == "CO" &
-#'  grasslandData$Year %in% c(1998:2002),]
+#' dat <- grasslandData[grasslandData$Site == "AZ" &
+#'  grasslandData$Year %in% c(1922:1925),]
 #' names(dat)[1] <- "speciesName"
 #' inv <- grasslandInventory[unique(dat$Quad)]
 #' outDat <- trackSpp(dat = dat,

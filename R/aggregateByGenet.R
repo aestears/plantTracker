@@ -54,8 +54,8 @@
 #' @export
 #'
 #' @examples
-#' dat <- grasslandData[grasslandData$Site == c("CO") &
-#'  grasslandData$Species %in% c("Bouteloua gracilis", "Lepidium densiflorum"),]
+#' dat <- grasslandData[grasslandData$Site == c("AZ") &
+#'  grasslandData$Species %in% c("Bouteloua rothrockii", "Calliandra eriophylla" ),]
 #' names(dat)[1] <- "speciesName"
 #' inv <- grasslandInventory[unique(dat$Quad)]
 #' outDat <- trackSpp(dat = dat,

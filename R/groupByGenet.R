@@ -32,12 +32,13 @@
 #' \code{i}th row in 'dat'.
 #'
 #' @examples
-#' dat <- grasslandData[grasslandData$Site=="CO" &
-#' grasslandData$Quad == "ungz_5a" &
-#' grasslandData$Species == "Bouteloua gracilis" &
-#' grasslandData$Year == 1997,]
+#' dat <- grasslandData[grasslandData$Site == "AZ" &
+#' grasslandData$Quad == "SG2" &
+#' grasslandData$Species == "Bouteloua rothrockii" &
+#' grasslandData$Year == 1922,]
 #'
-#' groupByGenet(dat = dat, buffGenet = 0.005)
+#' groupByGenet(dat = dat, buffGenet = 0.01)
+#' groupByGenet(dat = dat, buffGenet = 0.1)
 #'
 #' @seealso [assign()] and [trackSpp()], \pkg{plantTracker} functions that apply
 #' this function across multiple species, quadrats, and years.

@@ -81,9 +81,10 @@ whether each ramet of a clonal species is considered an individual recruit,
 or if the entire genet is considered a single recruit.
 }
 \examples{
-dat <- grasslandData[grasslandData$Site == c("CO") &
- grasslandData$Species \%in\% c("Bouteloua gracilis", "Lepidium densiflorum") &
- grasslandData$Year \%in\% c(1998:2002),]
+dat <- grasslandData[grasslandData$Site == c("AZ") &
+ grasslandData$Species \%in\% c("Bouteloua rothrockii",
+ "Calliandra eriophylla") &
+ grasslandData$Year \%in\% c(1922:1925),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(dat = dat,

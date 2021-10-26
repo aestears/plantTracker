@@ -87,9 +87,9 @@ This function creates maps of a quadrat over time, color-coded
 by either species or by genet (trackID).
 }
 \examples{
-dat <- grasslandData[grasslandData$Site == "CO" &
- grasslandData$Quad == "unun_11" &
- grasslandData$Year \%in\% c(1998:2002),]
+ dat <- grasslandData[grasslandData$Site == c("AZ") &
+ grasslandData$Quad == "SG2" &
+ grasslandData$Year \%in\% c(1922:1925),]
 names(dat)[1] <- "speciesName"
 inv <- grasslandInventory[unique(dat$Quad)]
 outDat <- trackSpp(dat = dat,

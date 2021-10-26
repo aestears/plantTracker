@@ -44,12 +44,13 @@ function was designed for use within the \code{\link{assign}} function (and
 then the \code{\link{trackSpp}} function), but can be used independently.
 }
 \examples{
-dat <- grasslandData[grasslandData$Site=="CO" &
-grasslandData$Quad == "ungz_5a" &
-grasslandData$Species == "Bouteloua gracilis" &
-grasslandData$Year == 1997,]
+dat <- grasslandData[grasslandData$Site == "AZ" &
+grasslandData$Quad == "SG2" &
+grasslandData$Species == "Bouteloua rothrockii" &
+grasslandData$Year == 1922,]
 
-groupByGenet(dat = dat, buffGenet = 0.005)
+groupByGenet(dat = dat, buffGenet = 0.01)
+groupByGenet(dat = dat, buffGenet = 0.1)
 
 }
 \seealso{

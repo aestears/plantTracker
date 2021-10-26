@@ -11,10 +11,10 @@
 #' distance specified by the user. Then it either counts the number of other
 #' genets within that buffer, or calculates the proportion of that buffer area
 #' that is occupied by other individuals. [getNeighbors] can calculate
-#' either interspecific competition (between the focal individual and all other
-#' individuals within the buffer area) or intraspecific competition (between
-#' the focal individual and other individuals of the same species within the
-#' buffer area).
+#' either interspecific local neighborhood density (between the focal individual
+#' and all other individuals within the buffer area) or intraspecific local
+#' neighborhood density (between the focal individual and other individuals of
+#' the same species within the buffer area).
 #'
 #' @param dat An sf data.frame. Each row must represent a unique individual
 #' organism in a unique year. This argument can be a data.frame that is returned
@@ -32,21 +32,21 @@
 #' species name as a character string in the "Species" column, and a numeric
 #' value in the 'buff' column you'd like to use for that species.
 #' @param method A character string, either 'count' or 'area'. This argument
-#' determines which metric of competition will be calculated.
+#' determines which method is used to calculate local neighborhood density.
 #' If 'method' = 'count', then the number of other individuals within the buffer
 #' will be returned in the 'neighbors' column. If method = 'area', then the
 #' proportion of the buffer area that is occupied by other individuals will be
 #' returned in the 'neighbors' column. If the data in 'dat' was mapped initially
 #' as points, it is best to use 'method' = 'count'. If the data was mapped as
 #' polygons that are representative of individual basal area, using
-#' 'method' = 'area' is likely a more accurate represntation of the crowding the
-#' focal individual is experiencing.
+#' 'method' = 'area' is likely a more accurate representation of the crowding
+#' the focal individual is experiencing.
 #' @param compType A character string, either 'allSpp' or 'oneSpp'.
-#' If compType = 'allSpp', then a competition metric is calculated that
-#' considers all individuals around the focal individual, regardless of species
-#'  (interspecific competition). If compType = 'oneSpp', then a competition
-#'  metric is calculated that considers only individuals in the buffer area
-#'  that are the same species as the focal individual (intraspecific
+#' If compType = 'allSpp', then local neighborhood density is calculated
+#' considering all individuals around the focal individual, regardless of
+#' species (interspecific competition). If compType = 'oneSpp', then local
+#' neighborhood density is calculated considering only individuals in the buffer
+#' area that are the same species as the focal individual (intraspecific
 #'  competition).
 #' @param trackID An optional character string argument. Indicates the name of
 #' the column in 'dat' that contains a value that uniquely identifies each

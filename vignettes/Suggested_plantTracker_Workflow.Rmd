@@ -544,7 +544,9 @@ datTrackSpp <- plantTracker::trackSpp(dat = dat, inv = inv,
          aggByGenet = TRUE,
          printMessages = FALSE
          )
-knitr::kable(head(datTrackSpp))
+temp <- datTrackSpp
+names(temp)[c(7,9,11)] <- c("basalArea", "survives_t+1", "size_t+1")
+knitr::kable(head(temp[100:120,]))
 ```
 
 If you did not allow any species to be clonal (`clonal = 0`) or if 
@@ -600,7 +602,7 @@ buffer zone of the same species as the focal individual) or interspecific local
 neighborhood density (consider all other plants in the buffer zone, regardless 
 of species).
 
-```{r echo = FALSE, fig.width=6, fig.align = 'center', fig.cap = "Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
+```{r echo = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
 datComp <- datTrackSpp[datTrackSpp$Year == 1922,]
 
 ggplot(datComp) +
@@ -621,15 +623,16 @@ ggplot(datComp) +
   scale_fill_discrete(type = c( "#009E73", "#F0E442", "#E69F00",  "#56B4E9","#A6A6A6")) +
  scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
-
-```{r echo = FALSE, warnings = FALSE, message=FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5."}
-
+```{r echo = FALSE, warnings = FALSE, include=FALSE }
 suppressWarnings(st_intersects(st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp))
 countMethod <- datComp[c(3,5,63,67,70),]
 areaMethodTemp <- suppressWarnings(suppressMessages(st_intersection(st_buffer(
   datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp)))
 areaMethod <- areaMethodTemp[st_is(areaMethodTemp, c("POLYGON", "MULTIPOLYGON")),]
 
+```
+
+```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5."}
 ggplot(datComp) +
   geom_sf(data = 
             suppressWarnings(sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1)), 
@@ -736,7 +739,12 @@ datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
              method = "area",
              compType = "allSpp")
 
-knitr::kable(head(datNeighbors))
+
+temp <- datNeighbors
+rownames(temp) <- NULL
+names(temp)[c(8,10,12)] <- c("basalArea", "survives_t+1", "size_t+1")
+
+knitr::kable(head(temp[100:110,]), row.names = FALSE)
 ```
 
 ### *3* Next Steps

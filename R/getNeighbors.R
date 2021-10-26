@@ -332,12 +332,6 @@ per year.")
               ## put the neighbor counts into the 'dat' data.frame
               dat[match(datOneSpp$index, dat$index),]$neighbors <-
                 datOneSpp$neighbors
-
-              ## get the counter value for the progress bar
-              m <- which(temp$Site == i & temp$Quad == j & temp$Species == l
-                         & temp$Year == k)
-              ## add to the progress bar
-              utils::setTxtProgressBar(progress_bar, value = m)
             }
 
           } else if (compType == 'allSpp') { ## calculating interspecific
@@ -372,17 +366,9 @@ per year.")
             ## put the neighbor counts into the 'dat' data.frame
             dat[match(datSpp$index, dat$index),]$neighbors <-
               datSpp$neighbors
-
-            ## get the counter value for the progress bar
-            m <- which(temp$Site == i & temp$Quad == j
-                       & temp$Year == k)
-            ## add to the progress bar
-            utils::setTxtProgressBar(progress_bar, value = m)
           }
         }
       }
-      ## close the progress bar
-      close(progress_bar)
       }
   } else if (method == "area") {
     ## get the overlapping polygon areas

@@ -847,7 +847,7 @@
               assignOut <- rbind(assignOut, parents, deadGhosts)
             } else { #if (exists("assignOut") == FALSE) {
               ## if the assignOut df is empty
-              assignOut <- rbind(parents, deadGhosts)
+              assignOut <- suppressWarnings(rbind(parents, deadGhosts))
             }
 
             ## if this is the last year of sampling, put the 'tempCurrentYear'

@@ -447,8 +447,7 @@ values of either FALSE or TRUE for each species with no NAs.")
     stop("The 'printMessages' argument must be a logical value.")
   }
 
-  ## do need to check the 'flagSuspects', 'shrink', and 'dormSize' arguments
-
+  ## need to check the 'flagSuspects', 'shrink', and 'dormSize' arguments
   ## check 'flagSuspects' argument
   if (!is.logical(flagSuspects) | ## flagSuspects must be logical
       length(flagSuspects)!=1){ ## flagSuspects must be a vector of length = 1

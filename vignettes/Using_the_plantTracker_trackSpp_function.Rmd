@@ -68,7 +68,9 @@ arguments here:
 |              | name in 'dat', and the contents of   |         |        |
 |              | that list element is  a numeric      |         |        |
 |              | vector of all of the years in which  |         |        |
-|              | that quadrat was sampled.            |         |        |
+|              | that quadrat was actually sampled    |         |        |
+|              | (not just the years that have data   |         |        |
+|              |in 'dat'!)                            |        |        |
 +--------------+--------------------------------------+---------+--------+
 | dorm         | A single value greater than or equal |  Yes    |  N/A   |
 |              | to 0 indicating  the number of years |         |        |

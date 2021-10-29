@@ -161,7 +161,11 @@ an element for each quadrat with data in `dat`.
 each quadrat was sampled. If a quadrat was 'skipped' in a year, then that year 
 must be excluded from this vector. The format of the years must be the same as 
 the format of years in `dat` (i.e. if year is a four-digit number in `dat`, then 
-it must be a four-digit number in `inv`). 
+it must be a four-digit number in `inv`). Make sure this is the years the 
+quadrat was actually sampled, not just the years that have data in the 'dat' 
+argument! This argument allows the function to differentiate between years when 
+the quadrat wasn't sampled and years when there just weren't any individuals of 
+a species present in that quadrat. 
 
 Here is an example of an `inv` argument that corresponds to the example `dat` 
 argument above. The quadrats that have data in `dat` are "SG2" and "SG4",  so 

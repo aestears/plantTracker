@@ -44,7 +44,11 @@
 #' \code{\link{grasslandInventory}}. The name of each element of the list is a
 #' quadrat name in 'dat', and the contents of that list element is a numeric
 #' vector of all of the years in which that quadrat (or other unique spatial
-#' area) was sampled.
+#' area) was sampled. Make sure this is the years the quadrat was actually
+#' sampled, not just the years that have data in the 'dat' argument! This
+#' argument allows the function to differentiate between years when the quadrat
+#' wasn't sampled and years when there just weren't any individuals of a species
+#' present in that quadrat.
 #' @param dorm A numeric vector of length 1, indicating the number of years an
 #' individual of these species is allowed to go dormant, i.e. be absent from the
 #' map but be considered the same individual when it reappears. This must be an

@@ -221,6 +221,7 @@
 #'
 #' @export
 #' @import sf
+#' @importFrom units drop_units
 
 trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
                      species = "Species",
@@ -484,7 +485,7 @@ values of either FALSE or TRUE for each species with no NAs.")
                                 "geometry", "indexStore")]
 
   ## get the basal area for each observation
-  dat$basalArea_ramet <- st_area(dat)
+  dat$basalArea_ramet <- units::drop_units(st_area(dat))
 
   ## get the site(s)
 
@@ -503,6 +504,15 @@ values of either FALSE or TRUE for each species with no NAs.")
       } else if (is.vector(inv)) { ## if there is inv data for only 1 quadrat
         invQuad <- inv
       }
+      ## get the boundary box for this quadrat (for calculating nearEdge
+      # later on)
+      ## make a boundary box that is within the 'buff' argument of the quad
+      ## first, define the 'buff' zone (the average of 'buff' for each species)
+      buffAvg <- mean(buff$buff )
+      buffEdgeOutside <- sf::st_as_sfc(sf::st_bbox(dat[dat$Site==i,]))
+      buffEdgeInside <- sf::st_as_sfc(sf::st_bbox(dat[dat$Site==i,]) +
+                                        c(buffAvg, buffAvg,-buffAvg, -buffAvg))
+      buffEdge <-  sf::st_difference(buffEdgeOutside, buffEdgeInside)
       ## get the species w/in that quad
       for (k in unique(dat[dat$Site==i & dat$Quad==j,]$Species)) {
         ## k = the name of the species
@@ -536,7 +546,9 @@ values of either FALSE or TRUE for each species with no NAs.")
                          clonal = clonalK,
                          flagSuspects = flagSuspects,
                          shrink = shrink,
-                         dormSize = dormSize
+                         dormSize = dormSize,
+                         inheritsFromTrackSpp = TRUE,
+                         nearEdgeBox = buffEdge
         )
         ## see if the output d.f exists yet (trackSpOut)
         ## if it does exist, then add datOut for the current spp. to the output

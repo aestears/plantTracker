@@ -102,6 +102,8 @@
                     flagSuspects = FALSE,
                     shrink = 0.1,
                     dormSize = .05,
+                    inheritsFromTrackSpp = FALSE,
+                    nearEdgeBox = NULL,
                     ...){
   ## argument checking --------------------------------------------------------
    ## don't really do arg. checking, since this function is not exported, and
@@ -151,7 +153,7 @@
   dat$genetID <- as.character(NA)
   ## if not already present, create a column called 'basalArea_ramet' in 'dat'
   if (sum(dat$basalArea_ramet) == 0) {
-    dat$basalArea_ramet <-  st_area(dat)
+    dat$basalArea_ramet <-  sf::st_area(dat)
   }
   ## if 'flagSuspects' is TRUE, add a column for the flags to go into
   if (flagSuspects == TRUE) {
@@ -874,16 +876,21 @@
     tempPreviousYear[, c('size_tplus1', 'survives_tplus1')] <- NA
     assignOut <- tempPreviousYear
     }
-  ## populate the 'nearEdge' column
+
   ## make an empty column
   assignOut$nearEdge <- FALSE
-  ## make a boundary box that is within the 'buff' argument of the actual quad
-  buffEdgeOutside <- st_as_sfc(st_bbox(assignOut))
-  buffEdgeInside <- st_as_sfc(st_bbox(assignOut) + c(buff, buff, -buff,
-                                                     -buff))
-  buffEdge <-  st_difference(buffEdgeOutside, buffEdgeInside)
+  ## populate the 'nearEdge' column (if isn't inheriting data from trackSpp)
+  if (inheritsFromTrackSpp == FALSE) {
+    ## make a boundary box that is within the 'buff' argument of the actual quad
+    buffEdgeOutside <- sf::st_as_sfc(sf::st_bbox(assignOut))
+    buffEdgeInside <- sf::st_as_sfc(sf::st_bbox(assignOut) + c(buff, buff,-buff, -buff))
+    buffEdge <-  sf::st_difference(buffEdgeOutside, buffEdgeInside)
+    } else if (inheritsFromTrackSpp == TRUE) {
+    buffEdge <- nearEdgeBox
+  }
+
   ## find out which polys intersect with the buffered quad
-  assignOut[st_intersects(assignOut, buffEdge, sparse = FALSE),
+  assignOut[sf::st_intersects(assignOut, buffEdge, sparse = FALSE),
             "nearEdge"] <- TRUE
 
   ## clean up output assignOuta.frame (remove NAs and unneeded columns)

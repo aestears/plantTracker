@@ -173,9 +173,14 @@ checkDat <- function (dat, inv = NULL,
 
   ## is the 'dat' argument in the correct format? (is it an 'sf' object of type
   # 'POLYGON' or 'MULTIPOLYGON'?)
-  if(sum(st_is(dat, c("POLYGON", "MULTIPOLYGON"))) != nrow(dat)) {
+  if (sum(st_is(dat, c("POLYGON", "MULTIPOLYGON"))) != nrow(dat)) {
     stop("'dat' is not in correct sf format.
          sfc must be POLYGON or MULTIPOLYGON")
+  }
+  ## does the 'dat' argument contain any 'invalid' geometries?
+  if (sum(!sf::st_is_valid(dat) > 0)) {
+    inv_row <- which(sf::st_is_valid(dat)==FALSE)
+    stop("'dat' contains an invalid geometry an row(s) ", inv_row, ". This issue must be resolved before 'dat' can be used in any plantTracker functions.")
   }
 
   ## check the Species column

@@ -116,7 +116,7 @@
   ifClonal <- function(cloneDat, clonal, buffGenet, ...) {
     ## arguments
     ## cloneDat = cloneDataset for one species/quad/year (input from 'assign()'
-    # fxn), is a  subset of the 'cloneDat' argument from the 'assign()' fxn
+    # fxn), is a  subset of the 'dat' argument from the 'assign()' fxn
     ## clonal = inherits from the 'clonal' argument in the 'assign()' fxn
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
     # is input into the plantTracker::groupByGenet() fxn

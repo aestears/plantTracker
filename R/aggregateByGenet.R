@@ -151,17 +151,8 @@ if ("Suspect" %in% names(dat)) {
     }
   }
 
-#site ## the name of the column in 'dat' that contains the values for site
-
-#quad ## the name of the column in 'dat' that contains the data for quadrat
-
-#species ## the name of the column in 'dat' that contains the data for species
-
-#year ## the name of the column in 'dat' that contains the data for Year
-
-#trackID ## the name of the column in 'dat' that contains the data for trackID
-  ## check these column name arguments
-  ## put column name args. into a list for basic checks
+  ## put species, site, quad, year, and trackID name args. into a list for
+  # basic checks
   newNames <- list("species" = species, "site" = site, "quad" = quad,
                    "year" = year, "trackID" = trackID)
   ## check that each arg. is a character vector

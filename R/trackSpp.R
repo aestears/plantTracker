@@ -136,7 +136,7 @@
 #' unlikely that a very small individual will survive dormancy, so it is
 #' possible that the function has mistakenly given a survival value of '1' to
 #' this individual. A 'very small individual' is any observation with an area
-#' below a certain percentile (specified by 'dormSize') of the size distribution f
+#' below a certain percentile (specified by 'dormSize') of the size{} distribution f
 #' or this species, which is generated using all of the size data for this
 #' species in 'dat'.
 #' @param shrink A single numeric value. This value is only used when
@@ -349,13 +349,13 @@ trackSpp <- function(dat, inv, dorm , buff , buffGenet , clonal,
       clonal <- data.frame("Species" = unique(dat$Species), "clonal" = clonal)
     } else if (is.data.frame(clonal)) {
       if (sum(!names(clonal) %in% c("Species", "clonal")) == 0) {
-        if(sum(!unique(dat$Species) %in% clonal$Species) > 0 | ## clonal
+        if (sum(!unique(dat$Species) %in% clonal$Species) > 0 | ## clonal
            # must have data for all species present in 'dat'
            length(unique(clonal$Species)) != nrow(clonal) |## clonal cannot have
            # more than one value for each species
            sum(is.na(clonal$clonal)) > 0 | ## can't have NA values in clonal
-           !is.logical(clonal$clonal) | ## can't have non-numeric values for
-           # clonal$clonal
+           (!is.numeric(clonal$clonal) & !is.logical(clonal$clonal)) | ## can't
+           # have non-numeric values for clonal$clonal
            sum((clonal$clonal != TRUE & clonal$clonal != FALSE)) > 0
            ## clonal values must be either 0 or 1
         ) {
@@ -479,13 +479,14 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## put the 'extra' data into a separate d.f to 'store'
   datStore <- dat[, !names(dat) %in% c("Site", "Quad", "Year", "Species",
                                        "geometry")]
-  datStore <- st_drop_geometry(datStore)
+  datStore <- sf::st_drop_geometry(datStore)
   ## put the data we actually need into the 'dat' object
   dat <- dat[,names(dat) %in% c("Site", "Quad", "Year", "Species",
                                 "geometry", "indexStore")]
 
   ## get the basal area for each observation
-  dat$basalArea_ramet <- units::drop_units(st_area(dat))
+  dat$basalArea_ramet <- sf::st_area(dat)
+  units(dat$basalArea_ramet) <- NULL
 
   ## get the site(s)
 

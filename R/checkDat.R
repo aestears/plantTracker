@@ -178,7 +178,7 @@ checkDat <- function (dat, inv = NULL,
          sfc must be POLYGON or MULTIPOLYGON")
   }
   ## does the 'dat' argument contain any 'invalid' geometries?
-  if (sum(!sf::st_is_valid(dat) > 0)) {
+  if (sum(!sf::st_is_valid(dat)) > 0) {
     inv_row <- which(sf::st_is_valid(dat)==FALSE)
       stop("'dat' contains an invalid geometry in row ", paste(inv_row, collapse = ", "), ". This issue must be resolved before 'dat' can be used in any plantTracker functions.")
   }

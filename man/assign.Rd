@@ -14,6 +14,8 @@ assign(
   flagSuspects = FALSE,
   shrink = 0.1,
   dormSize = 0.05,
+  inheritsFromTrackSpp = FALSE,
+  nearEdgeBox = NULL,
   ...
 )
 }

@@ -48,6 +48,24 @@
 #' neighborhood density is calculated considering only individuals in the buffer
 #' area that are the same species as the focal individual (intraspecific
 #'  competition).
+#' @param output A character string, either 'summed' or 'bySpecies'. The default
+#' is 'summed'. This argument is only important to consider if you are using
+#' compType = 'allSpp'. If output = 'summed', then only one count/area value is
+#' returned for each individual. This value is the total count or area of all
+#' neighbors within the focal species buffer zone, regardless of species. If
+#' output = 'bySpecies', there is a count or area value returned for each
+#' species present in the buffer zone. For example, there are 15 individuals
+#' inside a buffer zone. Five are species A, three are species B, and 7 are
+#' species C. If output = 'summed', then the 'neighbors_count' column in the
+#' output data.frame will have the single value '15' in the row for this focal
+#' individual. However, if output = 'bySpecies', the row for this focal
+#' individual in the output data.frame will contain a named list in the
+#' 'neighbors_count' column that looks like the one below. If 'method' = 'area'
+#' and 'output' = 'bySpecies', a similar list will be returned, but will be in
+#' the 'neighbors_area' column and will contain areas rather than counts.
+#' ```{r}
+#' list("Species A "= 5, "Species B" = 3, "Species C" = 7)
+#' ```
 #' @param trackID An optional character string argument. Indicates the name of
 #' the column in 'dat' that contains a value that uniquely identifies each
 #' individual/genet. It is unnecessary to include a value for this argument if
@@ -75,11 +93,14 @@
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
 #' @return This function returns a data.frame with the same number of rows as
-#' 'dat' and all of the same columns, but with an additional column called
-#' 'neighbors'. This column contains either a count of the number of individuals
-#' within each focal individual's buffer (method = 'count'), or a proportion of
-#'  the buffer area that is occupied by other individuals (method = 'area').
-#'
+#' 'dat' and all of the same columns, but with an additional column or columns.
+#' If method = 'count', then a column called "neighbors_count" is added, which
+#' contains a count of the number of individuals within the buffer area that is
+#' occupied by other individuals. If method = 'area', two columns are added. The
+#' first is called "nBuff_area", which contains the area of the buffer around
+#' the focal individual. The second is called "neighbors_area", which contains
+#' the area of the individuals within the buffer zone around the
+#' focal individual.
 #' @seealso The [trackSpp()] function returns a data.frame that can be input
 #' directly into this function. If a data.frame is not aggregated by genet such
 #' that each unique genet/year combination is represented by only one row, then
@@ -116,6 +137,7 @@
 
 getNeighbors <- function (dat, buff, method,
                           compType = 'allSpp',
+                          output = 'summed',
                           trackID = 'trackID',
                           species = "Species",
                           quad = "Quad",
@@ -166,7 +188,6 @@ getNeighbors <- function (dat, buff, method,
          must have the same name that you specified in the 'trackID' argument in
          this function call.  ")
   }
-
 
   ## check other args.
   #buff
@@ -239,6 +260,16 @@ specified buffer of the focal individual")
     stop("'compType' must be a character vector of length one.")
   }
 
+  #output
+  if (is.character(output) & length(output) == 1) { ## must be a
+    # character of length one
+    if (output != 'summed' & output != 'bySpecies') {
+      stop("The 'output' argument must have a value of 'summed' or 'bySpecies'.")
+    }
+  } else {
+    stop("'output' must be a character vector of length one.")
+  }
+
   ## make sure that the 'dat' argument has been aggregated by genet!
   if (nrow(unique(dat[,c("Year","trackID")])) != nrow(dat)) {
     stop("In order to be used in this function, the 'dat' argument must have
@@ -247,11 +278,9 @@ specified buffer of the focal individual")
 per year.")
   }
 
-
   # work --------------------------------------------------------------------
   ## assign a unique index to each row to simplify the looping process
   dat$index <- 1:nrow(dat)
-
 
   ## subset the 'dat' d.f so that it only has the required columns
   # (and dstore the rest)
@@ -264,15 +293,10 @@ per year.")
   dat <- dat[,names(dat) %in% c("Species", "Site", "Quad", "Year",
                                 "trackID", "geometry", "index")]
 
-
-  ## make an empty column in 'dat' to contain the output neighborhood data
-  dat$neighbors <- NA
-
   ## put a buffer around each of the trackIDs in the entire data.frame
   dat <- merge(dat, buff, by = "Species")
 
   datBuffTemp <- sf::st_buffer(x = dat, dist = dat$buff)
-
 
   ## subtract the focal individuals from the buffered dataset
   tempBuffGeometry <- list()
@@ -294,6 +318,8 @@ per year.")
                                    sf::st_as_sfc(sf::st_bbox(dat)), datBuff))
 
   if (method == 'count') {
+    ## make an empty column in 'dat' to contain the output neighborhood data
+    dat$neighbors_count <- NA
     for (i in unique(dat$Site)) { ## loop through each site
       for (j in unique(dat[dat$Site== i ,"Quad"]$Quad)) { ## loop through each
         # quadrat
@@ -330,7 +356,7 @@ per year.")
                 datOneSpp$neighbors <- 0
               }
               ## put the neighbor counts into the 'dat' data.frame
-              dat[match(datOneSpp$index, dat$index),]$neighbors <-
+              dat[match(datOneSpp$index, dat$index),]$neighbors_count <-
                 datOneSpp$neighbors
             }
 
@@ -348,29 +374,70 @@ per year.")
             ## make the diagonal of the matrix FALSE, because a genet can't
             # overlap with itself
             diag(overlapM) <- FALSE
-            ## make a list such that the list element is the row index in
-            # datSppBuff of the focal indvidual, and the values in each element
-            # are the row indices of the polygons in datSpp that overlap with
-            # the focal individual
-            overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
-              c(which(x==TRUE)))
+            if (output == 'summed') {
+              ## make a list such that the list element is the row index in
+              # datSppBuff of the focal indvidual, and the values in each element
+              # are the row indices of the polygons in datSpp that overlap with
+              # the focal individual
+              overlapList <- apply(X = overlapM, MARGIN = 1, FUN = function(x)
+                c(which(x==TRUE)))
 
-            ## put the neighbor counts into the 'datSpp' data.frame
-            if (length(overlapList) > 0) {
-              ## get the number of genets that overlap w/ the focal buffer
-              datSpp$neighbors <-  unlist(lapply(overlapList, length))
-            } else {
-              datSpp$neighbors <- 0
+              ## put the neighbor counts into the 'datSpp' data.frame
+              if (length(overlapList) > 0) {
+                ## get the number of genets that overlap w/ the focal buffer
+                datSpp$neighbors <-  unlist(lapply(overlapList, length))
+              } else {
+                datSpp$neighbors <- 0
+              }
+
+              ## put the neighbor counts into the 'dat' data.frame
+              dat[match(datSpp$index, dat$index),]$neighbors_count <-
+                datSpp$neighbors
+
+            } else if (output == 'bySpecies') {
+              ## in overlapM, the ROW is the focal indvidiual, and the COLUMN is
+              # the overlapping individual
+              ## make the name of each of the columns correspond to the species
+              # identity of the overlappers
+              colnames(overlapM) <- datSpp$Species
+              ## aggregate by column (? can you do that?) so each cell of a row
+              # is the # of individuals that overlap with the focal individual
+              # for a given species (given by the colname)
+              # make empty matrix to hold by-species overlaps
+              overlapSpp <- matrix(NA, nrow = nrow(overlapM),
+                                   ncol = length(unique(colnames(overlapM))))
+              colnames(overlapSpp) <- unique(colnames(overlapM))
+
+              ## get the number of overlaps for each focal ind. (each row) for
+              # each 'm' species
+              for (m in unique(colnames(overlapM))) {
+                overlapSpp[,colnames(overlapSpp) == m] <-
+                  rowSums(overlapM[,colnames(overlapM) == m])
+              }
+
+              overlapSpp_List <- apply(overlapSpp, MARGIN = 1,
+                                       FUN = function(x) as.list(x))
+
+              ## put the neighbor counts into the 'datSpp' data.frame
+              if (length(overlapSpp_List) > 0) {
+                ## get the number of genets that overlap w/ the focal buffer
+                datSpp$neighbors <- overlapSpp_List
+              } else {
+                datSpp$neighbors <- 0
+              }
+
+              ## put the neighbor counts into the 'dat' data.frame
+              dat[match(datSpp$index, dat$index),]$neighbors_count <-
+                datSpp$neighbors
             }
-
-            ## put the neighbor counts into the 'dat' data.frame
-            dat[match(datSpp$index, dat$index),]$neighbors <-
-              datSpp$neighbors
           }
         }
       }
       }
   } else if (method == "area") {
+    ## make an empty column in 'dat' to contain the output neighborhood data
+    dat$neighbors_area <- NA
+    dat$nBuff_area <- NA
     ## get the overlapping polygon areas
     tempAreas <- suppressWarnings(
       sf::st_intersection(x = datBuff, y = dat))
@@ -391,17 +458,16 @@ per year.")
                                    "index" = tempAreas2$index),
                          FUN = function (x) sum(sf::st_area(x)))
 
-      ## proportionalize the area--divide the area of the 'neighbors' by the
-      # area of the buffer
-      ## make sure the do d.fs are in the same order (sort by index col.)
+
+      ## make sure the d.fs are in the same order (sort by index col.)
       datBuff <- datBuff[order(datBuff$index),]
       temp3 <- temp3[order(temp3$index),]
-      ## calculate area of neighbors as a proportion of buffered area
-      proportionalArea <- temp3$geometry/sf::st_area(datBuff)
+
       ## put the 'area' data in the correct rows in 'dat'
       ## join by 'index' column
-      dat[match(temp3$index, dat$index),]$neighbors <-
-        proportionalArea
+      dat[match(temp3$index, dat$index),]$nBuff_area <-sf::st_area(datBuff)
+      dat[match(temp3$index, dat$index),]$neighbors_area <- temp3$geometry
+
     } else if (compType == 'allSpp') {
       ## don't need to subset by species! (so use dat and datBuff)
 
@@ -410,26 +476,61 @@ per year.")
                                 tempAreas$Quad == tempAreas$Quad.1 &
                                 tempAreas$Year == tempAreas$Year.1,]
 
-      ## now aggregate by focal genet (column name = 'trackID')
-      temp3 <- aggregate(x = tempAreas2$geometry,
-                         by = list("Site" = tempAreas2$Site,
-                                   "Quad" = tempAreas2$Quad,
-                                   "Species" = tempAreas2$Species,
-                                   "trackID" = tempAreas2$trackID,
-                                   "Year" = tempAreas2$Year,
-                                   "index" = tempAreas2$index),
-                         FUN = function (x) sum(sf::st_area(x)))
-      ## proportionalize the area--divide the area of the 'neighbors' by the
-      # area of the buffer
-      ## make sure the two d.fs are in the same order (sort by index col.)
-      datBuff <- datBuff[order(datBuff$index),]
-      temp3 <- temp3[order(temp3$index),]
-      ## calculate area of neighbors as a proportion of buffered area
-      proportionalArea <- temp3$geometry/sf::st_area(datBuff)
-      ## put the 'area' data in the correct rows in 'dat'
-      ## join by 'index' column
-      dat[match(temp3$index, dat$index),]$neighbors <-
-        proportionalArea
+      if (output == "summed") {
+        ## now aggregate by focal genet (column name = 'trackID')
+        temp3 <- aggregate(x = tempAreas2$geometry,
+                           by = list("Site" = tempAreas2$Site,
+                                     "Quad" = tempAreas2$Quad,
+                                     "Species" = tempAreas2$Species,
+                                     "trackID" = tempAreas2$trackID,
+                                     "Year" = tempAreas2$Year,
+                                     "index" = tempAreas2$index),
+                           FUN = function (x) sum(sf::st_area(x)))
+        ## make sure the two d.fs are in the same order (sort by index col.)
+        datBuff <- datBuff[order(datBuff$index),]
+        temp3 <- temp3[order(temp3$index),]
+
+        ## put the 'area' data in the correct rows in 'dat'
+        dat[match(temp3$index, dat$index),]$nBuff_area <-sf::st_area(datBuff)
+        dat[match(temp3$index, dat$index),]$neighbors_area <- temp3$geometry
+      } else if (output == "bySpecies") {
+        ## now aggregate by focal genet (column name = 'trackID') AND by species
+        # of the neighbors
+        temp3_spp <- aggregate(x = tempAreas2$geometry,
+                           by = list("Site" = tempAreas2$Site,
+                                     "Quad" = tempAreas2$Quad,
+                                     "Species" = tempAreas2$Species,
+                                     "trackID" = tempAreas2$trackID,
+                                     "Year" = tempAreas2$Year,
+                                     "index" = tempAreas2$index,
+                                     "Species_neighbor" = tempAreas2$Species.1),
+                           FUN = function (x) sum(sf::st_area(x)))
+
+        ## put this aggregated d.f into a list format (one element for each
+        # focal ind., then one next level element for each neighbor species)
+        for (n in unique(temp3_spp$index)) {
+          tmp <- temp3_spp[temp3_spp$index == unique(temp3_spp$index)[n],]
+          tmpDF <- tmp[1,1:6]
+          tmpL <- list()
+          tmpL[[1]] <- as.list(tmp[,8])
+          names(tmpL[[1]]) <- tmp[,7]
+          tmpDF$neighbors_area <- tmpL
+          if(n == unique(temp3_spp$index)[1]) {
+            bySppDF <- tmpDF
+          } else {
+            bySppDF <- rbind(bySppDF, tmpDF)
+          }
+        }
+
+        ## make sure the two d.fs are in the same order (sort by index col.)
+        datBuff <- datBuff[order(datBuff$index),]
+        bySppDF <- bySppDF[order(bySppDF$index),]
+
+        ## put the 'area' data in the correct rows in 'dat'
+        dat[match(temp3$index, dat$index),]$nBuff_area <-sf::st_area(datBuff)
+        dat[match(temp3$index, dat$index),]$neighbors_area <-
+          bySppDF$neighbors_area
+      }
     }
   }
 
@@ -469,15 +570,16 @@ per year.")
 
 
 # testing -----------------------------------------------------------------
-
-# dat <- grasslandData[grasslandData$Site == "CO" &
-#                     grasslandData$Quad == "ungz_5a",]
+#
+# dat <- grasslandData[grasslandData$Site == "AZ" &
+#                     grasslandData$Quad == "SG2",]
 # datIDs<- trackSpp(dat = dat, inv = grasslandInventory, dorm = 1, buff = 0.05,
 #                   buffGenet = 0.005,
-#                   clonal = data.frame("Species" = c("Bouteloua gracilis",
-#                                                     "Agropyron smithii",
-#                                                     "Sphaeralcea coccinea"),
-#                   "clonal" = c(TRUE,TRUE,FALSE)))
+#                   clonal = data.frame("Species" = c("Heteropogon contortus",
+#                                                     "Bouteloua rothrockii",
+#                                                     "Ambrosia artemisiifolia",
+#                                                     "Calliandra eriophylla" ),
+#                   "clonal" = c(TRUE,TRUE,FALSE, FALSE)))
 #
 # names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
 #
@@ -486,7 +588,7 @@ per year.")
 #              focal = 'genet',
 #              species = "speciesName",
 #              trackID = "uniqueID")
-# #
+#
 #
 #
 # plot(sf::st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &
@@ -501,6 +603,27 @@ per year.")
 # text(x = sapply(st_centroid(labels$geometry), FUN = function(x) x[1]),
 #      y = sapply(st_centroid(labels$geometry), FUN = function(x) x[2]),
 #      labels = labels$uniqueID)
-
-
+#
+#  dat <- grasslandData[grasslandData$Site == c("AZ") &
+#   grasslandData$Species %in% c("Bouteloua rothrockii",
+#   "Calliandra eriophylla"),]
+#  names(dat)[1] <- "speciesName"
+#
+#  inv <- grasslandInventory[unique(dat$Quad)]
+#  outDat <- trackSpp(dat = dat,
+#   inv = inv,
+#   dorm = 1,
+#   buff = .05,
+#   buffGenet = 0.005,
+#   clonal = data.frame("Species" = unique(dat$speciesName),
+#   "clonal" = c(TRUE)),
+#   species = "speciesName",
+#   aggByGenet = TRUE
+#   )
+#
+#   finalDat <- getNeighbors(dat = outDat,
+#   buff = .15,
+#   method = 'count',
+#   compType = 'oneSpp', output = "bySpecies",
+#   species = "speciesName")
 

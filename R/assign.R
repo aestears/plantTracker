@@ -121,7 +121,7 @@
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
     # is input into the plantTracker::groupByGenet() fxn
     if(clonal == TRUE) {
-      cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
+      cloneDat$genetID <- plantTracker::groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
       tempCloneDat <- stats::aggregate(basalArea_ramet ~ genetID, sum,
                                        data = cloneDat)

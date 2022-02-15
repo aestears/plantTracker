@@ -519,49 +519,106 @@
                 # more than one parent)...
                 ## get a vector of individuals with 'ties' (>1 parent)
                 ties <- names(multParents[multParents > 1])
-                for (m in 1:ncol(overlaps[,ties])) {
-                  ## get the highest value between the two ties
-                  winner <- max(overlaps[,ties][,m], na.rm = TRUE)
-                  # if there is only one 'winner':
-                  if (length(winner) ==1) {
-                    ## set all other values that aren't the highest in that
-                    # column to 'NA'
-                    overlaps[,ties][,m][overlaps[,ties][,m] != winner] <- NA
-                  } else if (length(winner) > 1) {
-                    ##  if there is more than 1 winner (i.e. if there are two
-                    # parents with the exact same overlap with the child), then
-                    # we have to break the tie some other way. Use the distance
-                    # between the centroids to do this
+                if (length(ties) > 1) {
+                  for (m in 1:ncol(as.data.frame(overlaps[,ties]))) {
+                    ## get the highest value between the two ties
+                    winner <- max(overlaps[,ties][,m], na.rm = TRUE)
+                    # if there is only one 'winner':
+                    if (length(winner) ==1) {
+                      ## set all other values that aren't the highest in that
+                      # column to 'NA'
+                      overlaps[,ties][,m][overlaps[,ties][,m] != winner] <- NA
+                    } else if (length(winner) > 1) {
+                      ##  if there is more than 1 winner (i.e. if there are two
+                      # parents with the exact same overlap with the child), then
+                      # we have to break the tie some other way. Use the distance
+                      # between the centroids to do this
 
-                    ## get the name of the problem 'child'
-                    badChild_name <- names(overlaps[,ties])[m]
-                    ## get the spatial data for that child
-                    badChild <- suppressWarnings(
-                      sf::st_centroid(
-                        tempCurrentYear[tempCurrentYear$index == as.numeric(
-                          strsplit(badChild_name, "__")[[1]][2]),]))
+                      ## get the name of the problem 'child'
+                      badChild_name <- names(overlaps[,ties])[m]
+                      ## get the spatial data for that child
+                      badChild <- suppressWarnings(
+                        sf::st_centroid(
+                          tempCurrentYear[tempCurrentYear$index == as.numeric(
+                            strsplit(badChild_name, "__")[[1]][2]),]))
 
-                    ## get the names of the problem 'parents'
-                    badParents_names <- rownames(
-                      overlaps[is.na(overlaps[,ties][,m])==FALSE,])
-                    # get the spatial data for those parents
-                    badParents <- suppressWarnings(
-                      sf::st_centroid(
+                      ## get the names of the problem 'parents'
+                      badParents_names <- rownames(
+                        overlaps[is.na(overlaps[,ties][,m])==FALSE,])
+                      badParents <-
                         tempPreviousYear[tempPreviousYear$trackID
-                                         %in% badParents_names,]))
+                                         %in% badParents_names,]
+                      ## aggregate badParents by trackID so that each genet has
+                      # only one row of data
+                      badParents <- suppressWarnings(
+                        sf::st_centroid(
+                          sf:::aggregate.sf(x = badParents[,"trackID"],
+                                            by = list("trackID" = badParents$trackID),
+                                            FUN = nrow,
+                                            do_union = TRUE)))
 
-                    ## compare the centroid distances between parents and child
-                    dists <- sf::st_distance(badChild, badParents,
-                                             which = 'Euclidean')
-                    rownames(dists) <- badChild_name
-                    colnames(dists) <- badParents_names
+                      ## compare the centroid distances between parents and child
+                      dists <- sf::st_distance(badChild, badParents,
+                                               which = 'Euclidean')
+                      rownames(dists) <- badChild_name
+                      colnames(dists) <- badParents_names
 
-                    smallDist <- colnames(dists)[which(dists == min(dists))]
-                    ## replace the non-winning cell in the 'overlaps' matrix
-                    # with an 'NA'
-                    overlaps[rownames(overlaps) != smallDist, badChild_name] <- NA
-                  }
-                } # end of loop going through each tie
+                      smallDist <- colnames(dists)[which(dists == min(dists))]
+                      ## replace the non-winning cell in the 'overlaps' matrix
+                      # with an 'NA'
+                      overlaps[rownames(overlaps) != smallDist, badChild_name] <- NA
+                    }
+                  } # end of loop going through each tie
+                } else if (length(ties) == 1) {
+                    ## get the highest value between the two ties
+                    winner <- max(overlaps[,ties], na.rm = TRUE)
+                    # if there is only one 'winner':
+                    if (length(winner) ==1) {
+                      ## set all other values that aren't the highest in that
+                      # column to 'NA'
+                      overlaps[,ties][overlaps[,ties] != winner] <- NA
+                    } else if (length(winner) > 1) {
+                      ##  if there is more than 1 winner (i.e. if there are two
+                      # parents with the exact same overlap with the child), then
+                      # we have to break the tie some other way. Use the distance
+                      # between the centroids to do this
+
+                      ## get the name of the problem 'child'
+                      badChild_name <- ties
+                      ## get the spatial data for that child
+                      badChild <- suppressWarnings(
+                        sf::st_centroid(
+                          tempCurrentYear[tempCurrentYear$index == as.numeric(
+                            strsplit(badChild_name, "__")[[1]][2]),]))
+
+                      ## get the names of the problem 'parents'
+                      badParents_names <- rownames(
+                        overlaps[is.na(overlaps[,ties])==FALSE,])
+                      # get the spatial data for those parents
+                      badParents <-
+                          tempPreviousYear[tempPreviousYear$trackID
+                                           %in% badParents_names,]
+                      ## aggregate badParents by trackID so that each genet has
+                      # only one row of data
+                      badParents <- suppressWarnings(
+                        sf::st_centroid(
+                          sf:::aggregate.sf(x = badParents[,"trackID"],
+                                by = list("trackID" = badParents$trackID),
+                                FUN = nrow,
+                                do_union = TRUE)))
+
+                      ## compare the centroid distances between parents and child
+                      dists <- sf::st_distance(badChild, badParents,
+                                               which = 'Euclidean')
+                      rownames(dists) <- badChild_name
+                      colnames(dists) <- badParents_names
+
+                      smallDist <- colnames(dists)[which(dists == min(dists))]
+                      ## replace the non-winning cell in the 'overlaps' matrix
+                      # with an 'NA'
+                      overlaps[rownames(overlaps) != smallDist, badChild_name] <- NA
+                    }
+                }
               }
 
               ## after the previous loop, there is now only one parent for each

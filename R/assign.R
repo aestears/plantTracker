@@ -332,10 +332,12 @@
             ## get a d.f that contains the obs. w/ no trackIDs
             tempTrackIDs <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
 
+            ## assign them genetIDs first
+            tempCurrentYear <- ifClonal(tempCurrentYear, clonal = clonal, buffGenet = buffGenet)
             ## add trackIDs to the tempCurrentYear data.frame
-            tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
-              tempTrackIDs$sp_code_6, "_", tempTrackIDs$Year, "_",
-              tempTrackIDs$genetID)
+             tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
+               tempTrackIDs$sp_code_6, "_", tempTrackIDs$Year, "_",
+               tempTrackIDs$genetID)
 
             ## then need to add 'age' and 'recruit' data (but first check that
             # this isn't the first year after a gap in sampling)
@@ -471,28 +473,30 @@
                                                overlapArea$index)
               ## get the genetID names merged with the index value (same values
               # used for names of columns in 'overlaps' matrix)
-              overlapArea$childName <- paste0("genet__",
-                                              overlapArea$genetID.1,
-                                              "__",
+              overlapArea$childName <- paste0("childPoly__",
                                               overlapArea$index.1)
 
               ## calculate the overlap between each parent poly and each child
               overlapArea$overlappingArea <- sf::st_area(overlapArea$geometry)
 
-              overlapArea <- sf::st_set_geometry(overlapArea, NULL)
+              overlapArea <- sf::st_drop_geometry(overlapArea)
 
-              ## aggregate the overlaps by rows (by 'parents')
-              overlaps <- stats::aggregate(
-                overlapArea$overlappingArea, by = list(
-                  overlapArea$trackID, overlapArea$genetID.1), FUN = sum)
+              # ## aggregate the overlaps by rows (by 'parents')
+              # overlaps <- stats::aggregate(
+              #   overlapArea$overlappingArea, by = list(
+              #     overlapArea$trackID, overlapArea$genetID.1), FUN = sum)
+              #
+              #
+              # names(overlaps) <- c("parentTrackID", "childGenetID",
+              #                      "overlappingArea")
 
+              # overlaps$childGenetID <- paste0(
+              #   "genet__", overlaps$childGenetID, "__",seq(
+              #     from = 500, by = 1, length.out = nrow(overlaps)))
 
-              names(overlaps) <- c("parentTrackID", "childGenetID",
-                                   "overlappingArea")
-
-              overlaps$childGenetID <- paste0(
-                "genet__", overlaps$childGenetID, "__",seq(
-                  from = 500, by = 1, length.out = nrow(overlaps)))
+              ## get only the necessary data from the overlapArea d.f
+              overlaps <- overlapArea[,c("parentName", "childName",
+                                         "overlappingArea")]
 
               ## transform the overlaps dataframe into a 'wide' dataframe, so
               # that every row is a unique parent trackID, and the columns are
@@ -500,97 +504,139 @@
               # overlap between each parent/child pair
               overlapsTemp <- stats::reshape(overlaps,
                                              v.names = "overlappingArea",
-                                             idvar = "parentTrackID",
-                                             timevar = "childGenetID",
+                                             idvar = "parentName",
+                                             timevar = "childName",
                                              direction = "wide")
 
-              ## correct the column names for this data.frame
+              ## remove the 'index' ID from the parent name
+              overlapsTemp$parentName <- sapply(strsplit(
+                overlapsTemp$parentName, "__"), unlist)[1,]
+
+              ## aggregate by parent genet, so that each genet has only one
+              # row of data
+              overlapsTemp <- aggregate(x = overlapsTemp[,2:ncol(overlapsTemp)],
+                                        by = list(
+                                          "parentName" =
+                                            overlapsTemp$parentName),
+                                        FUN = sum)
+
               ## remove old "parentTrackID" column
               temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
               ## add parentTrackID as rownames
-              rownames(temp) <- as.character(overlapsTemp$parentTrackID)
+              rownames(temp) <- as.character(overlapsTemp$parentName)
               ## add childGenetID as the column names
               names(temp)  <- sapply(strsplit(names(overlapsTemp)[2:ncol(
                 overlapsTemp)], "overlappingArea."), unlist)[2,]
 
               overlaps <- temp
 
-              ## transpose the 'overlaps' matrix so that we can aggregate by
-              # genet (genetID are rows, trackID are columns)
-              overlaps <- t(overlaps)
-              ## simplify the row names so they only have the genetID number
-              overlaps <- as.data.frame(overlaps)
-              overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),
-                                                             "__"),
-                                                    unlist)[2,])
-              overlaps[is.na(overlaps)==TRUE] <- 0
+              # ## transpose the 'overlaps' matrix so that we can aggregate by
+              # # genet (genetID are rows, trackID are columns)
+              # overlaps <- t(overlaps)
+              # ## simplify the row names so they only have the genetID number
+              # overlaps <- as.data.frame(overlaps)
+              # overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),
+              #                                                "__"),
+              #                                       unlist)[2,])
 
-              ## aggregate the overlap data by genetID
-              overlapsTemp <- stats::aggregate(
-                overlaps[,1:(ncol(overlaps)-1)], by = list(overlaps$genetID),
-                FUN = sum)
+              # overlaps[is.na(overlaps)==TRUE] <- 0
 
-              temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
-              ## fix rownames (childGenetID)
-              rownames(temp) <- paste0("genet_",overlapsTemp$Group.1)
-              ## fix colnames (parentTrackID)
-              names(temp) <- names(overlaps)[names(overlaps)!="genetID"]
+              ## each child can have only one parent, so if there is only ever
+              # one value in each column, than the next step is easy... each
+              # column gets the trackID of the 'parent' that it overlaps with
+              multParents <- apply(X = overlaps, MARGIN = 2, FUN = function(x)
+                sum(is.na(x)==FALSE))
+              # does each child only have one parent?
+              if (sum(multParents > 1) == 0) {  # if yes:
 
-              overlaps <- temp
+                ## get the numeric genetIDs of the children (for each parent)
+                nameDF <- stack(apply(X = t(overlaps), MARGIN = 1,
+                      function(x) names(x[which(is.na(x)==FALSE)])))
+                # rename the columns so they make sense
+                names(nameDF) <- c("parentTrackID", "childIndex")
 
-              ## transpose the matrix back so that each row is a parent and each
-              # column is a child
-              overlaps <- t(overlaps)
-
-              ## each parent can only have one child, and each child can only
-              # have one parent (since we've already clustered the polygons by
-              # genet). Each parent-child pair will be determined by the
-              # greatest amount of overlap. This is done by going through the
-              # 'overlaps' matrix and finding the largest overlap value. Then,
-              # the trackID from that parent will be assigned to the child.
-
-              whileOverlaps <- overlaps
-              done <- FALSE
-              counter <- 0
-              while (!done) {
-                ## get the row and column indices of the maximum value
-                maxInds <- which(whileOverlaps == max(whileOverlaps,
-                                                      na.rm = TRUE),
-                                 arr.ind = TRUE)
-                ## get the trackID of the parent
-                maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
-                ## get the numeric genetID of the child
-                maxChild <- strsplit(colnames(
-                  whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
+                ## get just the index for the 'children'
+                nameDF$childIndex <- as.numeric(sapply(
+                  strsplit(
+                    as.character(nameDF$childIndex), split = "__"), unlist)[2,])
 
                 ## put the trackID from the parent into the tempCurrentYear d.f
                 # rows that correspond to the genetID of the child
+                tempCurrentYear[match(nameDF$childIndex, tempCurrentYear$index),
+                                "trackID"] <- nameDF$parentTrackID
                 tempCurrentYear[tempCurrentYear$genetID==maxChild,
-                             "trackID"] <- maxParent
+                                "trackID"] <- maxParent
+              } else {
+                # if no (at least one child has more than one parent)
 
-                ## overwrite the 'max' value with an NA, so we can find the next
-                # largest value
-                whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
-                ## overwrite all of the other values in the parent row and the
-                # child column with NAs also (since each parent can only have
-                # one child, and each child can only have one parent)
-                whileOverlaps[maxInds[1,1],] <- NA
-                whileOverlaps[,maxInds[1,2]] <- NA
+              }
 
-
-                counter <- counter + 1 ## update the 'counter'
-                if (counter > 500) {
-                  stop("tracking 'while' loop is running out of control!")
-                } ## end of 'if' thats checking that the counter isn't too large
-
-                if (sum(whileOverlaps, na.rm = TRUE)==0) {
-                  ## if the sum of the  matrix is empty (is all NAs), then stop
-                  # the while loop
-                  done <- TRUE
-                } ## end of 'if' that's redefining 'done' if matrix is all NAs
-              } ## end of 'while' that's finding the max values in the matrix
-              ## end of 'if' that contains the work if there ARE overlaps
-            }
+            #   # ## aggregate the overlap data by genetID
+            #   # overlapsTemp <- stats::aggregate(
+            #   #   overlaps[,1:(ncol(overlaps)-1)], by = list(overlaps$genetID),
+            #   #   FUN = sum)
+            #   #
+            #   # temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
+            #   # ## fix rownames (childGenetID)
+            #   # rownames(temp) <- paste0("genet_",overlapsTemp$Group.1)
+            #   # ## fix colnames (parentTrackID)
+            #   # names(temp) <- names(overlaps)[names(overlaps)!="genetID"]
+            #   #
+            #   # overlaps <- temp
+            #   #
+            #   # ## transpose the matrix back so that each row is a parent and each
+            #   # # column is a child
+            #   # overlaps <- t(overlaps)
+            #
+            #   ## each parent can only have one child, and each child can only
+            #   # have one parent (since we've already clustered the polygons by
+            #   # genet). Each parent-child pair will be determined by the
+            #   # greatest amount of overlap. This is done by going through the
+            #   # 'overlaps' matrix and finding the largest overlap value. Then,
+            #   # the trackID from that parent will be assigned to the child.
+            #
+            #   whileOverlaps <- overlaps
+            #   done <- FALSE
+            #   counter <- 0
+            #   while (!done) {
+            #     ## get the row and column indices of the maximum value
+            #     maxInds <- which(whileOverlaps == max(whileOverlaps,
+            #                                           na.rm = TRUE),
+            #                      arr.ind = TRUE)
+            #     ## get the trackID of the parent
+            #     maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
+            #     ## get the numeric genetID of the child
+            #     maxChild <- strsplit(colnames(
+            #       whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
+            #
+            #     ## put the trackID from the parent into the tempCurrentYear d.f
+            #     # rows that correspond to the genetID of the child
+            #     tempCurrentYear[tempCurrentYear$genetID==maxChild,
+            #                  "trackID"] <- maxParent
+            #
+            #     ## overwrite the 'max' value with an NA, so we can find the next
+            #     # largest value
+            #     whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
+            #     ## overwrite all of the other values in the parent row and the
+            #     # child column with NAs also (since each parent can only have
+            #     # one child, and each child can only have one parent)
+            #     whileOverlaps[maxInds[1,1],] <- NA
+            #     whileOverlaps[,maxInds[1,2]] <- NA
+            #
+            #
+            #     counter <- counter + 1 ## update the 'counter'
+            #     if (counter > 500) {
+            #       stop("tracking 'while' loop is running out of control!")
+            #     } ## end of 'if' thats checking that the counter isn't too large
+            #
+            #     if (sum(whileOverlaps, na.rm = TRUE)==0) {
+            #       ## if the sum of the  matrix is empty (is all NAs), then stop
+            #       # the while loop
+            #       done <- TRUE
+            #     } ## end of 'if' that's redefining 'done' if matrix is all NAs
+            #   } ## end of 'while' that's finding the max values in the matrix
+            #   ## end of 'if' that contains the work if there ARE overlaps
+            # }
 
             ## make optional checks that will flag obs. as 'suspect'
             if (flagSuspects == TRUE) {
@@ -680,17 +726,17 @@
             orphans <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
             ## make sure that there are orphans
             if (nrow(orphans)>0) {
+              # give each orphan a genetID
+              orphans <- ifClonal(cloneDat = orphans, clonal = clonal, buffGenet = buffGenet)
               ## make a unique trackID for each genetID in the 'orphan' dataset
               orphanIDs <- data.frame(
-                "genetID" = unique(tempCurrentYear[is.na(
-                  tempCurrentYear$trackID)==TRUE, "genetID"]$genetID), ## get
+                "genetID" = unique(orphans$genetID), ## get
                 # the unique genetIDs of the 'orphans'
                 "trackID" = paste0(unique(
-                  tempCurrentYear$sp_code_6), ## get the unique 6-letter species
+                  orphans$sp_code_6), ## get the unique 6-letter species
                   # code
-                  "_",unique(tempCurrentYear$Year), ## get the unique year
-                  "_",c(1:length(unique(tempCurrentYear[is.na(
-                    tempCurrentYear$trackID)==TRUE,"genetID"]$genetID)))))
+                  "_",unique(orphans$Year), ## get the unique year
+                  "_",c(1:length(unique(orphans$genetID)))))
 
               ## add the orphan trackIDs to the 'orphan's data.frame
               orphans$trackID <- orphanIDs[match(orphans$genetID,
@@ -750,6 +796,14 @@
               # trackID
               children$age <- tempParents[match(children$trackID,
                                                 tempParents$trackIDtemp),]$age
+
+              ## calculate the appropriate 'basalArea_genet' data for each child
+              childGenet_area <- aggregate(children$basalArea_ramet,
+                                           by = list(
+                                             "trackID" = children$trackID), sum)
+              names(childGenet_area) <- c("trackID", "basalArea_genet")
+              children <- merge(x = children[,names(children) !="basalArea_genet"],
+                    y = childGenet_area, by = "trackID")
             }
 
             ## PARENTS
@@ -814,7 +868,7 @@
               }
               ## give the deadGhosts a 0 in survival (if there are any
               # deadGhosts)
-              if (nrow(deadGhosts)>0){
+              if (nrow(deadGhosts)>0) {
                 deadGhosts$survives_tplus1 <- 0
                 deadGhosts$ghost <- 0
               }
@@ -908,13 +962,13 @@ return(assignOut)
 # function will do this ahead of time when the user calls it)
 sampleDat <- grasslandData[grasslandData$Site == "AZ"
                            & grasslandData$Quad == "SG2"
-                           & grasslandData$Species == "Aristida longiseta",]
+                           & grasslandData$Species == "Bouteloua rothrockii",]
 # this should be a data.frame
 dat <- sampleDat
 #
 # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
 # # to tell the 'assign' function when the quadrat was sampled
-sampleInv<- grasslandInventory[["q45"]]
+sampleInv<- grasslandInventory[["SG2"]]
 # this should be an integer vector
 inv <- sampleInv
 

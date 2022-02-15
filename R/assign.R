@@ -264,7 +264,7 @@
           assignOut <- tempPreviousYear
         }
 
-        ## get data from year i and put in 'tempPrevioiusYear'
+        ## get data from year i and put in 'tempPreviousYear'
         tempPreviousYear <- dat[dat$Year==inv[i],]
 
         ## determine if the tempPreviousYear data.frame has any data
@@ -312,12 +312,12 @@
         ## need to get the sf data.frame of the 'next' year (year 'i')
         tempCurrentYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
 
-        if (nrow(tempCurrentYear)>0) { ## if there is data in the
-          # tempCurrentYear d.f (and clonal arg. is true), then assign genetIDs
-          tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear,
-                                   clonal = clonal,
-                                   buffGenet = buffGenet)
-        }
+        # if (nrow(tempCurrentYear)>0) { ## if there is data in the
+        #   # tempCurrentYear d.f (and clonal arg. is true), then assign genetIDs
+        #   tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear,
+        #                            clonal = clonal,
+        #                            buffGenet = buffGenet)
+        # }
 
         ## MAKE SURE THERE IS DATA IN YEAR i-1 (tempPreviousYear isn't empty) If
         # not, then go to the next i (only after replacing 'tempPreviousYear'
@@ -450,9 +450,9 @@
             next
             ## end of 'else' that has steps if tempCurrentYear is empty
           } else { ## if the tempCurrentYear data DOES exist,
-            ## AGGREGATE BY GENET for year i (if clonal = TRUE)
-            tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear, clonal = clonal,
-                                     buffGenet = buffGenet)
+            # ## AGGREGATE BY GENET for year i (if clonal = TRUE)
+            # tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear, clonal = clonal,
+            #                          buffGenet = buffGenet)
 
             ## FIND OVERLAPPING POLYGONS
             ## get the amount of overlap between each polygon
@@ -904,27 +904,27 @@ return(assignOut)
 # testing -----------------------------------------------------------------
  # example input data ------------------------------------------------------
 #
-# # prepares the dataset to feed into the 'assign' function (the 'trackSpp'
-# # function will do this ahead of time when the user calls it)
-# sampleDat <- grasslandData[grasslandData$Site == "KS"
-#                            & grasslandData$Quad == "q45"
-#                            & grasslandData$Species == "Aristida longiseta",]
-# # this should be a data.frame
-# dat <- sampleDat
-# #
-# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # # to tell the 'assign' function when the quadrat was sampled
-# sampleInv<- grasslandInventory[["q45"]]
-# # this should be an integer vector
-# inv <- sampleInv
+# prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# function will do this ahead of time when the user calls it)
+sampleDat <- grasslandData[grasslandData$Site == "AZ"
+                           & grasslandData$Quad == "SG2"
+                           & grasslandData$Species == "Aristida longiseta",]
+# this should be a data.frame
+dat <- sampleDat
 #
-# testOutput <- assign(dat = dat,
-#                      inv = inv,
-#                      dorm = 1,
-#                      buff = .05,
-#                      buffGenet = .001,
-#                      clonal =  TRUE,
-#                      flagSuspects = TRUE)
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+sampleInv<- grasslandInventory[["q45"]]
+# this should be an integer vector
+inv <- sampleInv
+
+testOutput <- assign(dat = dat,
+                     inv = inv,
+                     dorm = 1,
+                     buff = .05,
+                     buffGenet = .001,
+                     clonal =  TRUE,
+                     flagSuspects = TRUE)
 
 
 # # ggplot(testOutput) +

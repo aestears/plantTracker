@@ -247,10 +247,10 @@
     # last year of sampling?
     for (i in (firstYearIndex+1):length(inv)) {
       ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
-      # 'tempPreviousYear' and 'tempCurrentYear' are not far enough apart to exceed
-      # the 'dormancy' argument. If dormancy is not exceeded, then go ahead with
-      # this loop. If it is, then freshly redefine 'tempPreviousYear' and proceed
-      # to the next 'i'
+      # 'tempPreviousYear' and 'tempCurrentYear' are not far enough apart to
+      # exceed the 'dormancy' argument. If dormancy is not exceeded, then go
+      # ahead with this loop. If it is, then freshly redefine 'tempPreviousYear'
+      # and proceed to the next 'i'
       if (inv[i] - inv[i-1] > (dorm+1)) { ## if the gap between years EXCEEDS
         # the dormancy argument
         ## put the 'tempPreviousYear' data into the 'assignOut' d.f, making sure
@@ -268,8 +268,8 @@
         tempPreviousYear <- dat[dat$Year==inv[i],]
 
         ## determine if the tempPreviousYear data.frame has any data
-        if (nrow(tempPreviousYear) < 1) { ## if there is NOT data in year i, then
-          # go to next i (but only after overwriting the tempPreviousYear
+        if (nrow(tempPreviousYear) < 1) { ## if there is NOT data in year i,
+          # then go to next i (but only after overwriting the tempPreviousYear
           # data.frame with data from the next i)
           tempPreviousYear <- dat[dat$Year==inv[i+1],]
           next
@@ -312,13 +312,6 @@
         ## need to get the sf data.frame of the 'next' year (year 'i')
         tempCurrentYear <-  sf::st_as_sf(dat[dat$Year==inv[i],])
 
-        # if (nrow(tempCurrentYear)>0) { ## if there is data in the
-        #   # tempCurrentYear d.f (and clonal arg. is true), then assign genetIDs
-        #   tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear,
-        #                            clonal = clonal,
-        #                            buffGenet = buffGenet)
-        # }
-
         ## MAKE SURE THERE IS DATA IN YEAR i-1 (tempPreviousYear isn't empty) If
         # not, then go to the next i (only after replacing 'tempPreviousYear'
         # with the tempCurrentYear data.frame)
@@ -330,12 +323,15 @@
           # don't get these data later in the 'orphans' section
           if (nrow(tempCurrentYear) > 0) {
             ## get a d.f that contains the obs. w/ no trackIDs
-            tempTrackIDs <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
+            tempTrackIDs <- tempCurrentYear[
+              is.na(tempCurrentYear$trackID)==TRUE,]
 
             ## assign them genetIDs first
-            tempCurrentYear <- ifClonal(tempCurrentYear, clonal = clonal, buffGenet = buffGenet)
+            tempCurrentYear <- ifClonal(tempCurrentYear, clonal = clonal,
+                                        buffGenet = buffGenet)
             ## add trackIDs to the tempCurrentYear data.frame
-             tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
+             tempCurrentYear[is.na(
+               tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
                tempTrackIDs$sp_code_6, "_", tempTrackIDs$Year, "_",
                tempTrackIDs$genetID)
 
@@ -451,11 +447,7 @@
             ## go to next i
             next
             ## end of 'else' that has steps if tempCurrentYear is empty
-          } else { ## if the tempCurrentYear data DOES exist,
-            # ## AGGREGATE BY GENET for year i (if clonal = TRUE)
-            # tempCurrentYear <- ifClonal(cloneDat = tempCurrentYear, clonal = clonal,
-            #                          buffGenet = buffGenet)
-
+          } else { ## if the tempCurrentYear data DOES exist
             ## FIND OVERLAPPING POLYGONS
             ## get the amount of overlap between each polygon
             overlapArea <- suppressWarnings(sf::st_intersection(tempPreviousBuff,
@@ -480,19 +472,6 @@
               overlapArea$overlappingArea <- sf::st_area(overlapArea$geometry)
 
               overlapArea <- sf::st_drop_geometry(overlapArea)
-
-              # ## aggregate the overlaps by rows (by 'parents')
-              # overlaps <- stats::aggregate(
-              #   overlapArea$overlappingArea, by = list(
-              #     overlapArea$trackID, overlapArea$genetID.1), FUN = sum)
-              #
-              #
-              # names(overlaps) <- c("parentTrackID", "childGenetID",
-              #                      "overlappingArea")
-
-              # overlaps$childGenetID <- paste0(
-              #   "genet__", overlaps$childGenetID, "__",seq(
-              #     from = 500, by = 1, length.out = nrow(overlaps)))
 
               ## get only the necessary data from the overlapArea d.f
               overlaps <- overlapArea[,c("parentName", "childName",
@@ -530,24 +509,14 @@
 
               overlaps <- temp
 
-              # ## transpose the 'overlaps' matrix so that we can aggregate by
-              # # genet (genetID are rows, trackID are columns)
-              # overlaps <- t(overlaps)
-              # ## simplify the row names so they only have the genetID number
-              # overlaps <- as.data.frame(overlaps)
-              # overlaps$genetID <- as.numeric(sapply(strsplit(rownames(overlaps),
-              #                                                "__"),
-              #                                       unlist)[2,])
-
-              # overlaps[is.na(overlaps)==TRUE] <- 0
-
               ## each child can have only one parent, so if there is only ever
               # one value in each column, than the next step is easy... each
               # column gets the trackID of the 'parent' that it overlaps with
               multParents <- apply(X = overlaps, MARGIN = 2, FUN = function(x)
                 sum(is.na(x)==FALSE))
               # does each child only have one parent?
-              if (sum(multParents > 1) != 0) {  ## if no (at least one child has more than one parent)...
+              if (sum(multParents > 1) != 0) {  ## if no (at least one child has
+                # more than one parent)...
                 ## get a vector of individuals with 'ties' (>1 parent)
                 ties <- names(multParents[multParents > 1])
                 for (m in 1:ncol(overlaps[,ties])) {
@@ -613,73 +582,7 @@
               # rows that correspond to the genetID of the child
               tempCurrentYear[match(nameDF$childIndex, tempCurrentYear$index),
                               "trackID"] <- nameDF$parentTrackID
-
-            #   # ## aggregate the overlap data by genetID
-            #   # overlapsTemp <- stats::aggregate(
-            #   #   overlaps[,1:(ncol(overlaps)-1)], by = list(overlaps$genetID),
-            #   #   FUN = sum)
-            #   #
-            #   # temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
-            #   # ## fix rownames (childGenetID)
-            #   # rownames(temp) <- paste0("genet_",overlapsTemp$Group.1)
-            #   # ## fix colnames (parentTrackID)
-            #   # names(temp) <- names(overlaps)[names(overlaps)!="genetID"]
-            #   #
-            #   # overlaps <- temp
-            #   #
-            #   # ## transpose the matrix back so that each row is a parent and each
-            #   # # column is a child
-            #   # overlaps <- t(overlaps)
-            #
-            #   ## each parent can only have one child, and each child can only
-            #   # have one parent (since we've already clustered the polygons by
-            #   # genet). Each parent-child pair will be determined by the
-            #   # greatest amount of overlap. This is done by going through the
-            #   # 'overlaps' matrix and finding the largest overlap value. Then,
-            #   # the trackID from that parent will be assigned to the child.
-            #
-            #   whileOverlaps <- overlaps
-            #   done <- FALSE
-            #   counter <- 0
-            #   while (!done) {
-            #     ## get the row and column indices of the maximum value
-            #     maxInds <- which(whileOverlaps == max(whileOverlaps,
-            #                                           na.rm = TRUE),
-            #                      arr.ind = TRUE)
-            #     ## get the trackID of the parent
-            #     maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
-            #     ## get the numeric genetID of the child
-            #     maxChild <- strsplit(colnames(
-            #       whileOverlaps)[maxInds[1,2]],"_")[[1]][2]
-            #
-            #     ## put the trackID from the parent into the tempCurrentYear d.f
-            #     # rows that correspond to the genetID of the child
-            #     tempCurrentYear[tempCurrentYear$genetID==maxChild,
-            #                  "trackID"] <- maxParent
-            #
-            #     ## overwrite the 'max' value with an NA, so we can find the next
-            #     # largest value
-            #     whileOverlaps[maxInds[1,1],maxInds[1,2]] <- NA
-            #     ## overwrite all of the other values in the parent row and the
-            #     # child column with NAs also (since each parent can only have
-            #     # one child, and each child can only have one parent)
-            #     whileOverlaps[maxInds[1,1],] <- NA
-            #     whileOverlaps[,maxInds[1,2]] <- NA
-            #
-            #
-            #     counter <- counter + 1 ## update the 'counter'
-            #     if (counter > 500) {
-            #       stop("tracking 'while' loop is running out of control!")
-            #     } ## end of 'if' thats checking that the counter isn't too large
-            #
-            #     if (sum(whileOverlaps, na.rm = TRUE)==0) {
-            #       ## if the sum of the  matrix is empty (is all NAs), then stop
-            #       # the while loop
-            #       done <- TRUE
-            #     } ## end of 'if' that's redefining 'done' if matrix is all NAs
-            #   } ## end of 'while' that's finding the max values in the matrix
-            #   ## end of 'if' that contains the work if there ARE overlaps
-            # }
+            }
 
             ## make optional checks that will flag obs. as 'suspect'
             if (flagSuspects == TRUE) {
@@ -1003,25 +906,25 @@ return(assignOut)
 #
 # prepares the dataset to feed into the 'assign' function (the 'trackSpp'
 # function will do this ahead of time when the user calls it)
-sampleDat <- grasslandData[grasslandData$Site == "AZ"
-                           & grasslandData$Quad == "SG2"
-                           & grasslandData$Species == "Bouteloua rothrockii",]
-# this should be a data.frame
-dat <- sampleDat
+# sampleDat <- grasslandData[grasslandData$Site == "AZ"
+#                            & grasslandData$Quad == "SG2"
+#                            & grasslandData$Species == "Bouteloua rothrockii",]
+# # this should be a data.frame
+# dat <- sampleDat
+# #
+# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # # to tell the 'assign' function when the quadrat was sampled
+# sampleInv<- grasslandInventory[["SG2"]]
+# # this should be an integer vector
+# inv <- sampleInv
 #
-# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # to tell the 'assign' function when the quadrat was sampled
-sampleInv<- grasslandInventory[["SG2"]]
-# this should be an integer vector
-inv <- sampleInv
-
-testOutput <- assign(dat = dat,
-                     inv = inv,
-                     dorm = 1,
-                     buff = .05,
-                     buffGenet = .001,
-                     clonal =  TRUE,
-                     flagSuspects = TRUE)
+# testOutput <- assign(dat = dat,
+#                      inv = inv,
+#                      dorm = 1,
+#                      buff = .05,
+#                      buffGenet = .001,
+#                      clonal =  TRUE,
+#                      flagSuspects = TRUE)
 
 
 # # ggplot(testOutput) +

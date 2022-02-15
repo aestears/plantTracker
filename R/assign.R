@@ -547,29 +547,72 @@
               multParents <- apply(X = overlaps, MARGIN = 2, FUN = function(x)
                 sum(is.na(x)==FALSE))
               # does each child only have one parent?
-              if (sum(multParents > 1) == 0) {  # if yes:
+              if (sum(multParents > 1) != 0) {  ## if no (at least one child has more than one parent)...
+                ## get a vector of individuals with 'ties' (>1 parent)
+                ties <- names(multParents[multParents > 1])
+                for (m in 1:ncol(overlaps[,ties])) {
+                  ## get the highest value between the two ties
+                  winner <- max(overlaps[,ties][,m], na.rm = TRUE)
+                  # if there is only one 'winner':
+                  if (length(winner) ==1) {
+                    ## set all other values that aren't the highest in that
+                    # column to 'NA'
+                    overlaps[,ties][,m][overlaps[,ties][,m] != winner] <- NA
+                  } else if (length(winner) > 1) {
+                    ##  if there is more than 1 winner (i.e. if there are two
+                    # parents with the exact same overlap with the child), then
+                    # we have to break the tie some other way. Use the distance
+                    # between the centroids to do this
 
-                ## get the numeric genetIDs of the children (for each parent)
-                nameDF <- stack(apply(X = t(overlaps), MARGIN = 1,
-                      function(x) names(x[which(is.na(x)==FALSE)])))
-                # rename the columns so they make sense
-                names(nameDF) <- c("parentTrackID", "childIndex")
+                    ## get the name of the problem 'child'
+                    badChild_name <- names(overlaps[,ties])[m]
+                    ## get the spatial data for that child
+                    badChild <- suppressWarnings(
+                      sf::st_centroid(
+                        tempCurrentYear[tempCurrentYear$index == as.numeric(
+                          strsplit(badChild_name, "__")[[1]][2]),]))
 
-                ## get just the index for the 'children'
-                nameDF$childIndex <- as.numeric(sapply(
-                  strsplit(
-                    as.character(nameDF$childIndex), split = "__"), unlist)[2,])
+                    ## get the names of the problem 'parents'
+                    badParents_names <- rownames(
+                      overlaps[is.na(overlaps[,ties][,m])==FALSE,])
+                    # get the spatial data for those parents
+                    badParents <- suppressWarnings(
+                      sf::st_centroid(
+                        tempPreviousYear[tempPreviousYear$trackID
+                                         %in% badParents_names,]))
 
-                ## put the trackID from the parent into the tempCurrentYear d.f
-                # rows that correspond to the genetID of the child
-                tempCurrentYear[match(nameDF$childIndex, tempCurrentYear$index),
-                                "trackID"] <- nameDF$parentTrackID
-                tempCurrentYear[tempCurrentYear$genetID==maxChild,
-                                "trackID"] <- maxParent
-              } else {
-                # if no (at least one child has more than one parent)
+                    ## compare the centroid distances between parents and child
+                    dists <- sf::st_distance(badChild, badParents,
+                                             which = 'Euclidean')
+                    rownames(dists) <- badChild_name
+                    colnames(dists) <- badParents_names
 
+                    smallDist <- colnames(dists)[which(dists == min(dists))]
+                    ## replace the non-winning cell in the 'overlaps' matrix
+                    # with an 'NA'
+                    overlaps[rownames(overlaps) != smallDist, badChild_name] <- NA
+                  }
+                } # end of loop going through each tie
               }
+
+              ## after the previous loop, there is now only one parent for each
+              # child. Proceed w/ assigning appropriate trackIDs to children
+
+              ## get the numeric genetIDs of the children (for each parent)
+              nameDF <- stack(apply(X = t(overlaps), MARGIN = 1,
+                                      function(x) names(x[which(is.na(x)==FALSE)])))
+              # rename the columns so they make sense
+              names(nameDF) <- c("parentTrackID", "childIndex")
+
+              ## get just the index for the 'children'
+              nameDF$childIndex <- as.numeric(sapply(
+                strsplit(
+                  as.character(nameDF$childIndex), split = "__"), unlist)[2,])
+
+              ## put the trackID from the parent into the tempCurrentYear d.f
+              # rows that correspond to the genetID of the child
+              tempCurrentYear[match(nameDF$childIndex, tempCurrentYear$index),
+                              "trackID"] <- nameDF$parentTrackID
 
             #   # ## aggregate the overlap data by genetID
             #   # overlapsTemp <- stats::aggregate(
@@ -947,7 +990,7 @@
   assignOut[sf::st_intersects(assignOut, buffEdge, sparse = FALSE),
             "nearEdge"] <- TRUE
 
-  ## clean up output assignOuta.frame (remove NAs and unneeded columns)
+  ## clean up output assignOut data.frame (remove NAs and unneeded columns)
   assignOut <- assignOut[is.na(assignOut$Species)==FALSE,
                          !(names(assignOut) %in% c("ghost","genetID", "index",
                                                    "sp_code_6"))]

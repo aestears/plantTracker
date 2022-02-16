@@ -493,6 +493,7 @@
               ## aggregate by parent genet, so that each genet has only one
               # row of data (if clonal == TRUE)
               if (clonal == TRUE) {
+                oldNames <- names(overlapsTemp)
                 overlapsTemp <- aggregate(x = overlapsTemp[,2:ncol(overlapsTemp)],
                                           by = list(
                                             "parentName" =
@@ -500,17 +501,18 @@
                                           FUN = sum, na.rm = TRUE)
                 # change '0's to 'NA's
                 overlapsTemp[which(overlapsTemp==0, arr.ind = TRUE)] <- NA
+                names(overlapsTemp) <- oldNames
               }
 
-              ## remove old "parentTrackID" column
-              temp <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
               ## add parentTrackID as rownames
-              rownames(temp) <- as.character(overlapsTemp$parentName)
+              rownames(overlapsTemp) <- as.character(overlapsTemp$parentName)
               ## add childGenetID as the column names
-              names(temp)  <- sapply(strsplit(names(overlapsTemp)[2:ncol(
-                overlapsTemp)], "overlappingArea."), unlist)[2,]
-
-              overlaps <- temp
+              names(overlapsTemp)  <- c("parentName", sapply(strsplit(names(overlapsTemp)[2:ncol(
+                overlapsTemp)], "overlappingArea."), unlist)[2,])
+              ## remove old "parentTrackID" column
+              overlaps <- as.data.frame(overlapsTemp[,2:ncol(overlapsTemp)])
+              rownames(overlaps) <- rownames(overlapsTemp)
+              names(overlaps) <- names(overlapsTemp)[2:ncol(overlapsTemp)]
 
               ## determine if clonality is allowed...
               if (clonal == TRUE) { ## if yes, then each parent can have
@@ -1020,13 +1022,13 @@ return(assignOut)
   }
 
 # testing -----------------------------------------------------------------
- # example input data ------------------------------------------------------
+# example input data ------------------------------------------------------
 #
-# prepares the dataset to feed into the 'assign' function (the 'trackSpp'
-# function will do this ahead of time when the user calls it)
+# ## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# # function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "AZ"
-#                            & grasslandData$Quad == "SG2"
-#                            & grasslandData$Species == "Bouteloua rothrockii",]
+#                            & grasslandData$Quad == "SG4"
+#                            & grasslandData$Species == "Ambrosia artemisiifolia",]
 # # this should be a data.frame
 # dat <- sampleDat
 # #
@@ -1040,15 +1042,15 @@ return(assignOut)
 #                      inv = inv,
 #                      dorm = 1,
 #                      buff = .05,
-#                      buffGenet = .001,
-#                      clonal =  TRUE,
+#                      # buffGenet = .001,
+#                      clonal =  FALSE,
 #                      flagSuspects = TRUE)
-
-
-# # ggplot(testOutput) +
-# #   geom_sf(aes(fill = as.factor(trackID)), alpha = 0.5) +
-# #   scale_fill_discrete(guide = FALSE) +
-# #   theme_classic()
+#
+#
+# ggplot(testOutput) +
+#   geom_sf(aes(fill = as.factor(trackID),colour = Year), alpha = 0.5) +
+#   scale_fill_discrete(guide = "none") +
+#   theme_classic()
 # #
 # # ggplot() +
 # #   geom_sf(data = st_buffer(testOutput[testOutput$Year==2009,],.05), fill = "purple", alpha = 0.5) +

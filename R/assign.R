@@ -217,7 +217,6 @@
   ## give all individuals in year #1 a '0' in the ghost column
   tempPreviousYear$ghost <- 0
 
-
   ## check that first year in quadrat inventory and first year of
   # actual data match
   if (min(dat$Year) > inv[1]) { ## if the year of 'tempPreviousYear' is NOT
@@ -498,7 +497,9 @@
                                           by = list(
                                             "parentName" =
                                               overlapsTemp$parentName),
-                                          FUN = sum)
+                                          FUN = sum, na.rm = TRUE)
+                # change '0's to 'NA's
+                overlapsTemp[which(overlapsTemp==0, arr.ind = TRUE)] <- NA
               }
 
               ## remove old "parentTrackID" column
@@ -518,8 +519,9 @@
                 ## each child can have only one parent, so if there is only ever
                 # one value in each column, than the next step is easy... each
                 # column gets the trackID of the 'parent' that it overlaps with
-                multParents <- apply(X = overlaps, MARGIN = 2, FUN = function(x)
-                  sum(is.na(x)==FALSE))
+                multParents <- apply(X = overlaps,
+                                     MARGIN = 2,
+                                     FUN = function(x) sum(is.na(x)==FALSE))
                 # does each child only have one parent?
                 if (sum(multParents > 1) != 0) {  ## if no (at least one child has
                   # more than one parent)...

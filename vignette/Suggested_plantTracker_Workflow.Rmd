@@ -1,7 +1,7 @@
 ---
 title: "Suggested plantTracker Workflow"
 author: Alice Stears
-date: 29 September 2021
+date: 18 February 2022
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Suggested_plantTracker_Workflow}
@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, include = FALSE}
-library(plantTracker)
+#library(plantTracker)
 library(ggplot2)
 library(sf)
-# library(devtools)
-# load_all()
+library(devtools)
+load_all()
 ```
 
 
@@ -53,7 +53,7 @@ Below are the basic requirements for these data objects.
 
 #### *1.1* The `dat` data frame must . . .
 
-*  ... be an sf data.frame. More on this below...
+*  ... be an sf data.frame. More on this below in section *1.1.1*...
 
 *  ... contain a row for each individual observation in each year. 
 
@@ -116,7 +116,7 @@ the ride" in any analysis using plantTracker functions.
 
 Here's what some of the example `dat` data (from the 'SG2' quadrat at the 
 'AZ' site in 1922) look like when plotted spatially:    
-```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "Figure 1.1: Spatial map of a subset of example `dat` dataset"}
+```{r echo = FALSE,  fig.width=8, fig.align = 'center', fig.cap = "**Figure 1.1** *: Spatial map of a subset of example `dat` dataset*"}
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
                               grasslandData$Year == 1922, ]
@@ -148,6 +148,113 @@ each time point for each organism (or ramet), and is accompanied by the required
 metadata detailed above. For example, plantTracker functions could be used to 
 estimate tree demographic rates at the scale of 100 m x 50 m plots.
 
+##### *1.1.1* Getting your data into the 'sf' data format 
+As mentioned above, plantTracker uses the 'sf' R package to deal with spatial 
+data. The map data that plantTracker was built to analyze is inherently spatial, 
+so you need to know how to the basics of dealing with spatial data in R if you 
+want to use plantTracker! There are many good resources to help you orient 
+yourself to working with spatial data in R generally:   
+
+  *  [https://cengel.github.io/R-spatial/intro.html](https://cengel.github.io/R-spatial/intro.html)    
+  *  [https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/](https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/)    
+  
+And the 'sf' package more specifically:       
+
+  *  [https://cran.r-project.org/web/packages/sf/sf.pdf](https://cran.r-project.org/web/packages/sf/sf.pdf)      
+  *  [https://r-spatial.github.io/sf/](https://r-spatial.github.io/sf/)
+
+These resources provide a great orientation, and while I recommend looking over 
+them if you're new to working with spatial data in R, I've included a brief 
+tutorial for uploading shapefiles into R as 'sf' data frames. 
+
+Most of the published chart-quadrat datasets have the map data stored as 
+shapefiles in complex file structures, which can be a bit confusing to navigate. 
+plantTracker requires all of your data (for all species, plots and years) to be 
+in one single data frame, so this code shows how to navigate through a complex 
+file structure to to pull out shapefiles and put them into one single sf data 
+frame. For this exapmle, I'll use data from Central Plains Experimental Research 
+Location in Colorado, which has been published in [this data paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3556779?backTo=/collections/Cover_density_and_demographics_of_shortgrass_steppe_plants_mapped_1997_2010_in_permanent_grazed_and_ungrazed_quadrats/3305970). In this dataset, shapefiles for each quadrat are stored in 
+their own folder. Within that folder there are two shapefiles for each year: one 
+that contains map data for polygons, and one that contains data for points. The 
+following code reads in those shapefiles, transorms the points to polygons of a 
+fixed radius, and puts all the data into one sf data frame. If you want to 
+follow along, download the 'shapefiles.zip' file from the data paper, un-zip it, 
+and name it "CO_shapefiles". 
+```{r, echo=FALSE, include=FALSE, eval = TRUE}
+# get the working directory name
+wdName <- c("/Users/Alice/Dropbox/Grad School/Research/Trait Project/Data/Adler Dowloaded Datasets/Adler_CO_Downloaded Data/")
+```
+```{r, warning=FALSE, eval = FALSE}
+#  save a character vector of the file names in the file that contains the 
+# shapefiles (in this case, called "CO_shapefiles"), each of which is a quadrat
+# note: 'wdName' is a character string indicating the path of the directory 
+# containing the 'CO_shapefiles' folder
+quadNames <- list.files(paste0(wdName,"CO_shapefiles/"))
+
+# now we'll loop through the quadrat folders to download the data
+for (i in 1:2){#length(quadNames)) {
+  # get the names of the quadrat for this iteration of the loop
+  quadNow <- quadNames[i]
+  #  get a character vector of the unique quad/Year combinations of data in 
+  # this folder that contain polygon data
+  quadYears <- quadYears <-  unlist(strsplit(list.files(
+    paste0(wdName, "CO_shapefiles/",quadNow,"/"),
+    pattern = ".shp$"), split = ".shp"))
+  # loop through each of the years in this quadrat
+  for (j in 1:length(quadYears)) {
+    # save the name of this quadYear combo
+    quadYearNow <- quadYears[j]
+    # read in the shapefile for this quad/year combo as an sf data frame 
+    # using the 'st_read()' function from the sf package 
+    shapeNow <- sf::st_read(dsn = paste0(wdName,"CO_shapefiles/",quadNow), 
+                            #  the 'dsn' argument is the folder that 
+                            # contains the shapefile files--in this case, 
+                            # the folder for this quadrat
+                            layer = quadYearNow) # the 'layer' argument has the 
+    # name of the shapefile, without the filetype extension! This is because each 
+    # shapefile consists of at least three separate files, each of which has a 
+    # unique filetype extension. 
+    # the shapefiles in this dataset do not have all of the metadata we 
+    # need, and have some we don't need, so we'll remove what we don't need and 
+    # add columns for 'site', 'quad', and 'year'
+    shapeNow$Site <- "CO"
+    shapeNow$Quad <- quadNow
+    # get the Year for the shapefile name--in this case it is the last for 
+    # numbers of the name
+    shapeNow$Year <- as.numeric(strsplit(quadYearNow, split = "_")[[1]][4])
+    # determine if the 'current' quad/year contains point data or polygon data
+    if (grepl(quadYearNow, pattern = "^pnt")) { # if quadYearNow has point data
+      # remove the columns we don't need
+      shapeNow <- shapeNow[,!(names(shapeNow)
+                              %in% c("coords_x1", "coords_x2", "coords_x1_", 
+                                     "coords_x2_", "coords_x1.1", "coords_x2.1"))]
+      # reformat the point into a a very small polygon 
+      # (a circle w/ a radius of .003 m)
+      shapeNow <- sf::st_buffer(x = shapeNow, dist = .003)
+      # add a column indicating that this observation was originally 
+      # mapped as a point
+      shapeNow$type <- "point"
+    } else { # if quadYearNow has polygon data
+      # remove the columns we don't need
+      shapeNow <- shapeNow[,!(names(shapeNow) %in% c("SP_ID", "SP_ID_1", "x", "y", "area"))]
+      # add a column indicating that this observation was originally 
+      # mapped as a polygon
+      shapeNow$type <- "polygon"
+    }
+    # now we'll save this sf data frame 
+    if (i == 1 & j == 1) { # if this is the first year in the first quadrat
+      outDat <- shapeNow
+    } else { # if this isn't the first year in the first quadrat, simply rbind 
+      # the shapeNow sf data frame onto the previous data 
+      outDat <- rbind(outDat, shapeNow)
+    }
+  }
+}
+
+# Now, all of the spatial data are in one sf data frame, and are ready to be used in plantTracker functions! 
+```
+
+
 #### *1.2* The `inv` list must . . .
 
 * ... be a named list
@@ -165,16 +272,36 @@ it must be a four-digit number in `inv`). Make sure this is the years the
 quadrat was actually sampled, not just the years that have data in the 'dat' 
 argument! This argument allows the function to differentiate between years when 
 the quadrat wasn't sampled and years when there just weren't any individuals of 
-a species present in that quadrat. 
+a species present in that quadrat. If a quadrat wasn't sampled in a given year, 
+don't put an 'NA' in `inv` for that year! Instead, just skip that year. 
 
 Here is an example of an `inv` argument that corresponds to the example `dat` 
 argument above. The quadrats that have data in `dat` are "SG2" and "SG4",  so 
 there are elements in `inv` that correspond to each of these quadrats. 
-```{r echo=FALSE, fig.align='center'}
+```{r echo=FALSE, fig.align='center', fig.cap = "**Figure 1.2**: *An example of the `inv` argument*"}
 (inv <- grasslandInventory[c( "SG2", "SG4")])
 ```
-**Figure 1.2**: An example of the `inv` argument
 
+If you already have a quadrat inventory as a data frame, it isn't complicated to 
+reformat it to work with plantTracker functions.
+For example, if your quadrat inventory data frame looks like this: 
+```{r, echo = FALSE}
+data.frame("quad1" = c(2000, 2001, NA, 2003, 2004, 2005, 2006, 2007),
+           "quad2" = c(2000:2007), 
+           "quad3" = c(2000, NA, 2002, 2003, 2004, 2005, 2006, 2007))
+```
+Then do this to get it into a format ready for plantTracker: 
+```{r}
+quadInv_DF <- data.frame("quad1" = c(2000, 2001, NA, 2003, 2004, 2005, 2006, 2007),
+           "quad2" = c(2000:2007), 
+           "quad3" = c(2000, NA, 2002, 2003, 2004, 2005, 2006, 2007))
+
+# use the 'as.list()' function to transform your data frame into a named list
+quadInv_list <- as.list(quadInv_DF)
+# we still need to remove the 'NA' values, which we can do using the 
+# 'lapply()' function
+(quadInv_list <- lapply(X = quadInv_list, FUN = function(x) x[is.na(x) == FALSE]))
+```
 
 #### *1.3* Checking the `inv` and `dat` arguments  
 This step is optional, but can be useful if you're unsure whether your `dat` and 
@@ -250,7 +377,7 @@ scenario, in years 3 and 4 there are not polygons of species 'A' that are in the
 same location as our focal individual, but there is a polygon in year 4 that 
 overlaps our focal individual. If dorm = 1, then our focal individual would 
 get a 0 for survival, but if dorm = 2, then it would get a 1 for survival. 
-```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.1: A visualization of the 'dormancy' scenario described above."}
+```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*"}
 
 exampleSmall <- exampleDat[unique(c(30, 42, 44, 25,  2, 61, 59, 52, 45,  8, 42, 37, 60, 34, 45, 38, 26, 49, 52, 46)),]
 
@@ -311,11 +438,10 @@ dormDF <- data.frame("Species" = c("tree A", "shrub B", "tree C", "forb D", "for
 knitr::kable(dormDF, caption = "**Table 2.1**: Example 'dorm' data.frame", )
 ```
   
-  
-  *Important Note* Be very careful about how you define the 'dorm' argument. The 
-  bigger the 'dorm' argument, the more likely you are to overestimate survival. 
-  For annually-sampled data, I would need a very biologically-compelling reason 
-  to to specify a 'dorm' argument greater than 1 year.
+ +  *Important Note:* Be very careful about how you define the 'dorm' argument. The 
+    bigger the 'dorm' argument, the more likely you are to overestimate survival. 
+    For annually-sampled data, I would need a very biologically-compelling reason 
+    to to specify a 'dorm' argument greater than 1 year.
   
 * 'buff' This is a positive numeric value that indicates how much an individual 
 can move from year 1 to year 2 and still be considered the same individual 
@@ -328,7 +454,7 @@ data in `dat` is measured in meters, and you want to allow a plant to 'move'
 `buff = .15` in your call to `trackSpp()`. If you want to allow no movement, use 
 `buff = 0`. Below is a visualization of two different 'buff' scenarios.
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the *same* individual and receive the same trackID."}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*"}
 
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
@@ -374,7 +500,7 @@ ggplot(data = exampleDatIDs
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as *different* individuals and receive different trackIDs."}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*"}
 
 exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .03)
 exampleBuffed$Year <- 1922
@@ -427,19 +553,29 @@ but with a column called "clonal").
 
 The following arguments to `trackSpp()` are only required in certain contexts. 
 
-* 'buffGenet' is a numeric argument that is only required if `clonal = TRUE` 
+* 'buffGenet' is an argument that is only required if `clonal = TRUE` 
 or if 'clonal' is a data frame that contains at least a single 'TRUE' in the 
 "clonal" column. 'buffGenet' is a numeric value that indicates how close
-polygons of the same species in the same year must be to one another in order to 
-be considered parts of the same genetic individual (ramets of the same genet). 
-This argument is passed to the `groupByGenet()` function, which assigns the same 
-trackID to individuals that are within the 'buffGenet' buffer of each other. 
-The value of 'buffGenet' must be greater than or equal to zero, and must be in 
-the same units as the spatial data in `dat`. 'buffGenet' can be a single numeric 
-value which will be applied to all species present in `dat`, or can be specified 
-uniquely for each species by creating a data frame that contains a 'buffGenet' 
-argument for each species (analogous to the data frame for the 'dorm' argument 
-shown in Table 2.1, but with a column called "buffGenet").
+polygons of the same species must be to one another in the first year in order 
+to be considered parts of the same genetic individual (ramets of the same 
+genet). Similar to 'buff', be very careful and conservative when defining this 
+argument. A large value for 'buffGenet' can quickly lead to the entire quadrat 
+being treated as the same genetic individual! I suggest experimenting with 
+multiple values of 'buffGenet', looking at maps that show the trackID 
+assignment, and deciding on a value that leads to trackID assignments that make 
+the most biological sense to you. This argument is passed to the 
+`groupByGenet()` function, which assigns the same trackID to individuals that 
+are within the 'buffGenet' buffer of each other. Polygons are only grouped by 
+genet in the first year of data. After that point, grouping by genet happens 
+based on data in previous years. If there are multiple polygons that overlap 
+with a genet in the previous year, they are given the same trackID and are 
+considered ramets belonging to the same genet. The value of 'buffGenet' must be 
+greater than or equal to zero, and must be in the same units as the spatial data 
+in `dat`. 'buffGenet' can be a single numeric value which will be applied to all 
+species present in `dat`, or can be specified uniquely for each species by 
+creating a data frame that contains a 'buffGenet' argument for each species 
+(analogous to the data frame for the 'dorm' argument shown in Table 2.1, but 
+with a column called "buffGenet").
 
 * 'aggByGenet' is a logical argument that is only required if `clonal = TRUE` 
 or if 'clonal' is a data frame that contains at least a single 'TRUE' in the 
@@ -533,8 +669,8 @@ this individual is large enough to survive dormancy. The default value is
 These are all of the possible arguments to `trackSpp()`! 
 
 #### *2.2.* Function Output
-Below is an example of what the output of `trackSpp()` might look like, using 
-the example `dat` and `inv` data we've used so far. 
+Below is an example of a potential function call to `trackSpp()`, using 
+the example `dat` and `inv` data we've used so far. :  
 ```{r}
 datTrackSpp <- plantTracker::trackSpp(dat = dat, inv = inv,
          dorm = 1,
@@ -548,6 +684,10 @@ datTrackSpp <- plantTracker::trackSpp(dat = dat, inv = inv,
          aggByGenet = TRUE,
          printMessages = FALSE
          )
+```
+
+And here's what the output of this `trackSpp()` looks like: 
+```{r, echo = FALSE}
 temp <- datTrackSpp
 names(temp)[c(7,9,11)] <- c("basalArea", "survives_t+1", "size_t+1")
 knitr::kable(head(temp[100:120,]))
@@ -606,7 +746,13 @@ buffer zone of the same species as the focal individual) or interspecific local
 neighborhood density (consider all other plants in the buffer zone, regardless 
 of species).
 
-```{r echo = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it. "}
+* Third, the user can decide whether the neighborhood density value 
+(either a count or area) for each focal individual is a single value that sums 
+the number or area of neighbors, or whether it is actually 
+a list that provides the neighborhood density for each species present in the 
+neighborhood. 
+
+```{r echo = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.1**: *This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it.*"}
 datComp <- datTrackSpp[datTrackSpp$Year == 1922,]
 
 ggplot(datComp) +
@@ -636,7 +782,7 @@ areaMethod <- areaMethodTemp[st_is(areaMethodTemp, c("POLYGON", "MULTIPOLYGON"))
 
 ```
 
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5."}
+```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.2**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.*"}
 ggplot(datComp) +
   geom_sf(data = 
             suppressWarnings(sf::st_buffer(datComp[datComp$trackID == "HETCON_1922_6",], .1)), 
@@ -660,7 +806,7 @@ ggplot(datComp) +
  scale_color_discrete(type = c( "#009E73", "#F0E442","#E69F00",  "#56B4E9", "#A6A6A6")) 
 ```
 
-```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462."}
+```{r echo = FALSE, warnings = FALSE, fig.width=7, fig.align = 'center', fig.cap = "**Figure 3.3**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.*"}
 areaMethodTemp <- suppressWarnings(st_intersection(st_buffer(
   datComp[datComp$trackID == "HETCON_1922_6",], .1), datComp))
 areaMethod <- areaMethodTemp[areaMethodTemp$trackID.1 != "HETCON_1922_6",]
@@ -719,6 +865,22 @@ meaning that only individuals of the same species as the focal individual will
 be considered when calculating the competition metric. If no value is provided, 
 it will default to "allSpp". 
 
+* 'output' This is a character string that is set to either 'summed' or 
+'bySpecies'. The default is 'summed'. This argument is only important to 
+consider if you are using compType = 'allSpp'. If output = 'summed', then only 
+one count/area value is returned for each individual. This value is the total 
+count or area of all neighbors within the focal species buffer zone, regardless 
+of species. If output = 'bySpecies', there is a count or area value returned for 
+each species present in the buffer zone. For example, you are using 
+'getNeighbors()' with 'method' = 'count' and 'compType' = 'allSpp'. A focal 
+individual in your dataset has seven other plants inside its buffer zone, three 
+of species A, two of species B, and 2 of species C. If 'output' = 'summed', the 
+value in the 'neighbors_count' column of the returned data frame will simply 
+contain the value '7'. If 'output' = 'bySpecies', the 'neighbors_count' column 
+for this individual will actually contain a named list 
+`{r} list("Species A "= 5, "Species B" = 3, "Species C" = 7)`. The default value 
+of 'output' is 'summed'.   
+
 * 'trackID/species/quad/year/site/geometry' These arguments only need to be 
 included if the columns in `dat` that contain the data for trackID, species, 
 site, quadrat, year and geometry of each observation are *different* from the
@@ -742,8 +904,8 @@ datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
              buff = .15,
              method = "area",
              compType = "allSpp")
-
-
+```
+```{r, echo = FALSE}
 temp <- datNeighbors
 rownames(temp) <- NULL
 names(temp)[c(8,10,12)] <- c("basalArea", "survives_t+1", "size_t+1")

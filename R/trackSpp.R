@@ -489,7 +489,6 @@ values of either FALSE or TRUE for each species with no NAs.")
   units(dat$basalArea_ramet) <- NULL
 
   ## get the site(s)
-
   for(i in unique(dat$Site)) { ## i = the name of the site
     if(printMessages==TRUE){
       cat(paste0("Site: ",i, "\n"))

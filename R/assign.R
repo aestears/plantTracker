@@ -803,6 +803,9 @@
               ## add the orphan trackIDs to the 'orphan's data.frame
               orphans$trackID <- paste0(orphans$sp_code_6, "_",orphans$Year, "_", 1:nrow(orphans))
 
+              ## populate the 'basalArea_genet' column for the orphans
+              orphans$basalArea_genet <- orphans$basalArea_ramet
+
               ## check that the orphans don't come after a gap in sampling (if
               # they do, then leave NA's for all demographic values, if they
               # don't, then proceed with the following code)

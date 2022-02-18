@@ -584,13 +584,13 @@ per year.")
 # names(datIDs)[c(3,4)] <- c("speciesName", "uniqueID")
 #
 # dataTest <- getNeighbors(dat = datIDs, buff = .15, method = "count",
-#              compType = 'allSpp',
+#              compType = 'allSpp', output = 'summed',
 #              focal = 'genet',
 #              species = "speciesName",
 #              trackID = "uniqueID")
 #
-#
-#
+
+
 # plot(sf::st_buffer(dataTest[dataTest$uniqueID == "AGRSMI_1997_13" &
 #                           dataTest$Quad == "ungz_5a" & dataTest$Year == 1997
 #                         ,]$geometry, .15), col = "pink")

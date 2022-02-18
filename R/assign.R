@@ -792,21 +792,11 @@
             orphans <- tempCurrentYear[is.na(tempCurrentYear$trackID)==TRUE,]
             ## make sure that there are orphans
             if (nrow(orphans)>0) {
-              # give each orphan a genetID
-              orphans <- ifClonal(cloneDat = orphans, clonal = clonal, buffGenet = buffGenet)
-              ## make a unique trackID for each genetID in the 'orphan' dataset
-              orphanIDs <- data.frame(
-                "genetID" = unique(orphans$genetID), ## get
-                # the unique genetIDs of the 'orphans'
-                "trackID" = paste0(unique(
-                  orphans$sp_code_6), ## get the unique 6-letter species
-                  # code
-                  "_",unique(orphans$Year), ## get the unique year
-                  "_",c(1:length(unique(orphans$genetID)))))
+              ## orphans are NOT grouped by genet, since it is very unlikely
+              # that new recruits consist of multiple ramets
 
               ## add the orphan trackIDs to the 'orphan's data.frame
-              orphans$trackID <- orphanIDs[match(orphans$genetID,
-                                                 orphanIDs$genetID),"trackID"]
+              orphans$trackID <- paste0(orphans$sp_code_6, "_",orphans$Year, "_", 1:nrow(orphans))
 
               ## check that the orphans don't come after a gap in sampling (if
               # they do, then leave NA's for all demographic values, if they

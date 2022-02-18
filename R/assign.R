@@ -141,6 +141,11 @@
   }
 
   ## work -------------------------------------------------------------------
+  ## remove the out data.frame
+  if(exists("assignOut") == TRUE){
+    rm("assignOut")
+  }
+  ## make sure dat is in the correct sf format
   dat <- sf::st_as_sf(x = dat, sf_column_name = "geometry")
   ## add columns to the 'dat' dataset needed for output from assign()
   dat$trackID <- as.character(NA)

@@ -106,6 +106,13 @@ It is possible that the tracking function has mistakenly assigned a '1' for
 survival in year t, because it is unlikely that this individual is large
 enough to survive dormancy. The default value is \code{dormSize = .05}.}
 
+\item{inheritsFromTrackSpp}{A logical argument that is only applicable when
+'assign()' is used internally in 'trackSpp()'.}
+
+\item{nearEdgeBox}{An sf data frame indicating the bounding box of the
+quadrat. This argument is only used if 'assign()' is used internally
+in 'trackSpp()'.}
+
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \description{

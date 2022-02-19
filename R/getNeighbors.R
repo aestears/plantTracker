@@ -496,7 +496,7 @@ per year.")
       } else if (output == "bySpecies") {
         ## now aggregate by focal genet (column name = 'trackID') AND by species
         # of the neighbors
-        temp3_spp <- aggregate(x = tempAreas2$geometry,
+        temp3_spp <- stats::aggregate(x = tempAreas2$geometry,
                            by = list("Site" = tempAreas2$Site,
                                      "Quad" = tempAreas2$Quad,
                                      "Species" = tempAreas2$Species,
@@ -527,8 +527,8 @@ per year.")
         bySppDF <- bySppDF[order(bySppDF$index),]
 
         ## put the 'area' data in the correct rows in 'dat'
-        dat[match(temp3$index, dat$index),]$nBuff_area <-sf::st_area(datBuff)
-        dat[match(temp3$index, dat$index),]$neighbors_area <-
+        dat[match(bySppDF$index, dat$index),]$nBuff_area <-sf::st_area(datBuff)
+        dat[match(bySppDF$index, dat$index),]$neighbors_area <-
           bySppDF$neighbors_area
       }
     }

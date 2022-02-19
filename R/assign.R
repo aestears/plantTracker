@@ -97,6 +97,7 @@
 #'
 #' @import sf
 #' @importFrom stats aggregate reshape qnorm sd
+#' @importFrom utils stack
 
  assign <- function(dat,
                     inv,
@@ -504,7 +505,7 @@
               # row of data (if clonal == TRUE)
               if (clonal == TRUE) {
                 oldNames <- names(overlapsTemp)
-                overlapsTemp <- aggregate(x = overlapsTemp[,2:ncol(overlapsTemp)],
+                overlapsTemp <- stats::aggregate(x = overlapsTemp[,2:ncol(overlapsTemp)],
                                           by = list(
                                             "parentName" =
                                               overlapsTemp$parentName),
@@ -572,7 +573,7 @@
                         # only one row of data
                         badParents <- suppressWarnings(
                           sf::st_centroid(
-                            sf:::aggregate.sf(x = badParents[,"trackID"],
+                            stats::aggregate(x = badParents[,"trackID"],
                                               by = list("trackID" = badParents$trackID),
                                               FUN = nrow,
                                               do_union = TRUE)))
@@ -622,7 +623,7 @@
                       # only one row of data
                       badParents <- suppressWarnings(
                         sf::st_centroid(
-                          sf:::aggregate.sf(x = badParents[,"trackID"],
+                          stats::aggregate(x = badParents[,"trackID"],
                                             by = list("trackID" = badParents$trackID),
                                             FUN = nrow,
                                             do_union = TRUE)))
@@ -645,7 +646,7 @@
                 # child. Proceed w/ assigning appropriate trackIDs to children
 
                 ## get the numeric genetIDs of the children (for each parent)
-                nameDF <- stack(apply(X = t(overlaps), MARGIN = 1,
+                nameDF <- utils::stack(apply(X = t(overlaps), MARGIN = 1,
                                       function(x) names(x[which(is.na(x)==FALSE)])))
                 # rename the columns so they make sense
                 names(nameDF) <- c("parentTrackID", "childIndex")
@@ -721,7 +722,7 @@
               # current year must be > 10% of the size of previous year)
 
               ## make sure the areas are aggregated by genet
-              smallPrevious <- aggregate(x = sf::st_drop_geometry(
+              smallPrevious <- stats::aggregate(x = sf::st_drop_geometry(
                 tempPreviousYear[, "basalArea_ramet"]),
                 by = list("Year_prev" = tempPreviousYear$Year,
                           "trackID" = tempPreviousYear$trackID),
@@ -729,7 +730,7 @@
               )
               names(smallPrevious)[3] <- "Area"
 
-              smallCurrent <- aggregate(x = sf::st_drop_geometry(
+              smallCurrent <- stats::aggregate(x = sf::st_drop_geometry(
                 tempCurrentYear[, "basalArea_ramet"]),
                 by = list("Year_curr" = tempCurrentYear$Year,
                           "trackID" = tempCurrentYear$trackID),
@@ -867,7 +868,7 @@
                                                 tempParents$trackIDtemp),]$age
 
               ## calculate the appropriate 'basalArea_genet' data for each child
-              childGenet_area <- aggregate(children$basalArea_ramet,
+              childGenet_area <- stats::aggregate(children$basalArea_ramet,
                                            by = list(
                                              "trackID" = children$trackID), sum)
               names(childGenet_area) <- c("trackID", "basalArea_genet")

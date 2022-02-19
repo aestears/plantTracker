@@ -10,8 +10,8 @@ getNeighbors(
   buff,
   method,
   compType = "allSpp",
-  trackID = "trackID",
   output = "summed",
+  trackID = "trackID",
   species = "Species",
   quad = "Quad",
   year = "Year",
@@ -57,11 +57,6 @@ neighborhood density is calculated considering only individuals in the buffer
 area that are the same species as the focal individual (intraspecific
 competition).}
 
-\item{trackID}{An optional character string argument. Indicates the name of
-the column in 'dat' that contains a value that uniquely identifies each
-individual/genet. It is unnecessary to include a value for this argument if
-the column name is 'trackID' (the default value is 'trackID').}
-
 \item{output}{A character string, either 'summed' or 'bySpecies'. The default
 is 'summed'. This argument is only important to consider if you are using
 compType = 'allSpp'. If output = 'summed', then only one count/area value is
@@ -76,7 +71,7 @@ individual. However, if output = 'bySpecies', the row for this focal
 individual in the output data.frame will contain a named list in the
 'neighbors_count' column that looks like the one below. If 'method' = 'area'
 and 'output' = 'bySpecies', a similar list will be returned, but will be in
-the 'neighbors_area' column and will contain areas rather than counts.\if{html}{\out{<div class="r">}}\preformatted{list("Species A "= 5, "Species B" = 3, "Species C" = 7)
+the 'neighbors_area' column and will contain areas rather than counts.\if{html}{\out{<div class="sourceCode r">}}\preformatted{list("Species A "= 5, "Species B" = 3, "Species C" = 7)
 }\if{html}{\out{</div>}}\preformatted{## $`Species A `
 ## [1] 5
 ## 
@@ -86,6 +81,11 @@ the 'neighbors_area' column and will contain areas rather than counts.\if{html}{
 ## $`Species C`
 ## [1] 7
 }}
+
+\item{trackID}{An optional character string argument. Indicates the name of
+the column in 'dat' that contains a value that uniquely identifies each
+individual/genet. It is unnecessary to include a value for this argument if
+the column name is 'trackID' (the default value is 'trackID').}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is

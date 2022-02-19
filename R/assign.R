@@ -84,6 +84,11 @@
 #' survival in year t, because it is unlikely that this individual is large
 #' enough to survive dormancy. The default value is `dormSize = .05`.
 #' @param ... Other arguments passed on to methods. Not currently used.
+#' @param  inheritsFromTrackSpp A logical argument that is only applicable when
+#' 'assign()' is used internally in 'trackSpp()'.
+#' @param nearEdgeBox An sf data frame indicating the bounding box of the
+#' quadrat. This argument is only used if 'assign()' is used internally
+#' in 'trackSpp()'.
 #'
 #' @seealso [trackSpp()], which is a wrapper for the [assign()] function that
 #' applies it over many species and quadrats. The [assign()] function uses the

@@ -892,13 +892,18 @@ each observation is called 'species_names', then the argument
 #### *3.2.* Function Outputs 
 
 The output of `getNeighbors()` is an sf data frame that is identical to the 
-input `dat`, but with an additional column called 'neighbors', which contains 
-either an integer value indicating the number of individuals within the buffer 
-area, or a decimal less that 1 that indicates the proportion of the buffer area
-that is occupied by competitors. 
+input `dat`, but with either one or two additional columns. If 
+'method' = 'area', there are two columns added called "nBuff_area" and 
+"neighbors_area". The first contains the area of the buffer zone around each 
+focal individual. The second contains the basal area of neighbors that overlap 
+with a focal individual's buffer zone. If 'method' = 'count', there is only one 
+additional column added to the output, called "neighbors_count." This column 
+contains a count of the neighbors that occur within a focal individual's 
+buffer zone. 
 
 Here's an example of a `getNeighbors()` function call using the resulting data 
-from the example in section *2.2*, as well as the resulting data.frame:  
+from the example in section *2.2*, as well as the resulting data frame. Note 
+that 'method' = 'area', so two columns are added to the returned data frame:   
 ```{r}
 datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
              buff = .15,
@@ -911,6 +916,55 @@ rownames(temp) <- NULL
 names(temp)[c(8,10,12)] <- c("basalArea", "survives_t+1", "size_t+1")
 
 knitr::kable(head(temp[100:110,]), row.names = FALSE)
+```
+
+The example above uses the option 'output' = 'summed', which is the default for 
+the 'getNeighbors()' function. With this option, the "neighbors_area" or 
+"neighbors_count" column (depending on the 'method' argument) contains just one 
+value that sums the neighbor count or area across all neighbor species. However, 
+if 'output' = 'bySpecies', the "neighbors_count" or "neighbors_area" column 
+contains a list with the counts or areas broken down by species. The 'output' 
+argument is described in more detail in section *3.1*. If you want to use the 
+'getNeighbors()' function to determine how the effect of neighbors differs 
+according to the species identity of those neighbors, setting the 'output' 
+argument to 'bySpecies' allows you to do this. However, it is likely that your 
+subsequent analyses will need the by-species neighbor data in a matrix or data 
+frame format, rather than in a list nested inside a data frame, which is how 
+'getNeighbors()' returns the data. 
+
+Here is some code that turns the data returned by 
+'getNeighbors(output = bySpecies)' into a matrix where each row has data for one 
+focal individual, and each column has data for one species. This format should 
+be easier to work with for further analysis.  
+```{r}
+# save the output of the getNeighbors() function
+datNeighbors_bySpp <- plantTracker::getNeighbors(dat = datTrackSpp,
+             buff = .15, method = "area", compType = "allSpp", output = "bySpecies")
+
+# determine all of the possible species that can occupy the buffer zone
+compSpp <- unique(datTrackSpp$Species)
+
+temp <- lapply(X = datNeighbors_bySpp$neighbors_area,  FUN = function(x) {
+  tmp <- unlist(x)
+  tmp2 <- tmp[compSpp]
+  }
+)
+
+for (i in 1:length(temp)) {
+  # fix the column names
+  names(temp[[i]]) <- compSpp
+  # save the data in a matrix
+  if (i == 1) {
+    datOut <- temp[[i]]
+  } else {
+    datOut <- rbind(datOut, temp[[i]])
+  }
+}
+# make the rownames of the matrix correspond to the trackID of the focal individual
+rownames(datOut) <- datNeighbors_bySpp$trackID
+
+# show the first few rows of the datOut data frame: 
+datOut[1:5,]
 ```
 
 ### *3* Next Steps

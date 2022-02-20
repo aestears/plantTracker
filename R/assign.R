@@ -674,28 +674,95 @@
                    maxInds <- which(whileOverlaps ==
                                       max(whileOverlaps,na.rm = TRUE),
                                     arr.ind = TRUE)
+                   ## what if there is a tie?? --i.e. there are >=2 overlaps
+                   # that have the same value
+                   if (nrow(maxInds) > 1) {
+                     # get the names of the potential parents
+                     maybeParents_names <- rownames(whileOverlaps[unique(maxInds[,"row"]),])
+                     # get the names of the potential children
+                     maybeChildren_names <- names(whileOverlaps)[unique(maxInds[,"col"])]
+                     ## get a matrix of centroid distances
+                     # the the spatial data for maybeChidlren
+                     maybeChildren <- suppressWarnings(
+                       sf::st_centroid(
+                         tempCurrentYear[tempCurrentYear$index %in%
+                                           as.numeric(
+                                             as.vector(
+                                               data.frame(
+                                                 strsplit(
+                                                   x = maybeChildren_names,
+                                                   split = "__")
+                                                 )[2,])),]))
 
-                   ## get the trackID of the parent
-                   maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
+                     # get the spatial data for maybeParents
+                     maybeParents <-
+                       tempPreviousYear[tempPreviousYear$trackID
+                                        %in% maybeParents_names,]
 
-                   ## get the numeric index of the 'child'
-                   maxChild <- as.numeric(strsplit(
-                     colnames(whileOverlaps)[maxInds[1,2]],"__")[[1]][2])
+                     ## aggregate badParents by trackID so that each genet has
+                     # only one row of data
+                     maybeParents <- suppressWarnings(
+                       sf::st_centroid(
+                         stats::aggregate(x = maybeParents[,"trackID"],
+                                          by = list("trackID" = maybeParents$trackID),
+                                          FUN = nrow,
+                                          do_union = TRUE)))
 
-                   ## put the trackID from the parent into the tempCurrentYear
-                   # d.f rows that correspond to the genetID of the child
-                   tempCurrentYear[tempCurrentYear$index==maxChild,
-                                "trackID"] <- maxParent
+                     ## compare the centroid distances between parents and child
+                     dists <- sf::st_distance(maybeChildren, maybeParents,
+                                              which = 'Euclidean')
+                     rownames(dists) <- maybeChildren_names
+                     colnames(dists) <- maybeParents_names
 
-                   ## overwrite the 'max' value with an NA, so we can find the
-                   # next largest value
-                   whileOverlaps[maxInds[1,1],maxInds[1,2]] <- 0
+                     ## get the indices of the smallest distance pair
+                     smallDistInds <- which(dists == min(dists), arr.ind = TRUE)
+                     ## get the index of the smallest distance child
+                     smallChild <- rownames(dists)[smallDistInds[,"row"]]
+                     ## get the trackID of the smallest distance parent
+                     smallParent <- colnames(dists)[smallDistInds[,"col"]]
 
-                   ## overwrite all of the other values in the parent row and
-                   # the child column with NAs also (since each parent can only
-                   # have one child, and each child can only have one parent)
-                   whileOverlaps[maxInds[1,1],] <- 0
-                   whileOverlaps[,maxInds[1,2]] <- 0
+                     ## put the trackID from the parent into the tempCurrentYear
+                     # d.f rows that correspond to the row index of the child
+                     tempCurrentYear[
+                       tempCurrentYear$index==strsplit(
+                         x = smallChild, split = "__")[[1]][2],
+                                     "trackID"] <- smallParent
+
+                     ## overwrite the 'max' value with an NA, so we can find the
+                     # next largest value
+                     whileOverlaps[smallParent,smallChild] <- 0
+
+                     ## overwrite all of the other values in the parent row and
+                     # the child column with NAs also (since each parent can
+                     #only have one child, and each child can only have
+                     # one parent)
+                     whileOverlaps[smallParent,] <- 0
+                     whileOverlaps[,smallChild] <- 0
+
+                   } else { ## if there is only one maximum overlap--no ties
+
+                     ## get the trackID of the parent
+                     maxParent <- rownames(whileOverlaps)[maxInds[1,1]]
+
+                     ## get the numeric index of the 'child'
+                     maxChild <- as.numeric(strsplit(
+                       colnames(whileOverlaps)[maxInds[1,2]],"__")[[1]][2])
+
+                     ## put the trackID from the parent into the tempCurrentYear
+                     # d.f rows that correspond to the genetID of the child
+                     tempCurrentYear[tempCurrentYear$index==maxChild,
+                                     "trackID"] <- maxParent
+
+                     ## overwrite the 'max' value with an NA, so we can find the
+                     # next largest value
+                     whileOverlaps[maxInds[1,1],maxInds[1,2]] <- 0
+
+                     ## overwrite all of the other values in the parent row and
+                     # the child column with NAs also (since each parent can only
+                     # have one child, and each child can only have one parent)
+                     whileOverlaps[maxInds[1,1],] <- 0
+                     whileOverlaps[,maxInds[1,2]] <- 0
+                   }
 
                    ## update the 'counter'
                    counter <- counter + 1
@@ -1028,11 +1095,11 @@ return(assignOut)
 # testing -----------------------------------------------------------------
 # example input data ------------------------------------------------------
 #
-# ## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
-# # function will do this ahead of time when the user calls it)
+## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "AZ"
 #                            & grasslandData$Quad == "SG4"
-#                            & grasslandData$Species == "Ambrosia artemisiifolia",]
+#                            & grasslandData$Species == "Bouteloua rothrockii",]
 # # this should be a data.frame
 # dat <- sampleDat
 # #
@@ -1049,7 +1116,7 @@ return(assignOut)
 #                      # buffGenet = .001,
 #                      clonal =  FALSE,
 #                      flagSuspects = TRUE)
-#
+
 #
 # ggplot(testOutput) +
 #   geom_sf(aes(fill = as.factor(trackID),colour = Year), alpha = 0.5) +

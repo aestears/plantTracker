@@ -72,15 +72,15 @@ individual in the output data.frame will contain a named list in the
 'neighbors_count' column that looks like the one below. If 'method' = 'area'
 and 'output' = 'bySpecies', a similar list will be returned, but will be in
 the 'neighbors_area' column and will contain areas rather than counts.\if{html}{\out{<div class="sourceCode r">}}\preformatted{list("Species A "= 5, "Species B" = 3, "Species C" = 7)
-#> $`Species A `
-#> [1] 5
-#> 
-#> $`Species B`
-#> [1] 3
-#> 
-#> $`Species C`
-#> [1] 7
-}\if{html}{\out{</div>}}}
+}\if{html}{\out{</div>}}\preformatted{## $`Species A `
+## [1] 5
+## 
+## $`Species B`
+## [1] 3
+## 
+## $`Species C`
+## [1] 7
+}}
 
 \item{trackID}{An optional character string argument. Indicates the name of
 the column in 'dat' that contains a value that uniquely identifies each

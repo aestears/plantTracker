@@ -39,7 +39,11 @@ and "survives_tplus1", so 'dat' should not contain columns with these names.}
 \code{\link{grasslandInventory}}. The name of each element of the list is a
 quadrat name in 'dat', and the contents of that list element is a numeric
 vector of all of the years in which that quadrat (or other unique spatial
-area) was sampled.}
+area) was sampled. Make sure this is the years the quadrat was actually
+sampled, not just the years that have data in the 'dat' argument! This
+argument allows the function to differentiate between years when the quadrat
+wasn't sampled and years when there just weren't any individuals of a species
+present in that quadrat.}
 
 \item{dorm}{A numeric vector of length 1, indicating the number of years an
 individual of these species is allowed to go dormant, i.e. be absent from the
@@ -139,7 +143,7 @@ be classified as 'suspect' is if it is very small before going dormant. It is
 unlikely that a very small individual will survive dormancy, so it is
 possible that the function has mistakenly given a survival value of '1' to
 this individual. A 'very small individual' is any observation with an area
-below a certain percentile (specified by 'dormSize') of the size distribution f
+below a certain percentile (specified by 'dormSize') of the size{} distribution f
 or this species, which is generated using all of the size data for this
 species in 'dat'.}
 

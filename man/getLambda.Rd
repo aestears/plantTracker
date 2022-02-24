@@ -29,10 +29,14 @@ contain a unique identification for each research site (default name is
 and an s.f 'geometry' column that contains a polygon or multipolygon data
 type for each individual observation.}
 
-\item{inv}{A named list in the same format as \code{\link{grasslandData}}.
-The name of each element of the list is a quadrat name in 'dat', and the
-contents of that list element is a numeric vector of all of the years in
-which that quadrat (or other unique spatial area) was sampled.}
+\item{inv}{The name of each element of the list is a
+quadrat name in 'dat', and the contents of that list element is a numeric
+vector of all of the years in which that quadrat (or other unique spatial
+area) was sampled. Make sure this is the years the quadrat was actually
+sampled, not just the years that have data in the 'dat' argument! This
+argument allows the function to differentiate between years when the quadrat
+wasn't sampled and years when there just weren't any individuals of a species
+present in that quadrat.}
 
 \item{method}{A single character argument that determines the method for
 calculating lambda. The default value is "area", which means that lambda is

@@ -29,11 +29,14 @@ type for each individual observation. This function should only be used if
 the individuals in 'dat' were mapped as polygons that are representative of
 their actual basal area, i.e. were not mapped as points.}
 
-\item{inv}{A named list in the same format as
-\code{\link{grasslandInventory}}The name of each element of the list is a
+\item{inv}{The name of each element of the list is a
 quadrat name in 'dat', and the contents of that list element is a numeric
 vector of all of the years in which that quadrat (or other unique spatial
-area) was sampled.}
+area) was sampled. Make sure this is the years the quadrat was actually
+sampled, not just the years that have data in the 'dat' argument! This
+argument allows the function to differentiate between years when the quadrat
+wasn't sampled and years when there just weren't any individuals of a species
+present in that quadrat.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is

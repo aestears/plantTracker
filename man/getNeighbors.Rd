@@ -10,6 +10,7 @@ getNeighbors(
   buff,
   method,
   compType = "allSpp",
+  output = "summed",
   trackID = "trackID",
   species = "Species",
   quad = "Quad",
@@ -38,23 +39,48 @@ species name as a character string in the "Species" column, and a numeric
 value in the 'buff' column you'd like to use for that species.}
 
 \item{method}{A character string, either 'count' or 'area'. This argument
-determines which metric of competition will be calculated.
+determines which method is used to calculate local neighborhood density.
 If 'method' = 'count', then the number of other individuals within the buffer
 will be returned in the 'neighbors' column. If method = 'area', then the
 proportion of the buffer area that is occupied by other individuals will be
 returned in the 'neighbors' column. If the data in 'dat' was mapped initially
 as points, it is best to use 'method' = 'count'. If the data was mapped as
 polygons that are representative of individual basal area, using
-'method' = 'area' is likely a more accurate represntation of the crowding the
-focal individual is experiencing.}
+'method' = 'area' is likely a more accurate representation of the crowding
+the focal individual is experiencing.}
 
 \item{compType}{A character string, either 'allSpp' or 'oneSpp'.
-If compType = 'allSpp', then a competition metric is calculated that
-considers all individuals around the focal individual, regardless of species
-(interspecific competition). If compType = 'oneSpp', then a competition
-metric is calculated that considers only individuals in the buffer area
-that are the same species as the focal individual (intraspecific
+If compType = 'allSpp', then local neighborhood density is calculated
+considering all individuals around the focal individual, regardless of
+species (interspecific competition). If compType = 'oneSpp', then local
+neighborhood density is calculated considering only individuals in the buffer
+area that are the same species as the focal individual (intraspecific
 competition).}
+
+\item{output}{A character string, either 'summed' or 'bySpecies'. The default
+is 'summed'. This argument is only important to consider if you are using
+compType = 'allSpp'. If output = 'summed', then only one count/area value is
+returned for each individual. This value is the total count or area of all
+neighbors within the focal species buffer zone, regardless of species. If
+output = 'bySpecies', there is a count or area value returned for each
+species present in the buffer zone. For example, there are 15 individuals
+inside a buffer zone. Five are species A, three are species B, and 7 are
+species C. If output = 'summed', then the 'neighbors_count' column in the
+output data.frame will have the single value '15' in the row for this focal
+individual. However, if output = 'bySpecies', the row for this focal
+individual in the output data.frame will contain a named list in the
+'neighbors_count' column that looks like the one below. If 'method' = 'area'
+and 'output' = 'bySpecies', a similar list will be returned, but will be in
+the 'neighbors_area' column and will contain areas rather than counts.\if{html}{\out{<div class="sourceCode r">}}\preformatted{list("Species A "= 5, "Species B" = 3, "Species C" = 7)
+}\if{html}{\out{</div>}}\preformatted{## $`Species A `
+## [1] 5
+## 
+## $`Species B`
+## [1] 3
+## 
+## $`Species C`
+## [1] 7
+}}
 
 \item{trackID}{An optional character string argument. Indicates the name of
 the column in 'dat' that contains a value that uniquely identifies each
@@ -90,10 +116,14 @@ unnecessary to include a value for this argument if the column name is
 }
 \value{
 This function returns a data.frame with the same number of rows as
-'dat' and all of the same columns, but with an additional column called
-'neighbors'. This column contains either a count of the number of individuals
-within each focal individual's buffer (method = 'count'), or a proportion of
-the buffer area that is occupied by other individuals (method = 'area').
+'dat' and all of the same columns, but with an additional column or columns.
+If method = 'count', then a column called "neighbors_count" is added, which
+contains a count of the number of individuals within the buffer area that is
+occupied by other individuals. If method = 'area', two columns are added. The
+first is called "nBuff_area", which contains the area of the buffer around
+the focal individual. The second is called "neighbors_area", which contains
+the area of the individuals within the buffer zone around the
+focal individual.
 }
 \description{
 This function calculates the density of individuals around
@@ -107,10 +137,10 @@ This function draws a buffer around each individual genet of a
 distance specified by the user. Then it either counts the number of other
 genets within that buffer, or calculates the proportion of that buffer area
 that is occupied by other individuals. \link{getNeighbors} can calculate
-either interspecific competition (between the focal individual and all other
-individuals within the buffer area) or intraspecific competition (between
-the focal individual and other individuals of the same species within the
-buffer area).
+either interspecific local neighborhood density (between the focal individual
+and all other individuals within the buffer area) or intraspecific local
+neighborhood density (between the focal individual and other individuals of
+the same species within the buffer area).
 }
 \examples{
 dat <- grasslandData[grasslandData$Site == c("AZ") &

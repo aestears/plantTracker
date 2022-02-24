@@ -25,11 +25,14 @@ year of data collection (default name is "Year") and an s.f 'geometry' column
 that contains a polygon or multipolygon data type for each
 individual observation.}
 
-\item{inv}{A named list in the same format
-as \code{\link{grasslandInventory}}. This argument is optional. The name of
-each element of the list is a quadrat name in 'dat', and the contents of that
-list element is a numeric vector of all of the years in which that quadrat
-(or other unique spatial area) was sampled.}
+\item{inv}{The name of each element of the list is a
+quadrat name in 'dat', and the contents of that list element is a numeric
+vector of all of the years in which that quadrat (or other unique spatial
+area) was sampled. Make sure this is the years the quadrat was actually
+sampled, not just the years that have data in the 'dat' argument! This
+argument allows the function to differentiate between years when the quadrat
+wasn't sampled and years when there just weren't any individuals of a species
+present in that quadrat.}
 
 \item{species}{An optional character string argument. Indicates
 the name of the column in 'dat' that contains species name data. It is

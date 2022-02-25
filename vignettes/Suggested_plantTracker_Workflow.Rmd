@@ -388,7 +388,7 @@ scenario, in years 3 and 4 there are not polygons of species "A" that are in the
 same location as our focal individual, but there is a polygon in year 4 that 
 overlaps our focal individual. If `dorm = 1`, then our focal individual would 
 get a "0" for survival, but if `dorm = 2`, then it would get a 1 for survival. 
-```{r echo = FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*"}
+```{r echo = FALSE, fig.width=8, fig.height = 3, fig.align = 'center', fig.cap = "**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*"}
 
 exampleSmall <- exampleDat[unique(c(30, 42, 44, 25,  2, 61, 59, 52, 45,  8, 42, 37, 60, 34, 45, 38, 26, 49, 52, 46)),]
 
@@ -466,7 +466,7 @@ data in `dat` is measured in meters, and you want to allow a plant to "move"
 `buff = .15` in your call to `trackSpp()`. If you want to allow no movement, use 
 `buff = 0`. Below is a visualization of two different `buff` scenarios.
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*"}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.height = 3, fig.align = 'center', fig.cap = "**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*"}
 
 exampleDat <- grasslandData[grasslandData$Site == "AZ" & 
                               grasslandData$Quad == "SG2" & 
@@ -512,7 +512,7 @@ ggplot(data = exampleDatIDs
   scale_linetype_manual(values=c("twodash", "solid", "dotted"))
 ```  
 
-```{r echo = FALSE, warning= FALSE, fig.width=8, fig.align = 'center', fig.cap = "**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*"}
+```{r echo = FALSE, warning= FALSE, fig.width=8, fig.height = 3, fig.align = 'center', fig.cap = "**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*"}
 
 exampleBuffed <- st_buffer(exampleDatIDsTemp[round(exampleDatIDsTemp$Area, 7) ==0.0005472,], dist = .03)
 exampleBuffed$Year <- 1922

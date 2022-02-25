@@ -1,25 +1,44 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# plantTracker
+# `plantTracker`
 
-Welcome to plantTracker! This package was designed to transform
+Welcome to `plantTracker`! This package was designed to transform
 long-term quadrat maps that show plant occurrence and size into
 demographic data that can be used to answer questions about population
-and community ecology. This vignette is designed to help you use
-plantTracker functions to move from a spatially referenced dataset
-containing plant cover data, to an output dataset that contains growth
-and survival data for each observed individual.
+and community ecology.
 
-This vignette will walk you through the steps to get from maps of plant
-cover to a demographic dataset that you can use for analysis!
+# `plantTracker`
 
-<!-- badges: start -->
-<!-- badges: end -->
+Welcome to `plantTracker`! This package was designed to transform
+**long-term quadrat maps** that show plant occurrence and size into
+**demographic data** that can be used to answer questions about
+population and community ecology.
+
+## Table of Contents
+
+-   [Installing `plantTracker`](#Installation)
+-   [How to Use `plantTracker`](#how_to_use)
+    -   [Prepare data for use in `plantTracker`](#prep_data)
+        -   [The quadrat map data: `dat`](#dat_data)
+            -   [transform `dat` to the `sf` format](#dat_to_sf)
+        -   [The quadrat inventory data: `inv`](#dat_inv)
+    -   [Ensure data is in the correct format with
+        `checkDat()`](#check_dat)
+    -   [Track individuals through time using `trackSpp()`](#trackSpp)
+        -   [Arguments in `trackSpp()`](#trackSpp_args)
+        -   [Understanding the output of `trackSpp()`](#trackSpp_out)
+    -   [Calculate local neighborhood density using
+        `getNeighbors()`](#getNeigh)
+        -   [Arguments in `getNeighbors()`](#getNeigh_args)
+        -   [Understanding the output of `trackSpp()`](#getNeigh_out)
+    -   [Further analysis with more `plantTracker` functions](#next)
+
+<a id="Installation"></a>
 
 ## Installation
 
-You can install the development version of plantTracker from
+You can install the development version of `plantTracker` from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -27,17 +46,21 @@ install.packages("devtools")
 devtools::install_github("aestears/plantTracker")
 ```
 
-plantTracker will also be available to download form CRAN in the near
+`plantTracker` will also be available to download form CRAN in the near
 future (hopefully…), so stay tuned!
 
-## How to use the plantTracker R package
+<a id="how_to_use"></a>
 
-The material below explains how to use plantTracker, starting with
+## How to use the `plantTracker` R package
+
+The material below explains how to use `plantTracker`, starting with
 formatting your data correctly. This information is also available in
-the ‘Suggested plantTracker Workflow’ vignette, which is included in the
-package.
+the ‘Suggested `plantTracker` Workflow’ vignette, which is included in
+the package.
 
-## *1.* Prepare data
+<a id="prep_data"></a>
+
+### *1.* Prepare data
 
 The functions in `plantTracker` require data in a specific format.
 `plantTracker` includes an example dataset that consists of two pieces:
@@ -53,9 +76,12 @@ that contains a vector of years in which each quadrat was sampled, which
 we from now on will cal `inv`. Below are the basic requirements for
 these data objects.
 
-### *1.1* The `dat` data frame must . . .
+<a id="dat_data"></a>
 
--   … be an `sf` data.frame. More on this below in section *1.1.1*…
+#### *1.1* The `dat` data frame must . . .
+
+-   … be an `sf` data.frame. More on this below in section
+    [*1.1.1*](#dat_to_sf%22)…
 -   … contain a row for each individual observation in each year.
 -   … have a column that contains character strings indicating the
     specific epithet for each observation. This column must be a
@@ -132,9 +158,9 @@ the “AZ” site in 1922) look like when plotted spatially:
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="**Figure 1.1** *: Spatial map of a subset of example 'dat' dataset*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
 <p class="caption">
-**Figure 1.1** *: Spatial map of a subset of example ‘dat’ dataset*
+Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
 </p>
 
 </div>
@@ -148,7 +174,9 @@ organism (or ramet), and is accompanied by the required metadata
 detailed above. For example, `plantTracker` functions could be used to
 estimate tree demographic rates at the scale of 100 m x 50 m plots.
 
-#### *1.1.1* Get your data into the `sf` data format
+<a id="dat_to_sf"></a>
+
+##### *1.1.1* Get your data into the `sf` data format
 
 As mentioned above, `plantTracker` uses the `sf` R package to deal with
 spatial data. The map data that `plantTracker` was built to analyze is
@@ -258,7 +286,9 @@ for (i in 1:2){#length(quadNames)) {
 # Now, all of the spatial data are in one sf data frame, and are ready to be used in plantTracker functions! 
 ```
 
-### *1.2* The `inv` list must . . .
+<a id="dat_inv"></a>
+
+#### *1.2* The `inv` list must . . .
 
 -   … be a named list
 -   … have element names that are each a character string identical to
@@ -327,7 +357,9 @@ quadInv_list <- as.list(quadInv_DF)
 #> [1] 2000 2002 2003 2004 2005 2006 2007
 ```
 
-### *1.3* Check the `inv` and `dat` arguments using `checkDat()`
+<a id="check_dat"></a>
+
+#### *1.3* Check the `inv` and `dat` arguments using `checkDat()`
 
 The generic `checkDat()` function:
 
@@ -368,7 +400,9 @@ Additional optional arguments to `checkDat()` are `species`, `site`,
 
 ------------------------------------------------------------------------
 
-## *2* Track individuals through time using `trackSpp()`
+<a id="trackSpp"></a>
+
+### *2* Track individuals through time using `trackSpp()`
 
 Now it’s time to transform your raw dataset into demographic data! This
 is accomplished using the `trackSpp()` function. This function follows
@@ -389,7 +423,9 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
   shrink = 0.1, dormSize = 0.05, ...)
 ```
 
-### *2.1* Function arguments
+<a id="trackSpp_args"></a>
+
+#### *2.1* Function arguments
 
 `trackSpp()` takes the following arguments:
 
@@ -434,10 +470,10 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
     <div class="figure" style="text-align: center">
 
-    <img src="man/figures/README-unnamed-chunk-9-1.png" alt="**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*" width="100%" />
+    <img src="man/figures/README-unnamed-chunk-9-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
     <p class="caption">
-    **Figure 2.1**: *A visualization of the ‘dormancy’ scenario
-    described above.*
+    Figure 2.1: A visualization of the ‘dormancy’ scenario described
+    above.
     </p>
 
     </div>
@@ -492,22 +528,22 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
 <p class="caption">
-**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923
-overlap and will be identified by trackSpp() as the **same** individual
-and receive the same trackID.*
+Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
+and will be identified by trackSpp() as the **same** individual and
+receive the same trackID.
 </p>
 
 </div>
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
 <p class="caption">
-**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923
-don’t quite overlap, so will be identified by trackSpp() as
-**different** individuals and receive different trackIDs.*
+Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
+quite overlap, so will be identified by trackSpp() as **different**
+individuals and receive different trackIDs.
 </p>
 
 </div>
@@ -658,7 +694,9 @@ contexts.
 
 These are all of the possible arguments to `trackSpp()`!
 
-### *2.2* Function output
+<a id="trackSpp_out"></a>
+
+#### *2.2* Function output
 
 Below is an example of a potential function call to `trackSpp()`, using
 the example `dat` and `inv` data we’ve used so far. :
@@ -725,7 +763,9 @@ functions outlined below for some additional useful data.
 
 ------------------------------------------------------------------------
 
-## *3* Calculate local neighborhood density using `getNeighbors()`
+<a id="getNeigh"></a>
+
+### *3* Calculate local neighborhood density using `getNeighbors()`
 
 It is often useful in demographic analyses to have some idea of the
 competition (or facilitation) that an individual organism is dealing
@@ -745,7 +785,9 @@ getNeighbors(dat, buff, method, compType = "allSpp", output = "summed",
   site = "Site", geometry = "geometry", ...)
 ```
 
-### *3.1* Function options and arguments
+<a id="getNeigh_args"></a>
+
+#### *3.1* Function options and arguments
 
 The `getNeighbors()` function in `plantTracker` calculates local
 neighborhood density for each unique individual in your dataset. A
@@ -784,36 +826,36 @@ local neighborhood density is calculated.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="**Figure 3.1**: *This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
 <p class="caption">
-**Figure 3.1**: *This individual outlined in pink is a focal individual,
-and the pale pink shows a 10 cm buffer around it.*
+Figure 3.1: This individual outlined in pink is a focal individual, and
+the pale pink shows a 10 cm buffer around it.
 </p>
 
 </div>
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="**Figure 3.2**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
 <p class="caption">
-**Figure 3.2**: *The 10cm buffer around the focal individual overlaps
-with 5 other unique individuals of two species. These overlapping
-individuals are outlined in dark grey. Using the ‘count’ method in
-`getNeighbors()`, we would get an intraspecific competition value of 3,
-and an interspecific competition value of 5.*
+Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
+other unique individuals of two species. These overlapping individuals
+are outlined in dark grey. Using the ‘count’ method in `getNeighbors()`,
+we would get an intraspecific competition value of 3, and an
+interspecific competition value of 5.
 </p>
 
 </div>
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" alt="**Figure 3.3**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-18-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
 <p class="caption">
-**Figure 3.3**: *The 10cm buffer around the focal individual overlaps
-with 5 other unique individuals of two species. The overlapping area is
-shaded in grey. Using the ‘area’ method in `getNeighbors()`, we would
-get an intraspecific competition metric of 0.0454, and an interspecific
-competition metric of 0.0462.*
+Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
+other unique individuals of two species. The overlapping area is shaded
+in grey. Using the ‘area’ method in `getNeighbors()`, we would get an
+intraspecific competition metric of 0.0454, and an interspecific
+competition metric of 0.0462.
 </p>
 
 </div>
@@ -874,7 +916,9 @@ Below are the arguments in the `getNeighbors()` function.
     argument `species = "species_names"` must be included in your call
     to `getNeighbors()`.
 
-### *3.2* Function outputs
+<a id="getNeigh_out"></a>
+
+#### *3.2* Function outputs
 
 The output of `getNeighbors()` is an `sf` data frame that is identical
 to the input `dat`, but with either one or two additional columns. If
@@ -1003,7 +1047,9 @@ datOut[1:5,]
 
 ------------------------------------------------------------------------
 
-## *4* Next steps
+<a id="next"></a>
+
+### *4* Next steps
 
 At this point, this dataset should be ready for you to use in any
 applications wish! There are a few additional functions that may help

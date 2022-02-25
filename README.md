@@ -1,25 +1,54 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# plantTracker
+# `plantTracker`
 
-Welcome to plantTracker! This package was designed to transform
+Welcome to `plantTracker`! This package was designed to transform
 long-term quadrat maps that show plant occurrence and size into
 demographic data that can be used to answer questions about population
-and community ecology. This vignette is designed to help you use
-plantTracker functions to move from a spatially referenced dataset
-containing plant cover data, to an output dataset that contains growth
-and survival data for each observed individual.
+and community ecology.
 
-This vignette will walk you through the steps to get from maps of plant
-cover to a demographic dataset that you can use for analysis!
+# Table of Contents
 
-<!-- badges: start -->
-<!-- badges: end -->
+-   \[plantTracker`](#planttracker`)
+    -   [Installation](#installation)
+    -   [How to use the `plantTracker` R
+        package](#how-to-use-the-%60planttracker%60-r-package)
+    -   [Prepare data](#prepare-data)
+        -   [The `dat` data frame must . .
+            .](#the-%60dat%60-data-frame-must-.-.-.)
+-   [save a character vector of the file names in the file that contains
+    the](#save-a-character-vector-of-the-file-names-in-the-file-that-contains-the)
+-   [shapefiles (in this case, called “CO\_shapefiles”), each of which
+    is a
+    quadrat](#shapefiles-(in-this-case,-called-%22co_shapefiles%22),-each-of-which-is-a-quadrat)
+-   [note: ‘wdName’ is a character string indicating the path of the
+    directory](#note:-'wdname'-is-a-character-string-indicating-the-path-of-the-directory)
+-   [containing the ‘CO\_shapefiles’
+    folder](#containing-the-'co_shapefiles'-folder)
+-   [now we’ll loop through the quadrat folders to download the
+    data](#now-we'll-loop-through-the-quadrat-folders-to-download-the-data)
+-   [Now, all of the spatial data are in one sf data frame, and are
+    ready to be used in plantTracker
+    functions!](#now,-all-of-the-spatial-data-are-in-one-sf-data-frame,-and-are-ready-to-be-used-in-planttracker-functions!) -
+    [Check the `inv` and `dat` arguments using
+    `checkDat()`](#check-the-%60inv%60-and-%60dat%60-arguments--using-%60checkdat()%60)
+    -   [Track individuals through time using
+        `trackSpp()`](#track-individuals-through-time-using-%60trackspp()%60)
+        -   [Function arguments](#function-arguments)
+    -   [Calculate local neighborhood density using
+        `getNeighbors()`](#calculate-local-neighborhood-density-using-%60getneighbors()%60)
+        -   [Function options and
+            arguments](#function-options-and-arguments)
+        -   [Function outputs](#function-outputs)
+-   [knitr::kable(head(temp\[100:110,\]), row.names =
+    FALSE)](#knitr::kable(head(temp%5B100:110,%5D),-row.names-=-false))
+    -   [Next steps](#next-steps) <!-- badges: start -->
+        <!-- badges: end -->
 
 ## Installation
 
-You can install the development version of plantTracker from
+You can install the development version of `plantTracker` from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -27,15 +56,15 @@ install.packages("devtools")
 devtools::install_github("aestears/plantTracker")
 ```
 
-plantTracker will also be available to download form CRAN in the near
+`plantTracker` will also be available to download form CRAN in the near
 future (hopefully…), so stay tuned!
 
-## How to use the plantTracker R package
+## How to use the `plantTracker` R package
 
-The material below explains how to use plantTracker, starting with
+The material below explains how to use `plantTracker`, starting with
 formatting your data correctly. This information is also available in
-the ‘Suggested plantTracker Workflow’ vignette, which is included in the
-package.
+the ‘Suggested `plantTracker` Workflow’ vignette, which is included in
+the package.
 
 ## *1.* Prepare data
 
@@ -132,7 +161,7 @@ the “AZ” site in 1922) look like when plotted spatially:
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="**Figure 1.1** *: Spatial map of a subset of example 'dat' dataset*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" alt="**Figure 1.1** *: Spatial map of a subset of example 'dat' dataset*" width="100%" />
 <p class="caption">
 **Figure 1.1** *: Spatial map of a subset of example ‘dat’ dataset*
 </p>
@@ -434,7 +463,7 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
     <div class="figure" style="text-align: center">
 
-    <img src="man/figures/README-unnamed-chunk-9-1.png" alt="**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*" width="100%" />
+    <img src="man/figures/README-unnamed-chunk-10-1.png" alt="**Figure 2.1**: *A visualization of the 'dormancy' scenario described above.*" width="100%" />
     <p class="caption">
     **Figure 2.1**: *A visualization of the ‘dormancy’ scenario
     described above.*
@@ -492,7 +521,7 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="**Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID.*" width="100%" />
 <p class="caption">
 **Figure 2.2**: *With a 10 cm buffer, these polygons in 1922 and 1923
 overlap and will be identified by trackSpp() as the **same** individual
@@ -503,7 +532,7 @@ and receive the same trackID.*
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="**Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs.*" width="100%" />
 <p class="caption">
 **Figure 2.3**: *With a 3 cm buffer, these polygons in 1922 and 1923
 don’t quite overlap, so will be identified by trackSpp() as
@@ -784,7 +813,7 @@ local neighborhood density is calculated.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="**Figure 3.1**: *This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" alt="**Figure 3.1**: *This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it.*" width="100%" />
 <p class="caption">
 **Figure 3.1**: *This individual outlined in pink is a focal individual,
 and the pale pink shows a 10 cm buffer around it.*
@@ -794,7 +823,7 @@ and the pale pink shows a 10 cm buffer around it.*
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="**Figure 3.2**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-18-1.png" alt="**Figure 3.2**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5.*" width="100%" />
 <p class="caption">
 **Figure 3.2**: *The 10cm buffer around the focal individual overlaps
 with 5 other unique individuals of two species. These overlapping
@@ -807,7 +836,7 @@ and an interspecific competition value of 5.*
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" alt="**Figure 3.3**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.*" width="100%" />
+<img src="man/figures/README-unnamed-chunk-19-1.png" alt="**Figure 3.3**: *The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462.*" width="100%" />
 <p class="caption">
 **Figure 3.3**: *The 10cm buffer around the focal individual overlaps
 with 5 other unique individuals of two species. The overlapping area is

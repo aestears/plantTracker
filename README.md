@@ -4,13 +4,6 @@
 # `plantTracker`
 
 Welcome to `plantTracker`! This package was designed to transform
-long-term quadrat maps that show plant occurrence and size into
-demographic data that can be used to answer questions about population
-and community ecology.
-
-# `plantTracker`
-
-Welcome to `plantTracker`! This package was designed to transform
 **long-term quadrat maps** that show plant occurrence and size into
 **demographic data** that can be used to answer questions about
 population and community ecology.
@@ -158,7 +151,7 @@ the “AZ” site in 1922) look like when plotted spatially:
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
 <p class="caption">
 Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
 </p>
@@ -470,7 +463,7 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
     <div class="figure" style="text-align: center">
 
-    <img src="man/figures/README-unnamed-chunk-9-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
+    <img src="man/figures/README-unnamed-chunk-10-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
     <p class="caption">
     Figure 2.1: A visualization of the ‘dormancy’ scenario described
     above.
@@ -528,7 +521,7 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
 <p class="caption">
 Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
 and will be identified by trackSpp() as the **same** individual and
@@ -539,7 +532,7 @@ receive the same trackID.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
 <p class="caption">
 Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
 quite overlap, so will be identified by trackSpp() as **different**
@@ -826,7 +819,7 @@ local neighborhood density is calculated.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
 <p class="caption">
 Figure 3.1: This individual outlined in pink is a focal individual, and
 the pale pink shows a 10 cm buffer around it.
@@ -836,7 +829,7 @@ the pale pink shows a 10 cm buffer around it.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
+<img src="man/figures/README-unnamed-chunk-18-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
 <p class="caption">
 Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. These overlapping individuals
@@ -849,7 +842,7 @@ interspecific competition value of 5.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
+<img src="man/figures/README-unnamed-chunk-19-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
 <p class="caption">
 Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. The overlapping area is shaded

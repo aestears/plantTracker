@@ -13,10 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# `plantTracker`
-Welcome to `plantTracker`! This package was designed to transform long-term 
-quadrat maps that show plant occurrence and size into demographic data that can 
-be used to answer questions about population and community ecology. 
+```{r, include = FALSE}
+library(devtools)
+devtools::source_gist("c83e078bf8c81b035e32c3fc0cf04ee8", 
+                      filename = 'render_toc.R')
+```
 
 # `plantTracker`
 Welcome to `plantTracker`! This package was designed to transform **long-term quadrat maps** that show plant occurrence and size into **demographic data** that can 
@@ -40,7 +41,8 @@ be used to answer questions about population and community ecology.
 
 <a id="Installation"></a>
 
-## Installation 
+## Installation
+
 You can install the development version of `plantTracker` from 
 [GitHub](https://github.com/) with: 
 

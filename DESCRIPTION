@@ -1,14 +1,14 @@
 Package: plantTracker
-Title: Extract Demographic Data from Quadrat Maps
-Version: 0.0.0.9000
-Date: 2021-09-20
+Title: Extract Demographic and Competition Data from Fine-scale Maps
+Version: 1.0.0.0000
+Date: 2022-02-27
 Authors@R: 
     person(given = "Alice",
            family = "Stears",
            role = c("aut", "cre"),
            email = "alice.e.stears@gmail.com")
 Description: This package contains functions to extract plant growth, survival, 
-  and competition data from annually mapped quadrats.
+  and competition data from repeated, fine-scale maps of plant occurence.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -27,9 +27,11 @@ population and community ecology.
         -   [Understanding the output of `trackSpp()`](#getNeigh_out)
     -   [Further analysis with more `plantTracker` functions](#next)
 
-<a id="Installation"></a> \#\# Installation
+<a id="Installation"></a>
 
-You can install the development version of `plantTracker` from
+## Installation
+
+You can install the current version of `plantTracker` from
 [GitHub](https://github.com/) with:
 
 ``` r

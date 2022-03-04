@@ -106,7 +106,7 @@ Below are the basic requirements for these data objects.
     [*1.1.1*](#dat_to_sf)…
 -   … contain a row for each individual observation in each year.
 -   … have a column that contains character strings indicating the
-    specific pithet for each observation. This column must be a
+    specific epithet for each observation. This column must be a
     character data type. The function expects this column to be called
     “Species”, but a different name can be specified in function calls.
 -   … have a column that contains character strings indicating the site

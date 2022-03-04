@@ -154,7 +154,7 @@ arguments here:
 
 Throughout this vignette, we'll use a smaller subset of the `grasslandData` and
 `grasslandInventory` data sets that are included in `plantTracker` for examples. 
-The susbset of `grasslandData` will be referred to as `dat`, because it is the 
+The subset of `grasslandData` will be referred to as `dat`, because it is the 
 `dat` argument in `trackSpp()`. The subset of `grasslandInventory` will be 
 referred to as `inv`, since it is used for the `inv` argument.  
 

@@ -13,7 +13,6 @@ population and community ecology.
 -   [Installing `plantTracker`](#Installation)
 -   \[Contributing\]\[(\#issues)\]
 -   [License](#license)
--   [Citation](#citation)
 -   [Contact](#contact)
 -   [How to Use `plantTracker`](#how_to_use)
     -   [Prepare data for use in `plantTracker`](#prep_data)
@@ -61,10 +60,6 @@ Help us make this package better!
 
 This package is licensed under MIT License Copyrgith (c) 2022 Alice
 Stears
-
-<a id="citation"></a>
-
-## Citation
 
 <a id="contact"></a>
 

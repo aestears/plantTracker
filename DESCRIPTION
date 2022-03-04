@@ -51,6 +51,7 @@ Imports:
     ggplot2,
     graphics,
     grDevices,
-    units
+    units,
+    minidown
 VignetteBuilder: knitr
 Language: en-US

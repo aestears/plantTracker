@@ -9,7 +9,7 @@ citEntry(
   volume   = ,
   number   = ,
   pages    = ,
-  url      = http://github.com/aestears/plantTracker,
+  url      = "http://github.com/aestears/plantTracker",
   textVersion = paste(
 
   )

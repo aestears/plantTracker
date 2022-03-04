@@ -80,7 +80,7 @@ and plots are color-coded either by species or trackID (unique
 genet identifier).
 
 #' @seealso \code{\link[=trackSpp]{trackSpp()}}, which can be used to assign trackIDs
-to observaitons.
+to observations.
 }
 \description{
 This function creates maps of a quadrat over time, color-coded

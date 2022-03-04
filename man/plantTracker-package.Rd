@@ -22,9 +22,9 @@ The DESCRIPTION file:
 }
 
 \seealso{
-This vignette will guide you through using the plantTracker package
-\code{\link[Suggested plantTracker Workflow.html]{Suggested_plantTracker_Workflow}}
+Use the following code to see the vignette will guide you through using the plantTracker package
+\code{vignette(topic = "Suggested_plantTracker_Workflow", package = "plantTracker")}
 
-This vignette goes through the trackSpp() function step-by-step
-\code{\link[Using the plantTracker trackSpp function.html]{Using_the_plantTracker_trackSpp_function}}
+Use the following code to see the vignette goes through the trackSpp() function step-by-step
+\code{vignette(topic = "Using_the_plantTracker_trackSpp_function", package = "plantTracker")}
 }

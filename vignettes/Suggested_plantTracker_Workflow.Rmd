@@ -140,7 +140,7 @@ ggplot(data = exampleDat) +
 ```
 
 It's important to note that, while `plantTracker` was designed to be used with 
-small-scale maps of plant occurence in quadrats, it is conceivably possible to 
+small-scale maps of plant occurrence in quadrats, it is conceivably possible to 
 use other styles of map data in `plantTracker` functions. All that is required is 
 a single mapped basal area (or point location converted to a small polygon) at 
 each time point for each organism (or ramet), and is accompanied by the required 
@@ -171,11 +171,11 @@ shapefiles in complex file structures, which can be a bit confusing to navigate.
 `plantTracker` requires all of your data (for all species, plots and years) to be 
 in one single data frame, so this code shows how to navigate through a complex 
 file structure to to pull out shapefiles and put them into one single `sf` data 
-frame. For this exapmle, I'll use data from Central Plains Experimental Research 
+frame. For this example, I'll use data from Central Plains Experimental Research 
 Location in Colorado, which has been published in [this data paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3556779?backTo=/collections/Cover_density_and_demographics_of_shortgrass_steppe_plants_mapped_1997_2010_in_permanent_grazed_and_ungrazed_quadrats/3305970). In this dataset, shapefiles for each quadrat are stored in 
 their own folder. Within that folder there are two shapefiles for each year: one 
 that contains map data for polygons, and one that contains data for points. The 
-following code reads in those shapefiles, transorms the points to polygons of a 
+following code reads in those shapefiles, transforms the points to polygons of a 
 fixed radius, and puts all the data into one `sf` data frame. If you want to 
 follow along, download the "shapefiles.zip" file from the data paper, un-zip it, 
 and name it "CO_shapefiles". 
@@ -721,7 +721,7 @@ between individuals can have a profound impact on whether an organism survives
 and grows. Spatial datasets of plant occurrence allow us to generate an estimate 
 of the interactions an individual plant has with other plants by determining how 
 many other individuals occupy the "local neighborhood" of each focal plant. 
-While this isn't a direct measure ofcompetition or facilitation, it gives us an
+While this isn't a direct measure of competition or facilitation, it gives us an
 estimate that we can include in demographic models.
 
 Here is the generic `getNeighbors()` function: 

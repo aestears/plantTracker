@@ -59,7 +59,7 @@
 #' genet identifier).
 #'
 #' #' @seealso [trackSpp()], which can be used to assign trackIDs
-#' to observaitons.
+#' to observations.
 #'
 #' @export
 #' @examples

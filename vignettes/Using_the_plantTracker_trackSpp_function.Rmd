@@ -962,7 +962,7 @@ Once the loop has progressed through the 'last' year, then the output
 data set will be saved, and the next species in the data set will be
 sent to `assign()`!
 
-# *4* Preparethe `trackSpp()` results to be returned!
+# *4* Prepare the `trackSpp()` results to be returned!
 There are just a few more steps in `trackSpp()` after the `assign()` function 
 has been applied to every species present in the data set. 
 

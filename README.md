@@ -134,7 +134,7 @@ Below are the basic requirements for these data objects.
     be converted to polygons. We recommend that you convert them to
     small circular polygons with an identical radius. If you do this
     transformation, we also recommend that you include a column that
-    indicates whether each row was originally mapped as apolygon or a
+    indicates whether each row was originally mapped as a polygon or a
     point, since the demographic data that deals with size will be
     relatively meaningless for observations originally mapped as points.
 -   `dat` does not need to have a coordinate reference system (i.e. CRS
@@ -171,7 +171,7 @@ Here are the first few rows of a possible `dat` input data.frame:
 
 -   Note: that the required columns are “Species”, “Site”, “Quad”,
     “Year”, and “geometry”. The additional columns “Type” and
-    “sp\_code\_6” are just “along forthe ride” in any analysis using
+    “sp\_code\_6” are just “along for the ride” in any analysis using
     `plantTracker` functions.
 
 Here’s what some of the example `dat` data (from the “SG2” quadrat at
@@ -187,7 +187,7 @@ Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
 </div>
 
 It’s important to note that, while `plantTracker` was designed to be
-used with small-scale maps of plant occurence in quadrats, it is
+used with small-scale maps of plant occurrence in quadrats, it is
 conceivably possible to use other styles of map data in `plantTracker`
 functions. All that is required is a single mapped basal area (or point
 location converted to a small polygon) at each time point for each
@@ -224,14 +224,14 @@ shapefiles in complex file structures, which can be a bit confusing to
 navigate. `plantTracker` requires all of your data (for all species,
 plots and years) to be in one single data frame, so this code shows how
 to navigate through a complex file structure to to pull out shapefiles
-and put them into one single `sf` data frame. For this exapmle, I’ll use
+and put them into one single `sf` data frame. For this example, I’ll use
 data from Central Plains Experimental Research Location in Colorado,
 which has been published in [this data
 paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3556779?backTo=/collections/Cover_density_and_demographics_of_shortgrass_steppe_plants_mapped_1997_2010_in_permanent_grazed_and_ungrazed_quadrats/3305970).
 In this dataset, shapefiles for each quadrat are stored in their own
 folder. Within that folder there are two shapefiles for each year: one
 that contains map data for polygons, and one that contains data for
-points. The following code reads in those shapefiles, transorms the
+points. The following code reads in those shapefiles, transforms the
 points to polygons of a fixed radius, and puts all the data into one
 `sf` data frame. If you want to follow along, download the
 “shapefiles.zip” file from the data paper, un-zip it, and name it
@@ -616,7 +616,7 @@ contexts.
     a row for every single ramet, or will be aggregated so that each
     genet is represented by a single row. If `aggByGenet = FALSE`, then
     the output is not aggregated. If `aggByGenet = TRUE` (the default
-    etting), then the results are aggregated using the `plantTracker`
+    setting), then the results are aggregated using the `plantTracker`
     function `aggregateByGenet()`. This function combines the `sf`
     “POLYGONS” for each ramet into one `sf` `MULTIPOLYGON` for the
     entire genet, and combines the associated metadata (“Species”,
@@ -631,7 +631,7 @@ contexts.
     column to have one value for each genet. If you want the output data
     frame from `trackSpp()` to have the same columns as your input `dat`
     data.frame, set the `aggByGenet` argument to FALSE. However, Be
-    Careful, since any demographicanalysis should be done with a
+    Careful, since any demographic analysis should be done with a
     data.set that has only one row per genet, otherwise you will be
     estimating survival and growth rates on the scale of ramets instead
     of genets. If you take the `aggByGenet = FALSE` route, be sure to
@@ -790,7 +790,7 @@ whether an organism survives and grows. Spatial datasets of plant
 occurrence allow us to generate an estimate of the interactions an
 individual plant has with other plants by determining how many other
 individuals occupy the “local neighborhood” of each focal plant. While
-this isn’t a direct measure ofcompetition or facilitation, it gives us
+this isn’t a direct measure of competition or facilitation, it gives us
 an estimate that we can include in demographic models.
 
 Here is the generic `getNeighbors()` function:

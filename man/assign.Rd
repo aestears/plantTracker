@@ -96,9 +96,9 @@ if it 'goes dormant' and has a size that is less than or equal to the
 percentile of the size distribution for this species that is designated by
 \code{dormSize}. For example, \code{dormSize = 0.05}, and the focal individual has a
 basal area of 0.5 cm^2. The 5th percentile of the distribution of size for
-this species, which is made usingthe mean and standard deviation of all
+this species, which is made using the mean and standard deviation of all
 observations in 'dat' for the species in question, is 0.6 cm^2. This
-individual does not have any overlaps in thenext year (year \code{t+1}), but
+individual does not have any overlaps in the next year (year \code{t+1}), but
 does have an overlap in year \code{t+2}. However, because the basal area of
 this observation is smaller than the 5th percentile of size for this species,
 the observation in year \code{t} will get a 'TRUE' in the 'Suspect' column.

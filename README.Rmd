@@ -17,10 +17,9 @@ knitr::opts_chunk$set(
 Welcome to `plantTracker`! This package was designed to transform **long-term quadrat maps** that show plant occurrence and size into **demographic data** that can be used to answer questions about population and community ecology. 
 
 ## Table of Contents 
-* [Installing `plantTracker`](#Installation)
-* [Contributing][(#issues)]
+* [Installing `plantTracker`](#Installation)    
+* [Contributing](#issues)
 * [License](#license)
-* [Citation](#citation)
 * [Contact](#contact)
 * [How to Use `plantTracker`](#how_to_use)
   * [Prepare data for use in `plantTracker`](#prep_data)
@@ -35,6 +34,7 @@ Welcome to `plantTracker`! This package was designed to transform **long-term qu
     * [Arguments in `getNeighbors()`](#getNeigh_args)
     * [Understanding the output of `trackSpp()`](#getNeigh_out)
   * [Further analysis with more `plantTracker` functions](#next)
+
 
 <a id="Installation"></a>
 
@@ -58,11 +58,7 @@ Please report any problems that you encounter while using `plantTracker` as "iss
 
 ## License
 This package is licensed under MIT License
-Copyrgith (c) 2022 Alice Stears
-
-<a id="citation"></a>
-
-## Citation
+Copyright (c) 2022 Alice Stears
 
 <a id="contact"></a>
 
@@ -70,7 +66,7 @@ Copyrgith (c) 2022 Alice Stears
 Questions about `plantTracker` can be forwarded to Alice Stears, the package 
 maintainer, at alice.e.stears@gmail.com. 
 
- <a id="how_to_use"></a>
+<a id="how_to_use"></a>
 
 ## How to use the `plantTracker` R package
                               

@@ -61,6 +61,8 @@ us make this package better!
 This package is licensed under MIT License Copyright (c) 2022 Alice
 Stears
 
+[![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
+
 <a id="contact"></a>
 
 ## Contact

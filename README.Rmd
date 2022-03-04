@@ -61,6 +61,8 @@ Please report any problems that you encounter while using `plantTracker` as "iss
 This package is licensed under MIT License
 Copyright (c) 2022 Alice Stears
 
+[![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
+
 <a id="contact"></a>
 
 ## Contact 

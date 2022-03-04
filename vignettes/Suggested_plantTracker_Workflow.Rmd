@@ -1,6 +1,5 @@
 ---
 title: "Suggested `plantTracker` Workflow"
-author: Alice Stears
 date: 18 February 2022
 output:
   minidown::mini_document:

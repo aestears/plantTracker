@@ -2,14 +2,33 @@ Package: plantTracker
 Title: Extract Demographic and Competition Data from Fine-scale Maps
 Version: 1.0.0.0000
 Date: 2022-02-27
-Authors@R: 
-    person(given = "Alice",
+Authors@R: c(person(given = "Alice",
            family = "Stears",
            role = c("aut", "cre"),
-           email = "alice.e.stears@gmail.com")
+           email = "alice.e.stears@gmail.com"),
+    person(given = "Jared",
+           family = "Studyvin",
+           role = c("aut"),
+           email = "studyvin@uwyo.edu"),
+    person(given = "David", 
+           family = "Atkins", 
+           role = c("aut"), 
+           email = "datkins8@uwyo.edu"),
+    person(given = "Peter", 
+           family = "Adler", 
+           role = c("ctb")) ,
+    person(given = "Shannon", 
+           family = "Albeke", 
+           role = c("ctb")),
+    person(given = "Daniel", 
+           family = "Laughlin", 
+          role = c("ctb", "ths")))
+Author: Alice Stears [aut, cre], Jared Studyvin [aut], David Atkins [aut]
+Maintaineer: Alice Stears <alice.e.stears@gmail.com>
 Description: This package contains functions to extract plant growth, survival, 
   and competition data from repeated, fine-scale maps of plant occurence.
 License: MIT + file LICENSE
+URL: http://github.com/aestears/plantTracker
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

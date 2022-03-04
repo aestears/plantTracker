@@ -11,6 +11,10 @@ population and community ecology.
 ## Table of Contents
 
 -   [Installing `plantTracker`](#Installation)
+-   \[Contributing\]\[(\#issues)\]
+-   [License](#license)
+-   [Citation](#citation)
+-   [Contact](#contact)
 -   [How to Use `plantTracker`](#how_to_use)
     -   [Prepare data for use in `plantTracker`](#prep_data)
         -   [The quadrat map data: `dat`](#dat_data)
@@ -41,6 +45,33 @@ devtools::install_github("aestears/plantTracker")
 
 `plantTracker` will also be available to download form CRAN in the near
 future (hopefully…), so stay tuned!
+
+<a id="issues"></a>
+
+## Contributing
+
+Please report any problems that you encounter while using `plantTracker`
+as “issues” on GitHub
+(<https://github.com/aestears/plantTracker/issues>)\[<https://github.com/aestears/plantTracker/issues>\].
+Help us make this package better!
+
+<a id="license"></a>
+
+## License
+
+This package is licensed under MIT License Copyrgith (c) 2022 Alice
+Stears
+
+<a id="citation"></a>
+
+## Citation
+
+<a id="contact"></a>
+
+## Contact
+
+Questions about `plantTracker` can be forwarded to Alice Stears, the
+package maintainer, at <alice.e.stears@gmail.com>.
 
 <a id="how_to_use"></a>
 
@@ -75,7 +106,7 @@ Below are the basic requirements for these data objects.
 #### *1.1* The `dat` data frame must . . .
 
 -   … be an `sf` data.frame. More on this below in section
-    [*1.1.1*](#dat_to_sf%22)…
+    [*1.1.1*](#dat_to_sf)…
 -   … contain a row for each individual observation in each year.
 -   … have a column that contains character strings indicating the
     specific pithet for each observation. This column must be a

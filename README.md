@@ -43,7 +43,7 @@ devtools::install_github("aestears/plantTracker")
 ```
 
 `plantTracker` will also be available to download form CRAN in the near
-future (hopefully…), so stay tuned!
+future, so stay tuned!
 
 <a id="issues"></a>
 

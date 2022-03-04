@@ -24,7 +24,7 @@ Authors@R: c(person(given = "Alice",
            family = "Laughlin", 
           role = c("ctb", "ths")))
 Author: Alice Stears [aut, cre], Jared Studyvin [aut], David Atkins [aut]
-Maintaineer: Alice Stears <alice.e.stears@gmail.com>
+Maintainer: Alice Stears <alice.e.stears@gmail.com>
 Description: This package contains functions to extract plant growth, survival, 
   and competition data from repeated, fine-scale maps of plant occurence.
 License: MIT + file LICENSE

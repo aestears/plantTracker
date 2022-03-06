@@ -538,7 +538,7 @@ values of either FALSE or TRUE for each species with no NAs.")
         }
 
         ## put this dataset into the 'assign' function
-        datOut <- assign(dat = datSp,
+        datOut <- plantTracker:::assign(dat = datSp,
                          inv = invQuad,
                          dorm = dormK,
                          buff = buffK,

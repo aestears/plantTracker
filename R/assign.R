@@ -343,7 +343,9 @@
                tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(
                tempTrackIDs$sp_code_6, "_", tempTrackIDs$Year, "_",
                tempTrackIDs$genetID)
-
+             ## add genet basal areas to the tempCurrentYear data.frame
+             tempCurrentYear[is.na(tempCurrentYear$trackID) == TRUE,
+                             "basalArea_genet"] <- tempTrackIDs$basalArea_genet
             ## then need to add 'age' and 'recruit' data (but first check that
             # this isn't the first year after a gap in sampling)
             tempCurrentYear[(tempCurrentYear$Year - inv[i-1]) < 2,

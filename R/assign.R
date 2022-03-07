@@ -149,7 +149,7 @@
   ## work -------------------------------------------------------------------
   ## remove the out data.frame
   if(exists("assignOut") == TRUE){
-    rm("assignOut")
+    suppressWarnings(rm("assignOut"))
   }
   ## make sure dat is in the correct sf format
   dat <- sf::st_as_sf(x = dat, sf_column_name = "geometry")
@@ -593,11 +593,11 @@
                     ## get the highest value between the two ties
                     winner <- max(overlaps[,ties], na.rm = TRUE)
                     # if there is only one 'winner':
-                    if (length(winner) ==1) {
+                    if (length(which(overlaps == winner)) ==1) {
                       ## set all other values that aren't the highest in that
                       # column to 'NA'
                       overlaps[,ties][overlaps[,ties] != winner] <- NA
-                    } else if (length(winner) > 1) {
+                    } else if (length(which(overlaps == winner)) > 1) {
                       ##  if there is more than 1 winner (i.e. if there are two
                       # parents with the exact same overlap with the child), then
                       # we have to break the tie some other way. Use the distance
@@ -612,8 +612,8 @@
                             strsplit(badChild_name, "__")[[1]][2]),]))
 
                       ## get the names of the problem 'parents'
-                      badParents_names <- rownames(
-                        overlaps[is.na(overlaps[,ties])==FALSE,])
+                      badParents_names <- rownames(overlaps)[!is.na(
+                       overlaps[,ties])]
                       # get the spatial data for those parents
                       badParents <-
                         tempPreviousYear[tempPreviousYear$trackID

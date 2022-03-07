@@ -149,7 +149,7 @@
   ## work -------------------------------------------------------------------
   ## remove the out data.frame
   if(exists("assignOut") == TRUE){
-    rm("assignOut")
+    suppressWarnings(rm("assignOut"))
   }
   ## make sure dat is in the correct sf format
   dat <- sf::st_as_sf(x = dat, sf_column_name = "geometry")

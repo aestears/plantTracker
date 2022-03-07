@@ -102,7 +102,7 @@ stop("The 'dat' argument must contain columns that are called 'basalArea_genet',
   # data types
   ## 'basalArea_genet'
   if (is.numeric(dat$basalArea_genet)==FALSE |
-      sum(!dat$basalArea_genet > 0) != 0 ) {
+      sum(!dat$basalArea_genet > 0, na.rm = TRUE) != 0 ) {
 stop("The 'basalArea_genet' column in 'dat' must be a numeric vector with
          only positive values.")
   }

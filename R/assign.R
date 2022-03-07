@@ -335,10 +335,9 @@
             ## get a d.f that contains the obs. w/ no trackIDs
             tempTrackIDs <- tempCurrentYear[
               is.na(tempCurrentYear$trackID)==TRUE,]
-
             ## assign them genetIDs first
-            tempCurrentYear <- ifClonal(tempCurrentYear, clonal = clonal,
-                                        buffGenet = buffGenet)
+            tempTrackIDs <- ifClonal(tempTrackIDs,
+                                     clonal = clonal, buffGenet = buffGenet)
             ## add trackIDs to the tempCurrentYear data.frame
              tempCurrentYear[is.na(
                tempCurrentYear$trackID)==TRUE,"trackID"] <- paste0(

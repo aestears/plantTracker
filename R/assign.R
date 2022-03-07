@@ -290,8 +290,8 @@
           # has them!)
 
           ## is there data for genetIDs in the 'tempPreviousYear' data?
-          if(is.null(tempPreviousYear$genetID)==TRUE) { ## if there is NOT data
-            # for genetID
+          if(sum(is.na(tempPreviousYear$genetID==TRUE)) > 1) { ## if there is
+            # NOT data for genetID
             ## group by genet
             tempPreviousYear <- ifClonal(cloneDat  = tempPreviousYear,
                                         clonal = clonal, buffGenet = buffGenet)
@@ -1097,25 +1097,29 @@ return(assignOut)
 #
 ## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
 # function will do this ahead of time when the user calls it)
-# sampleDat <- grasslandData[grasslandData$Site == "AZ"
-#                            & grasslandData$Quad == "SG4"
-#                            & grasslandData$Species == "Bouteloua rothrockii",]
-# # this should be a data.frame
-# dat <- sampleDat
-# #
-# # # get the appropriate grasslandInventory data for the "unun_11" quadrat,
-# # # to tell the 'assign' function when the quadrat was sampled
-# sampleInv<- grasslandInventory[["SG2"]]
-# # this should be an integer vector
-# inv <- sampleInv
+sampleDat <- grasslandData[grasslandData$Site == "AZ"
+                           & grasslandData$Quad == "SG4"
+                           & grasslandData$Species == "Bouteloua rothrockii",]
+# this should be a data.frame
+dat <- sampleDat
 #
-# testOutput <- assign(dat = dat,
-#                      inv = inv,
-#                      dorm = 1,
-#                      buff = .05,
-#                      # buffGenet = .001,
-#                      clonal =  FALSE,
-#                      flagSuspects = TRUE)
+# # get the appropriate grasslandInventory data for the "unun_11" quadrat,
+# # to tell the 'assign' function when the quadrat was sampled
+sampleInv<- grasslandInventory[["SG2"]]
+# this should be an integer vector
+inv <- sampleInv
+
+# remove a year to simulate 'dorm' being exceeded
+dat <- sampleDat[sampleDat$Year != 1924,]
+inv <- inv[c(1:2,4:5)]
+
+testOutput <- assign(dat = dat,
+                     inv = inv,
+                     dorm = 1,
+                     buff = .05,
+                     # buffGenet = .001,
+                     clonal =  FALSE,
+                     flagSuspects = TRUE)
 
 #
 # ggplot(testOutput) +

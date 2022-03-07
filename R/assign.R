@@ -290,8 +290,8 @@
           # has them!)
 
           ## is there data for genetIDs in the 'tempPreviousYear' data?
-          if(is.null(tempPreviousYear$genetID)==TRUE) { ## if there is NOT data
-            # for genetID
+          if(sum(is.na(tempPreviousYear$genetID==TRUE)) > 1) { ## if there is
+            # NOT data for genetID
             ## group by genet
             tempPreviousYear <- ifClonal(cloneDat  = tempPreviousYear,
                                         clonal = clonal, buffGenet = buffGenet)
@@ -1094,9 +1094,9 @@ return(assignOut)
 
 # testing -----------------------------------------------------------------
 # example input data ------------------------------------------------------
-#
-## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
-# function will do this ahead of time when the user calls it)
+# #
+# ## prepares the dataset to feed into the 'assign' function (the 'trackSpp'
+# # function will do this ahead of time when the user calls it)
 # sampleDat <- grasslandData[grasslandData$Site == "AZ"
 #                            & grasslandData$Quad == "SG4"
 #                            & grasslandData$Species == "Bouteloua rothrockii",]
@@ -1108,6 +1108,10 @@ return(assignOut)
 # sampleInv<- grasslandInventory[["SG2"]]
 # # this should be an integer vector
 # inv <- sampleInv
+#
+# # remove a year to simulate 'dorm' being exceeded
+# dat <- sampleDat[sampleDat$Year != 1924,]
+# inv <- inv[c(1:2,4:5)]
 #
 # testOutput <- assign(dat = dat,
 #                      inv = inv,

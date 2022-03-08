@@ -556,14 +556,15 @@
                   ties <- names(multParents[multParents > 1])
                   if (length(ties) > 1) {
                     for (m in 1:ncol(as.data.frame(overlaps[,ties]))) {
-                      ## get the highest value between the two ties
-                      winner <- which(overlaps[,ties][,m] == 
-                                      max(overlaps[, ties][, m], na.rm = TRUE))
+                     # get the maximum value of overlaps
+                      winnerVal <- max(overlaps[,ties][,m], na.rm = TRUE)
+                      ## get the location of the highest value between the two ties
+                      winner <- which(overlaps[,ties][,m] == winnerVal)
                       # if there is only one 'winner':
                       if (length(winner) ==1) {
                         ## set all other values that aren't the highest in that
                         # column to 'NA'
-                        overlaps[,ties][,m][overlaps[,ties][,m] != winner] <- NA
+                        overlaps[,ties][,m][overlaps[,ties][,m] != winnerVal] <- NA
                       } else if (length(winner) > 1) {
                         ##  if there is more than 1 winner (i.e. if there are two
                         # parents with the exact same overlap with the child), then

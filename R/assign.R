@@ -273,7 +273,10 @@
         } else{ ## if the assignOut df is empty
           assignOut <- tempPreviousYear
         }
-
+       ## is there any more data? if not, then end the loop
+       if(inv[i] > max(dat$Year)) {
+        break
+       }
         ## get data from year i and put in 'tempPreviousYear'
         tempPreviousYear <- dat[dat$Year==inv[i],]
 
@@ -282,14 +285,16 @@
           # then go to next i (but only after overwriting the tempPreviousYear
           # data.frame with data from the next i)
           tempPreviousYear <- dat[dat$Year==inv[i+1],]
+         # if there is data in this iteration...
+         if (nrow(tempPreviousYear) > 0) {
           ## assign trackIDs using groupByGenet (via ifClonal)
           # first, get genetIDs
           tempPreviousYear <- ifClonal(cloneDat = tempPreviousYear,
                                        clonal = clonal, buffGenet = buffGenet)
           # now assign trackIDs
-          tempPreviousYear$trackID <- paste0(tempPreviousYear$sp_code_6, "_",
-                                             tempPreviousYear$Year, "_",
-                                             tempPreviousYear$genetID)
+          tempPreviousYear$trackID <- paste0(tempPreviousYear$sp_code_6,
+                                             "_", tempPreviousYear$Year, "_", tempPreviousYear$genetID)
+        }
           next
         }
         if (nrow(tempPreviousYear) > 0 ) { ## if there IS data in year i, then

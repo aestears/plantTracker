@@ -557,7 +557,8 @@
                   if (length(ties) > 1) {
                     for (m in 1:ncol(as.data.frame(overlaps[,ties]))) {
                       ## get the highest value between the two ties
-                      winner <- max(overlaps[,ties][,m], na.rm = TRUE)
+                      winner <- which(overlaps[,ties][,m] == 
+                                      max(overlaps[, ties][, m], na.rm = TRUE))
                       # if there is only one 'winner':
                       if (length(winner) ==1) {
                         ## set all other values that aren't the highest in that

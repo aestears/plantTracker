@@ -282,6 +282,14 @@
           # then go to next i (but only after overwriting the tempPreviousYear
           # data.frame with data from the next i)
           tempPreviousYear <- dat[dat$Year==inv[i+1],]
+          ## assign trackIDs using groupByGenet (via ifClonal)
+          # first, get genetIDs
+          tempPreviousYear <- ifClonal(cloneDat = tempPreviousYear,
+                                       clonal = clonal, buffGenet = buffGenet)
+          # now assign trackIDs
+          tempPreviousYear$trackID <- paste0(tempPreviousYear$sp_code_6, "_",
+                                             tempPreviousYear$Year, "_",
+                                             tempPreviousYear$genetID)
           next
         }
         if (nrow(tempPreviousYear) > 0 ) { ## if there IS data in year i, then

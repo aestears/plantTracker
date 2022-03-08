@@ -679,7 +679,8 @@
                    # that have the same value
                    if (nrow(maxInds) > 1) {
                      # get the names of the potential parents
-                     maybeParents_names <- rownames(whileOverlaps[unique(maxInds[,"row"]),])
+                     maybeParents_names <- rownames(whileOverlaps)[unique(
+                       maxInds[,"row"])]
                      # get the names of the potential children
                      maybeChildren_names <- names(whileOverlaps)[unique(maxInds[,"col"])]
                      ## get a matrix of centroid distances

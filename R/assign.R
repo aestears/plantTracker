@@ -303,7 +303,8 @@
           # has them!)
 
           ## is there data for genetIDs in the 'tempPreviousYear' data?
-          if(sum(is.na(tempPreviousYear$genetID==TRUE)) > 1) { ## if there is
+          if (sum(is.na(tempPreviousYear$genetID) == TRUE) >=
+            1) { ## if there is
             # NOT data for genetID
             ## group by genet
             tempPreviousYear <- ifClonal(cloneDat  = tempPreviousYear,

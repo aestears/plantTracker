@@ -284,7 +284,8 @@ vector of years in which that quadrat was sampled."))
 
 ## check to see if there are any 'duplicates' in the data (i.e. geometries that 
                                              # are exact copies of one another)
-  if (sum(duplicated(dat$geometry)) > 0) {
+  if (sum(duplicated(dat)) > 0) {
+    dup <- dat[duplicated(dat),"geometry"]
     stop(paste0(
       "It seems that 'dat' contains two rows with the exact same geometries: ",
                 paste0(rownames(dat[dat$geometry==dup$geometry,]), 

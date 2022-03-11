@@ -251,11 +251,25 @@
 
   ## 'tempPreviousYear' data.frame will get redefined for
   # each iteration of the for-loop below
-
+  tempPrevI_empty <- FALSE
   ##  i = year in inventory
   if (inv[firstYearIndex] < max(inv)) { ## is the first year of data also the
     # last year of sampling?
     for (i in (firstYearIndex+1):length(inv)) {
+       if (tempPrevI_empty == TRUE) {
+         tempPreviousYear <- dat[dat$Year == inv[i-1], ]
+       if (nrow(tempPreviousYear) > 0) {
+         tempPreviousYear <- ifClonal(cloneDat = tempPreviousYear,
+                                      clonal = clonal, buffGenet = buffGenet)
+         tempPreviousYear$trackID <- paste0(tempPreviousYear$sp_code_6,
+                                            "_", tempPreviousYear$Year, "_",
+                                            tempPreviousYear$genetID)
+         tempPrevI_empty <- FALSE
+         } else {
+         tempPrevI_empty <- TRUE
+         next
+       }
+    }
       ## CHECK IF YEARS ARE CONTINUOUS -- check to see if the sampling years of
       # 'tempPreviousYear' and 'tempCurrentYear' are not far enough apart to
       # exceed the 'dormancy' argument. If dormancy is not exceeded, then go
@@ -282,19 +296,9 @@
 
         ## determine if the tempPreviousYear data.frame has any data
         if (nrow(tempPreviousYear) < 1) { ## if there is NOT data in year i,
-          # then go to next i (but only after overwriting the tempPreviousYear
-          # data.frame with data from the next i)
-          tempPreviousYear <- dat[dat$Year==inv[i+1],]
-         # if there is data in this iteration...
-         if (nrow(tempPreviousYear) > 0) {
-          ## assign trackIDs using groupByGenet (via ifClonal)
-          # first, get genetIDs
-          tempPreviousYear <- ifClonal(cloneDat = tempPreviousYear,
-                                       clonal = clonal, buffGenet = buffGenet)
-          # now assign trackIDs
-          tempPreviousYear$trackID <- paste0(tempPreviousYear$sp_code_6,
-                                             "_", tempPreviousYear$Year, "_", tempPreviousYear$genetID)
-        }
+          # then go to the next i--but first indicate that the previous i 
+         # did not have any data 
+         tempPrevI_empty <- TRUE
           next
         }
         if (nrow(tempPreviousYear) > 0 ) { ## if there IS data in year i, then

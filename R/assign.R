@@ -734,6 +734,28 @@
 
                      ## get the indices of the smallest distance pair
                      smallDistInds <- which(dists == min(dists), arr.ind = TRUE)
+                    
+                  # if the smallDistInds d.f contains data for TWO parents (>1 column number!)
+                  if (length(unique(smallDistInds[,"col"])) > 1) {
+                    for (n in unique(smallDistInds[,"col"])) {
+                      # get the data just for the nth parent
+                      tinyDistInds <- smallDistInds[smallDistInds[,"col"]==n,]
+                      # get the name of the nth child
+                      tinyChild <- rownames(dists)[tinyDistInds["row"]]
+                      # get the name of the nth parent
+                      tinyParent <- colnames(dists)[tinyDistInds["col"]] 
+                      # give the nth child the trackID of the nth parent (in tempCurrentYear)
+                      tempCurrentYear[tempCurrentYear$index ==
+                                        strsplit(x = tinyChild, split = "__")[[1]][2],
+                                      "trackID"] <- tinyParent
+                      # update the "whileOverlaps" matrix w/ appropriate zeros
+                      whileOverlaps[tinyParent, tinyChild] <- 0
+                      whileOverlaps[tinyParent, ] <- 0
+                      whileOverlaps[, tinyChild] <- 0
+                    }
+                  } else {
+                    # if the smallDistInds d.f contains data for only one parent (same column number)
+
                      ## get the index of the smallest distance child
                      smallChild <- rownames(dists)[smallDistInds[,"row"]]
                      ## get the trackID of the smallest distance parent
@@ -756,6 +778,7 @@
                      # one parent)
                      whileOverlaps[smallParent,] <- 0
                      whileOverlaps[,smallChild] <- 0
+                    }
 
                    } else { ## if there is only one maximum overlap--no ties
 

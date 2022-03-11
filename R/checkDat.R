@@ -292,6 +292,15 @@ vector of years in which that quadrat was sampled."))
                        collapse = ", ")))
   }
 
+ ## check that the area of the 'geometry' column is >0 for each obs. 
+ # if there are areas that are 0, then give a 'warning'                                             
+  if (sum(sf::st_area(dat) == 0) > 0) { 
+  badRows <- paste0(which(st_area(dat)==0),collapse = ", ")
+  warning(paste0("There are some observations in 'dat' that have an area of 0. 
+          You should double-check the geometry for these rows to make sure it's correct! 
+          Rows with 0 area: ",badRows))
+  }
+    
   # output ------------------------------------------------------------------
   ## prepare the output
 

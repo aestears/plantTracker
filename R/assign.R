@@ -500,7 +500,7 @@
               ## calculate the overlap between each parent poly and each child
               overlapArea$overlappingArea <- sf::st_area(overlapArea$geometry)
              # remove units from the overlap matrix, if they exist
-              units::units(overlapArea$overlappingArea) <- NULL
+              base::units(overlapArea$overlappingArea) <- NULL
 
               overlapArea <- sf::st_drop_geometry(overlapArea)
 

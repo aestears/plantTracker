@@ -282,25 +282,29 @@ vector of years in which that quadrat was sampled."))
     }
   }
 
-## check to see if there are any 'duplicates' in the data (i.e. geometries that 
+## check to see if there are any 'duplicates' in the data (i.e. geometries that
                                              # are exact copies of one another)
-  if (sum(duplicated(dat)) > 0) {
-    dup <- dat[duplicated(dat),"geometry"]
+
+  datDups <- dat
+  datDups$centroidX <- sapply(suppressWarnings(sf::st_centroid(datDups)$geometry), function(x) x[1])
+  datDups$centroidY <- sapply(suppressWarnings(sf::st_centroid(datDups)$geometry), function(x) x[2])
+  datDups <- sf::st_drop_geometry(datDups)
+  if (sum(duplicated(datDups)) > 0) {
+    dup <- datDups[duplicated(datDups),]
     stop(paste0(
-      "It seems that 'dat' contains two rows with the exact same geometries: ",
-                paste0(rownames(dat[dat$geometry==dup$geometry,]), 
-                       collapse = ", ")))
+      "It seems that this row in 'dat' has the exact same values as another row(s): ",
+                paste0(rownames(dup))))
   }
 
- ## check that the area of the 'geometry' column is >0 for each obs. 
- # if there are areas that are 0, then give a 'warning'                                             
-  if (sum(sf::st_area(dat) == 0) > 0) { 
+ ## check that the area of the 'geometry' column is >0 for each obs.
+ # if there are areas that are 0, then give a 'warning'
+  if (sum(sf::st_area(dat) == 0) > 0) {
   badRows <- paste0(which(st_area(dat)==0),collapse = ", ")
-  warning(paste0("There are some observations in 'dat' that have an area of 0. 
-          You should double-check the geometry for these rows to make sure it's correct! 
+  warning(paste0("There are some observations in 'dat' that have an area of 0.
+          You should double-check the geometry for these rows to make sure it's correct!
           Rows with 0 area: ",badRows))
   }
-    
+
   # output ------------------------------------------------------------------
   ## prepare the output
 

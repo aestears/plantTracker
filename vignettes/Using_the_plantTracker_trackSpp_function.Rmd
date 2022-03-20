@@ -259,7 +259,7 @@ six letter species code, year of first observation, and an arbitrary
 index differentiating individuals of the the same species and year of
 recruitment (e.g. HETCON_1922_3). 
 
-This following figures show data for one year (1922) and one species 
+The following figure shows data for one year (1922) and one species 
 (*Heteropogon contortus*). 
 
 ```{r echo = FALSE,  fig.show = 'hold', fig.width=7, fig.align = 'left', fig.cap = "**Figure 3.1**: *The value of 'buffGenet' used in the `trackSpp()` function can make a big difference in genetID assignments. These examples move from no genet grouping on the left, where every polygon has its own genetID, to grouping any ramets together that are less than 10 cm apart on the right. Colors and numbers indicate different genetIDs. Buffers are drawn around ramets that belong to the same genet.*", warning=FALSE}

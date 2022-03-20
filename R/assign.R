@@ -127,7 +127,7 @@
     ## buffGenet = inherits from the 'buffGenet' argument in the 'assign()' fxn,
     # is input into the plantTracker::groupByGenet() fxn
     if(clonal == TRUE) {
-      cloneDat$genetID <- plantTracker::groupByGenet(cloneDat, buffGenet)
+      cloneDat$genetID <- groupByGenet(cloneDat, buffGenet)
       ## aggregate size by genetID (total size for each ramet)
       tempCloneDat <- stats::aggregate(basalArea_ramet ~ genetID, sum,
                                        data = cloneDat)
@@ -296,8 +296,8 @@
 
         ## determine if the tempPreviousYear data.frame has any data
         if (nrow(tempPreviousYear) < 1) { ## if there is NOT data in year i,
-          # then go to the next i--but first indicate that the previous i 
-         # did not have any data 
+          # then go to the next i--but first indicate that the previous i
+         # did not have any data
          tempPrevI_empty <- TRUE
           next
         }
@@ -740,7 +740,7 @@
 
                      ## get the indices of the smallest distance pair
                      smallDistInds <- which(dists == min(dists), arr.ind = TRUE)
-                    
+
                   # if the smallDistInds d.f contains data for TWO parents (>1 column number!)
                   if (length(unique(smallDistInds[,"col"])) > 1) {
                     for (n in unique(smallDistInds[,"col"])) {
@@ -749,7 +749,7 @@
                       # get the name of the nth child
                       tinyChild <- rownames(dists)[tinyDistInds["row"]]
                       # get the name of the nth parent
-                      tinyParent <- colnames(dists)[tinyDistInds["col"]] 
+                      tinyParent <- colnames(dists)[tinyDistInds["col"]]
                       # give the nth child the trackID of the nth parent (in tempCurrentYear)
                       tempCurrentYear[tempCurrentYear$index ==
                                         strsplit(x = tinyChild, split = "__")[[1]][2],

@@ -179,10 +179,11 @@ following code reads in those shapefiles, transforms the points to polygons of a
 fixed radius, and puts all the data into one `sf` data frame. If you want to 
 follow along, download the "shapefiles.zip" file from the data paper, un-zip it, 
 and name it "CO_shapefiles". 
-```{r, echo=FALSE, include=FALSE, eval = TRUE}
+```{r, echo=FALSE, include=FALSE, eval = FALSE}
 # get the working directory name
 wdName <- c("/Users/Alice/Dropbox/Grad School/Research/Trait Project/Data/Adler Dowloaded Datasets/Adler_CO_Downloaded Data/")
 ```
+
 ```{r, warning=FALSE, eval = FALSE}
 #  save a character vector of the file names in the file that contains the 
 # shapefiles (in this case, called "CO_shapefiles"), each of which is a quadrat

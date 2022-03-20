@@ -167,7 +167,6 @@ checkDat <- function (dat, inv = NULL,
   ## replace the user-provided names in 'dat' with the default names
   names(dat)[match(usrNames, names(dat))] <- defaultNames
 
-
   ## proceed with remaining checks
   ## check the 'dat' argument (with default names)
 
@@ -177,6 +176,8 @@ checkDat <- function (dat, inv = NULL,
     stop("'dat' is not in correct sf format.
          sfc must be POLYGON or MULTIPOLYGON")
   }
+  ## does the 'dat' argument contain 'units'? If so, return an error, since
+  # units make everything more complicated
   ## does the 'dat' argument contain any 'invalid' geometries?
   if (sum(!sf::st_is_valid(dat)) > 0) {
     inv_row <- which(sf::st_is_valid(dat)==FALSE)
@@ -298,14 +299,26 @@ vector of years in which that quadrat was sampled."))
 
  ## check that the area of the 'geometry' column is >0 for each obs.
  # if there are areas that are 0, then give a 'warning'
-  if (sum(units::drop_units(sf::st_area(dat)) == 0) > 0) {
-    badRows <- paste0(which(units::drop_units(sf::st_area(dat)) == 0),
-                      collapse = ", ")
-    warning(paste0("There are some observations in 'dat' that have an area of 0.
+  if (is.na(sf::st_crs(dat)) == FALSE) {
+    if (sum(units::drop_units(sf::st_area(dat)) == 0) > 0) {
+      badRows <- paste0(which(units::drop_units(sf::st_area(dat)) == 0),
+                        collapse = ", ")
+      warning(paste0("There are some observations in 'dat' that have an area of 0.
                    \n You should double-check the geometry for these rows to \n
                    make sure it's correct! Rows with 0 area: ",
-                   badRows))
+                     badRows))
+    }
+  } else {
+    if (sum(sf::st_area(dat) == 0) > 0) {
+      badRows <- paste0(which(sf::st_area(dat) == 0),
+                        collapse = ", ")
+      warning(paste0("There are some observations in 'dat' that have an area of 0.
+                   \n You should double-check the geometry for these rows to \n
+                   make sure it's correct! Rows with 0 area: ",
+                     badRows))
+    }
   }
+
 
   # output ------------------------------------------------------------------
   ## prepare the output

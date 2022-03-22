@@ -304,7 +304,7 @@ per year.")
    tempBuffGeometry[i] <- suppressWarnings(
      sf::st_difference(x = datBuffTemp[i,],y = dat[i,])$geometry)
   }
-  #tempBuffGeometry <- mapply(FUN = sf::st_difference,
+  #tempBuffGeometry <- m(FUN = sf::st_difference,
                              #x = datBuffTemp$geometry,
                              #y = dat$geometry)
 
@@ -348,7 +348,7 @@ per year.")
               # element are the row indices of the polygons in datOneSpp that
               # overlap with the focal individual
               overlapList <- apply(overlapM, MARGIN = 1, FUN = function(x)
-                c(which(x==TRUE)))
+                c(which(x==TRUE)), simplify = FALSE)
               if (length(overlapList) > 0) {
                 ## get the number of genets that overlap w/ the focal buffer
                 datOneSpp$neighbors <-  unlist(lapply(overlapList, length))
@@ -380,7 +380,7 @@ per year.")
               # are the row indices of the polygons in datSpp that overlap with
               # the focal individual
               overlapList <- apply(X = overlapM, MARGIN = 1, FUN = function(x)
-                c(which(x==TRUE)))
+                c(which(x==TRUE)), simplify = FALSE)
 
               ## put the neighbor counts into the 'datSpp' data.frame
               if (length(overlapList) > 0) {
@@ -416,7 +416,7 @@ per year.")
               }
 
               overlapSpp_List <- apply(overlapSpp, MARGIN = 1,
-                                       FUN = function(x) as.list(x))
+                                       FUN = function(x) as.list(x), simplify = FALSE)
 
               ## put the neighbor counts into the 'datSpp' data.frame
               if (length(overlapSpp_List) > 0) {

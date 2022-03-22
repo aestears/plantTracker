@@ -814,7 +814,7 @@
                    ## update the 'counter'
                    counter <- counter + 1
 
-                   if (counter > 500) {
+                   if (counter > 3000) {
 
                      stop("tracking 'while' loop is running out of control!")
 

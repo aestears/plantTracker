@@ -222,12 +222,13 @@ frames.
 Most of the published chart-quadrat datasets have the map data stored as
 shapefiles in complex file structures, which can be a bit confusing to
 navigate. `plantTracker` requires all of your data (for all species,
-plots and years) to be in one single data frame, so this code shows how
-to navigate through a complex file structure to to pull out shapefiles
-and put them into one single `sf` data frame. For this example, I’ll use
-data from Central Plains Experimental Research Location in Colorado,
-which has been published in [this data
-paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3556779?backTo=/collections/Cover_density_and_demographics_of_shortgrass_steppe_plants_mapped_1997_2010_in_permanent_grazed_and_ungrazed_quadrats/3305970).
+plots and years) to be in one single data frame. *This example shows how
+you might navigate through a complex file structure to to pull out
+shapefiles and put them into one single `sf` data frame. for further
+analysis with `plantTracker`.* For this example, I’ll use a subset of
+the data from the Santa Rita Experimental Range in Arizona, which has
+been published in [this data
+paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3553581?file=5622201).
 In this dataset, shapefiles for each quadrat are stored in their own
 folder. Within that folder there are two shapefiles for each year: one
 that contains map data for polygons, and one that contains data for
@@ -235,14 +236,17 @@ points. The following code reads in those shapefiles, transforms the
 points to polygons of a fixed radius, and puts all the data into one
 `sf` data frame. If you want to follow along, download the
 “shapefiles.zip” file from the data paper, un-zip it, and name it
-“CO\_shapefiles”.
+“AZ\_shapefiles”. The dataset that is the result of this example is the
+same as part of the “grasslandData” dataset included in `plantTracker`.
 
 ``` r
 #  save a character vector of the file names in the file that contains the 
 # shapefiles (in this case, called "CO_shapefiles"), each of which is a quadrat
 # note: 'wdName' is a character string indicating the path of the directory 
-# containing the 'CO_shapefiles' folder
-quadNames <- list.files(paste0(wdName,"CO_shapefiles/"))
+# containing the 'AZ_shapefiles' folder
+quadNames <- list.files(paste0(wdName,"AZ_shapefiles/"))
+# trim the quadrats down to 2, for the sake of runtime in this example 
+quadNames <- quadNames[quadNames %in% c("SG2", "SG4")]
 
 # now we'll loop through the quadrat folders to download the data
 for (i in 1:2){#length(quadNames)) {
@@ -251,7 +255,7 @@ for (i in 1:2){#length(quadNames)) {
   #  get a character vector of the unique quad/Year combinations of data in 
   # this folder that contain polygon data
   quadYears <- quadYears <-  unlist(strsplit(list.files(
-    paste0(wdName, "CO_shapefiles/",quadNow,"/"),
+    paste0(wdName, "AZ_shapefiles/",quadNow,"/"),
     pattern = ".shp$"), split = ".shp"))
   # loop through each of the years in this quadrat
   for (j in 1:length(quadYears)) {
@@ -259,7 +263,7 @@ for (i in 1:2){#length(quadNames)) {
     quadYearNow <- quadYears[j]
     # read in the shapefile for this quad/year combo as an sf data frame 
     # using the 'st_read()' function from the sf package 
-    shapeNow <- sf::st_read(dsn = paste0(wdName,"CO_shapefiles/",quadNow), 
+    shapeNow <- sf::st_read(dsn = paste0(wdName,"AZ_shapefiles/",quadNow), 
                             #  the 'dsn' argument is the folder that 
                             # contains the shapefile files--in this case, 
                             # the folder for this quadrat
@@ -270,17 +274,16 @@ for (i in 1:2){#length(quadNames)) {
     # the shapefiles in this dataset do not have all of the metadata we 
     # need, and have some we don't need, so we'll remove what we don't need and 
     # add columns for 'site', 'quad', and 'year'
-    shapeNow$Site <- "CO"
+    shapeNow$Site <- "AZs"
     shapeNow$Quad <- quadNow
     # get the Year for the shapefile name--in this case it is the last for 
     # numbers of the name
-    shapeNow$Year <- as.numeric(strsplit(quadYearNow, split = "_")[[1]][4])
+    shapeNow$Year <- as.numeric(strsplit(quadYearNow, split = "_")[[1]][2]) + 1900
     # determine if the 'current' quad/year contains point data or polygon data
-    if (grepl(quadYearNow, pattern = "^pnt")) { # if quadYearNow has point data
+    if (grepl(quadYearNow, pattern = "C")) { # if quadYearNow has point data
       # remove the columns we don't need
       shapeNow <- shapeNow[,!(names(shapeNow)
-                              %in% c("coords_x1", "coords_x2", "coords_x1_", 
-                                     "coords_x2_", "coords_x1.1", "coords_x2.1"))]
+                              %in% c("Clone", "Seedling", "Area", "Length", "X", "Y"))]
       # reformat the point into a a very small polygon 
       # (a circle w/ a radius of .003 m)
       shapeNow <- sf::st_buffer(x = shapeNow, dist = .003)
@@ -289,22 +292,53 @@ for (i in 1:2){#length(quadNames)) {
       shapeNow$type <- "point"
     } else { # if quadYearNow has polygon data
       # remove the columns we don't need
-      shapeNow <- shapeNow[,!(names(shapeNow) %in% c("SP_ID", "SP_ID_1", "x", "y", "area"))]
+      shapeNow <- shapeNow[,!(names(shapeNow) %in% c("Seedling", "Canopy_cov", "X", "Y", "area"))]
       # add a column indicating that this observation was originally 
       # mapped as a polygon
       shapeNow$type <- "polygon"
     }
     # now we'll save this sf data frame 
     if (i == 1 & j == 1) { # if this is the first year in the first quadrat
-      outDat <- shapeNow
+      dat <- shapeNow
     } else { # if this isn't the first year in the first quadrat, simply rbind 
       # the shapeNow sf data frame onto the previous data 
-      outDat <- rbind(outDat, shapeNow)
+      dat <- rbind(dat, shapeNow)
     }
   }
 }
 
-# Now, all of the spatial data are in one sf data frame, and are ready to be used in plantTracker functions! 
+# Now, all of the spatial data are in one sf data frame!
+# for the sake of this example, we'll remove data for some species and years in order to make the example run faster (and to make this 'dat' data.frame identical to the "grasslandData" dataset included in this R pakcage).
+dat <- dat[dat$Species %in% c("Heteropogon contortus", "Bouteloua rothrockii", "Ambrosia artemisiifolia", "Calliandra eriophylla", "Bouteloua gracilis", "Hesperostipa comata", "Sphaeralcea coccinea", "Allium textile"),]
+dat <- dat[  (dat$Quad %in% c("SG2", "SG4") & 
+             dat$Year %in% c(1922:1927)),]
+```
+
+In some spatial datasets, observations that were measured as “points” in
+the field are still stored as “points” in the shapefiles. `plantTracker`
+requires all observations to be stored as “polygon” geometry in order to
+streamline functions, so we need to translate “points” into small
+polygons of a fixed area. In this case, we’ll transform them into
+circles with a radius of 1 cm (.01, since this dataset measures area in
+meters). ‘dat’ has a column called “type.” A value of “point” in this
+column will tell us that, even though the geometry of the “point” data
+is now in “polygon” format, the values for basal area and growth are not
+indicative of the true size of the plant.
+
+``` r
+# We use the function "st_buffer()" to add a buffer of our chosen radius (.01) around each point observation, which will transform each observation into a circle of the "polygon" format with a radius of .01. 
+dat_1 <- st_buffer(x = dat[st_is(x = dat, type = "POINT"),], dist = .01)
+dat_2 <- dat[!st_is(x = dat, type = "POINT"),]
+dat <- rbind(dat_1, dat_2)
+```
+
+If you don’t want to download the data and format it into an sf
+data.frame, you can also use a subset of the “grasslandData” data object
+stored in this R package. You will just need to subset it to include
+only the data from the “AZ” site. Code to do this is below:
+
+``` r
+dat <- grasslandData[grasslandData$Site == "AZ",]
 ```
 
 <a id="dat_inv"></a>
@@ -490,7 +524,7 @@ then our focal individual would get a “0” for survival, but if
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
 <p class="caption">
 Figure 2.1: A visualization of the ‘dormancy’ scenario described above.
 </p>
@@ -544,7 +578,7 @@ should look something like this:
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
 <p class="caption">
 Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
 and will be identified by trackSpp() as the **same** individual and
@@ -555,7 +589,7 @@ receive the same trackID.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
 <p class="caption">
 Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
 quite overlap, so will be identified by trackSpp() as **different**
@@ -734,10 +768,10 @@ datTrackSpp <- plantTracker::trackSpp(dat = dat, inv = inv,
 
 And here’s what the output of this call to `trackSpp()` looks like:
 
-    #> Simple feature collection with 327 features and 12 fields
+    #> Simple feature collection with 477 features and 12 fields
     #> Geometry type: GEOMETRY
     #> Dimension:     XY
-    #> Bounding box:  xmin: -0.001386579 ymin: -0.0002186041 xmax: 1.000536 ymax: 1.000651
+    #> Bounding box:  xmin: -0.001386579 ymin: -0.001017592 xmax: 1.000536 ymax: 1.001267
     #> CRS:           NA
     #> First 10 features:
     #>    Site Quad                 Species        trackID Year  type    basalArea
@@ -841,7 +875,7 @@ local neighborhood density is calculated.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
+<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
 <p class="caption">
 Figure 3.1: This individual outlined in pink is a focal individual, and
 the pale pink shows a 10 cm buffer around it.
@@ -851,7 +885,7 @@ the pale pink shows a 10 cm buffer around it.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
+<img src="man/figures/README-unnamed-chunk-19-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
 <p class="caption">
 Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. These overlapping individuals
@@ -864,7 +898,7 @@ interspecific competition value of 5.
 
 <div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
+<img src="man/figures/README-unnamed-chunk-20-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
 <p class="caption">
 Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. The overlapping area is shaded
@@ -957,10 +991,10 @@ datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
              compType = "allSpp")
 ```
 
-    #> Simple feature collection with 327 features and 14 fields
+    #> Simple feature collection with 477 features and 14 fields
     #> Geometry type: GEOMETRY
     #> Dimension:     XY
-    #> Bounding box:  xmin: -0.001386579 ymin: -0.0002186041 xmax: 1.000536 ymax: 1.000651
+    #> Bounding box:  xmin: -0.001386579 ymin: -0.001017592 xmax: 1.000536 ymax: 1.001267
     #> CRS:           NA
     #> First 10 features:
     #>                    Species Site Quad        trackID Year neighbors_area
@@ -975,7 +1009,7 @@ datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
     #> 9  Ambrosia artemisiifolia   AZ  SG2 AMBART_1922_17 1922   0.0022690175
     #> 10 Ambrosia artemisiifolia   AZ  SG2 AMBART_1922_18 1922   0.0006338116
     #>    nBuff_area basalArea basalArea_genet survives_t+1 survives_tplus1 size_t+1
-    #> 1  0.04320540     point    2.461883e-05           NA               0       NA
+    #> 1  0.04344697     point    2.461883e-05           NA               0       NA
     #> 2  0.07329218     point    2.461883e-05           NA               0       NA
     #> 3  0.07329218     point    2.461883e-05           NA               0       NA
     #> 4  0.07329218     point    2.461883e-05           NA               0       NA

@@ -151,7 +151,11 @@ It's important to note that, while `plantTracker` was designed to be used with s
 <a id="dat_to_sf"></a>
 
 ##### *1.1.1* Get your data into the `sf` data format 
-As mentioned above, `plantTracker` uses the `sf` R package to deal with spatial data. The map data that `plantTracker` was built to analyze is inherently spatial, so you need to know how to the basics of dealing with spatial data in R if you want to use `plantTracker`! There are many good resources to help you orient yourself to working with spatial data in R generally:   
+As mentioned above, `plantTracker` uses the `sf` R package to deal with spatial 
+data. The map data that `plantTracker` was built to analyze is inherently spatial, 
+so you need to know how to the basics of dealing with spatial data in R if you 
+want to use `plantTracker`! There are many good resources to help you orient 
+yourself to working with spatial data in R generally:   
 
   *  [https://cengel.github.io/R-spatial/intro.html](https://cengel.github.io/R-spatial/intro.html)    
   *  [https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/](https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/)    
@@ -161,19 +165,37 @@ And the `sf` package more specifically:
   *  [https://cran.r-project.org/web/packages/sf/sf.pdf](https://cran.r-project.org/web/packages/sf/sf.pdf)      
   *  [https://r-spatial.github.io/sf/](https://r-spatial.github.io/sf/)
 
-These resources provide a great orientation, and while I recommend looking over them if you're new to working with spatial data in R, I've included a brief tutorial for uploading shapefiles into R as `sf` data frames. 
+These resources provide a great orientation, and while I recommend looking over 
+them if you're new to working with spatial data in R, I've included a brief 
+tutorial for uploading shapefiles into R as `sf` data frames. 
 
-Most of the published chart-quadrat datasets have the map data stored as shapefiles in complex file structures, which can be a bit confusing to navigate. `plantTracker` requires all of your data (for all species, plots and years) to be in one single data frame, so this code shows how to navigate through a complex file structure to to pull out shapefiles and put them into one single `sf` data frame. For this example, I'll use data from Central Plains Experimental Research Location in Colorado, which has been published in [this data paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3556779?backTo=/collections/Cover_density_and_demographics_of_shortgrass_steppe_plants_mapped_1997_2010_in_permanent_grazed_and_ungrazed_quadrats/3305970). In this dataset, shapefiles for each quadrat are stored in their own folder. Within that folder there are two shapefiles for each year: one that contains map data for polygons, and one that contains data for points. The following code reads in those shapefiles, transforms the points to polygons of a fixed radius, and puts all the data into one `sf` data frame. If you want to follow along, download the "shapefiles.zip" file from the data paper, un-zip it, and name it "CO_shapefiles". 
-```{r, echo=FALSE, include=FALSE, eval = TRUE}
+Most of the published chart-quadrat datasets have the map data stored as 
+shapefiles in complex file structures, which can be a bit confusing to navigate. 
+`plantTracker` requires all of your data (for all species, plots and years) to be 
+in one single data frame. *This example shows how you might navigate through a 
+complex file structure to to pull out shapefiles and put them into one single 
+`sf` data frame. for further analysis with `plantTracker`.* 
+For this example, I'll use a subset of the data from the Santa Rita Experimental 
+Range in Arizona, which has been published in [this data paper](https://figshare.com/articles/dataset/Data_Paper_Data_Paper/3553581?file=5622201). In this dataset, shapefiles for each quadrat are stored in their own folder. 
+Within that folder there are two shapefiles for each year: one that contains map 
+data for polygons, and one that contains data for points. The following code 
+reads in those shapefiles, transforms the points to polygons of a fixed radius, 
+and puts all the data into one `sf` data frame. If you want to follow along, 
+download the "shapefiles.zip" file from the data paper, un-zip it, and name it "AZ_shapefiles". The dataset that is the result of this example is the same as 
+part of the "grasslandData" dataset included in `plantTracker`.
+```{r, echo=FALSE, include=FALSE, eval = FALSE}
 # get the working directory name
-wdName <- c("/Users/Alice/Dropbox/Grad School/Research/Trait Project/Data/Adler Dowloaded Datasets/Adler_CO_Downloaded Data/")
+wdName <- c("/Users/Alice/Dropbox/Grad School/Research/Trait Project/Data/ChartQuadDatasets/AZs_downloaded data/")
 ```
+
 ```{r, warning=FALSE, eval = FALSE}
 #  save a character vector of the file names in the file that contains the 
 # shapefiles (in this case, called "CO_shapefiles"), each of which is a quadrat
 # note: 'wdName' is a character string indicating the path of the directory 
-# containing the 'CO_shapefiles' folder
-quadNames <- list.files(paste0(wdName,"CO_shapefiles/"))
+# containing the 'AZ_shapefiles' folder
+quadNames <- list.files(paste0(wdName,"AZ_shapefiles/"))
+# trim the quadrats down to 2, for the sake of runtime in this example 
+quadNames <- quadNames[quadNames %in% c("SG2", "SG4")]
 
 # now we'll loop through the quadrat folders to download the data
 for (i in 1:2){#length(quadNames)) {
@@ -182,7 +204,7 @@ for (i in 1:2){#length(quadNames)) {
   #  get a character vector of the unique quad/Year combinations of data in 
   # this folder that contain polygon data
   quadYears <- quadYears <-  unlist(strsplit(list.files(
-    paste0(wdName, "CO_shapefiles/",quadNow,"/"),
+    paste0(wdName, "AZ_shapefiles/",quadNow,"/"),
     pattern = ".shp$"), split = ".shp"))
   # loop through each of the years in this quadrat
   for (j in 1:length(quadYears)) {
@@ -190,7 +212,7 @@ for (i in 1:2){#length(quadNames)) {
     quadYearNow <- quadYears[j]
     # read in the shapefile for this quad/year combo as an sf data frame 
     # using the 'st_read()' function from the sf package 
-    shapeNow <- sf::st_read(dsn = paste0(wdName,"CO_shapefiles/",quadNow), 
+    shapeNow <- sf::st_read(dsn = paste0(wdName,"AZ_shapefiles/",quadNow), 
                             #  the 'dsn' argument is the folder that 
                             # contains the shapefile files--in this case, 
                             # the folder for this quadrat
@@ -201,17 +223,16 @@ for (i in 1:2){#length(quadNames)) {
     # the shapefiles in this dataset do not have all of the metadata we 
     # need, and have some we don't need, so we'll remove what we don't need and 
     # add columns for 'site', 'quad', and 'year'
-    shapeNow$Site <- "CO"
+    shapeNow$Site <- "AZs"
     shapeNow$Quad <- quadNow
     # get the Year for the shapefile name--in this case it is the last for 
     # numbers of the name
-    shapeNow$Year <- as.numeric(strsplit(quadYearNow, split = "_")[[1]][4])
+    shapeNow$Year <- as.numeric(strsplit(quadYearNow, split = "_")[[1]][2]) + 1900
     # determine if the 'current' quad/year contains point data or polygon data
-    if (grepl(quadYearNow, pattern = "^pnt")) { # if quadYearNow has point data
+    if (grepl(quadYearNow, pattern = "C")) { # if quadYearNow has point data
       # remove the columns we don't need
       shapeNow <- shapeNow[,!(names(shapeNow)
-                              %in% c("coords_x1", "coords_x2", "coords_x1_", 
-                                     "coords_x2_", "coords_x1.1", "coords_x2.1"))]
+                              %in% c("Clone", "Seedling", "Area", "Length", "X", "Y"))]
       # reformat the point into a a very small polygon 
       # (a circle w/ a radius of .003 m)
       shapeNow <- sf::st_buffer(x = shapeNow, dist = .003)
@@ -220,23 +241,44 @@ for (i in 1:2){#length(quadNames)) {
       shapeNow$type <- "point"
     } else { # if quadYearNow has polygon data
       # remove the columns we don't need
-      shapeNow <- shapeNow[,!(names(shapeNow) %in% c("SP_ID", "SP_ID_1", "x", "y", "area"))]
+      shapeNow <- shapeNow[,!(names(shapeNow) %in% c("Seedling", "Canopy_cov", "X", "Y", "area"))]
       # add a column indicating that this observation was originally 
       # mapped as a polygon
       shapeNow$type <- "polygon"
     }
     # now we'll save this sf data frame 
     if (i == 1 & j == 1) { # if this is the first year in the first quadrat
-      outDat <- shapeNow
+      dat <- shapeNow
     } else { # if this isn't the first year in the first quadrat, simply rbind 
       # the shapeNow sf data frame onto the previous data 
-      outDat <- rbind(outDat, shapeNow)
+      dat <- rbind(dat, shapeNow)
     }
   }
 }
 
-# Now, all of the spatial data are in one sf data frame, and are ready to be used in plantTracker functions! 
+# Now, all of the spatial data are in one sf data frame!
+# for the sake of this example, we'll remove data for some species and years in order to make the example run faster (and to make this 'dat' data.frame identical to the "grasslandData" dataset included in this R pakcage).
+dat <- dat[dat$Species %in% c("Heteropogon contortus", "Bouteloua rothrockii", "Ambrosia artemisiifolia", "Calliandra eriophylla", "Bouteloua gracilis", "Hesperostipa comata", "Sphaeralcea coccinea", "Allium textile"),]
+dat <- dat[  (dat$Quad %in% c("SG2", "SG4") & 
+             dat$Year %in% c(1922:1927)),]
 ```
+
+In some spatial datasets, observations that were measured as "points" in the field are still stored as "points" in the shapefiles. `plantTracker` requires all observations to be stored as "polygon" geometry in order to streamline functions, so we need to translate "points" into small polygons of a fixed area. In this case, we'll transform them into circles with a radius of 1 cm (.01, since this dataset measures area in meters). 'dat' has a column called "type." A value of "point" in this column will tell us that, even though the geometry of the "point" data is now in "polygon" format, the values for basal area and growth are not indicative of the true size of the plant. 
+```{r}
+# We use the function "st_buffer()" to add a buffer of our chosen radius (.01) around each point observation, which will transform each observation into a circle of the "polygon" format with a radius of .01. 
+dat_1 <- st_buffer(x = dat[st_is(x = dat, type = "POINT"),], dist = .01)
+dat_2 <- dat[!st_is(x = dat, type = "POINT"),]
+dat <- rbind(dat_1, dat_2)
+```
+
+If you don't want to download the data and format it into an sf data.frame, you 
+can also use a  subset of the "grasslandData" data object stored in this R 
+package. You will just need to subset it to include only the data from the "AZ" 
+site. Code to do this is below: 
+```{r}
+dat <- grasslandData[grasslandData$Site == "AZ",]
+```
+
 
 <a id="dat_inv"></a>
                                   

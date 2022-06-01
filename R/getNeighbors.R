@@ -271,7 +271,7 @@ specified buffer of the focal individual")
   }
 
   ## make sure that the 'dat' argument has been aggregated by genet!
-  if (nrow(unique(dat[,c("Year","trackID")])) != nrow(dat)) {
+  if (nrow(unique(dat[,c("Year","trackID", "Quad")])) != nrow(dat)) {
     stop("In order to be used in this function, the 'dat' argument must have
     only one row for each unique individual (genet) in each year. You can use
     the 'aggregateByGenet()' function to get a dataset with one row per genet

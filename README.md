@@ -9,6 +9,7 @@ Welcome to `plantTracker`! This package was designed to transform
 population and community ecology.
 
 For more information about this package, you can head to the package website: (website)[http://www.astearsresearch.com/package/plantTracker/]
+
 You can also read the publication describing the package, published in Methods in Ecology and Evolution: (paper)[https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13950]
 
 ## Table of Contents

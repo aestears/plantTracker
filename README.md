@@ -54,8 +54,8 @@ future, so stay tuned!
 ## Contributing
 
 Please report any problems that you encounter while using `plantTracker`
-as “issues” on (our GitHub
-repository)[https://github.com/aestears/plantTracker/issues>]. Help
+as “issues” on [our GitHub
+repository](https://github.com/aestears/plantTracker/issues>). Help
 us make this package better!
 
 <a id="license"></a>

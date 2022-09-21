@@ -2,11 +2,13 @@ citHeader("To cite plantTracker in publications use:")
 
 citEntry(
   entry    = "Article",
-  title    = "plantTracker: an R package to translate chart quadrat maps into demographic data",
-  author   = "Alice E Stears, Peter B Adler, Shannon E Albeke, David H Atkins, Jared Studyvin, Daniel C Laughlin",
-  journal = "Methods in Ecology and Evolution (pending)",
+  title    = "plantTracker: an R package to translate maps of plant occurrence into demographic data",
+  author   = as.person(Alice E Stears, Peter B Adler, Shannon E Albeke, David H Atkins, Jared Studyvin, Daniel C Laughlin"),
+  journal = "Methods in Ecology and Evolution",
+  volume = "00",
+  pages = "1-9",
   year     = "2022",
-  url      = "http://github.com/aestears/plantTracker",
+  doi      = "https://doi.org/10.1111/2041-210X.13950",
   textVersion = paste(
 
   )

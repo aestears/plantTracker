@@ -40,7 +40,7 @@ URL: http://github.com/aestears/plantTracker
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Depends: 
     R (>= 2.10)
 Suggests: 

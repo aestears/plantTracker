@@ -75,7 +75,10 @@
 #'  species = "speciesName"
 #'  )
 #'
-#' @return
+#' @return This function returns a data frame with the columns 'Site', 'Quad',
+#' 'speciesName', 'Year', and 'recruits'. The 'recruits' column contains a count
+#' of the number of individuals of the species and in the site, quadrat, and
+#' year indicated in the other columns of the data frame.
 #' @export
 
 getRecruits <- function(dat,

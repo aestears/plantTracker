@@ -68,7 +68,10 @@ this argument if the column name is "recruit" (default is "recruit").}
 This function returns a table with columns for site, quadrat,
 species name, year, and number of recruits.
 
-
+This function returns a data frame with the columns 'Site', 'Quad',
+'speciesName', 'Year', and 'recruits'. The 'recruits' column contains a count
+of the number of individuals of the species and in the site, quadrat, and
+year indicated in the other columns of the data frame.
 }
 \description{
 This function calculates the number of new plant recruits of

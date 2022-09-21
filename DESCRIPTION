@@ -1,11 +1,12 @@
 Package: plantTracker
 Title: Extract Demographic and Competition Data from Fine-scale Maps
 Version: 1.0.0.0000
-Date: 2022-02-27
+Date: 2022-09-21
 Authors@R: c(person(given = "Alice",
            family = "Stears",
            role = c("aut", "cre"),
-           email = "alice.e.stears@gmail.com"),
+           email = "alice.e.stears@gmail.com",
+           comment = c(ORCID = "0000-0002-1325-6641")),
     person(given = "Jared",
            family = "Studyvin",
            role = c("aut"),
@@ -16,17 +17,24 @@ Authors@R: c(person(given = "Alice",
            email = "datkins8@uwyo.edu"),
     person(given = "Peter", 
            family = "Adler", 
-           role = c("ctb")) ,
+           role = c("ctb"),
+           comment = c(ORCID = "0000-0002-4216-4009")) ,
     person(given = "Shannon", 
            family = "Albeke", 
-           role = c("ctb")),
+           role = c("ctb"),
+           comment = c(ORCID = "0000-0001-7297-8049")),
     person(given = "Daniel", 
            family = "Laughlin", 
-          role = c("ctb", "ths")))
+          role = c("ctb", "ths"),
+          comment = c(ORCID = "0000-0002-9651-5732")))
 Author: Alice Stears [aut, cre], Jared Studyvin [aut], David Atkins [aut]
 Maintainer: Alice Stears <alice.e.stears@gmail.com>
-Description: This package contains functions to extract plant growth, survival, 
-  and competition data from repeated, fine-scale maps of plant occurence.
+Description: This package contains functions to extract growth, survival, 
+  and local neighborhood density information from repeated, fine-scale maps of 
+  organism occurence. Further information about this package can be found in our 
+  journal article, "plantTracker: An R package to translate maps of plant 
+  occurrence into demographic data" published in 2022 in Methods in Ecology and 
+  Evolution (Stears, et al., 2022) <https://doi.org/10.1111/2041-210X.13950>. 
 License: MIT + file LICENSE
 URL: http://github.com/aestears/plantTracker
 Encoding: UTF-8

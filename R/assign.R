@@ -69,7 +69,8 @@
 #' \code{t} gets a 'TRUE' in the 'Suspect' column. The default value
 #' is `shrink = 0.10`.
 #' @param dormSize A single numeric value. This value is only used when
-#' `flagSuspects = TRUE` and `dorm ≥ 1`. An individual is flagged as 'suspect'
+#' `flagSuspects = TRUE` and `dorm` is greater than or equal to 1. An individual
+#' is flagged as 'suspect'
 #' if it 'goes dormant' and has a size that is less than or equal to the
 #' percentile of the size distribution for this species that is designated by
 #' `dormSize`. For example, `dormSize = 0.05`, and the focal individual has a

@@ -52,6 +52,6 @@
 #'   the area of this polygon indicates the basal area of that plant.}
 #'   ...
 #' }
-#' @source \url{http://dx.doi.org/10.1890/11-2200.1} \cr
-#' \url{https://doi.org/10.6084/m9.figshare.c.3304113.v1}
+#' @source \url{dx.doi.org/10.1890/11-2200.1} \cr
+#' \url{doi.org/10.6084/m9.figshare.c.3304113.v1}
 "grasslandData"

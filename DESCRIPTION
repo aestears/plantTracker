@@ -14,19 +14,7 @@ Authors@R: c(person(given = "Alice",
     person(given = "David", 
            family = "Atkins", 
            role = c("aut"), 
-           email = "datkins8@uwyo.edu"),
-    person(given = "Peter", 
-           family = "Adler", 
-           role = c("ctb"),
-           comment = c(ORCID = "0000-0002-4216-4009")) ,
-    person(given = "Shannon", 
-           family = "Albeke", 
-           role = c("ctb"),
-           comment = c(ORCID = "0000-0001-7297-8049")),
-    person(given = "Daniel", 
-           family = "Laughlin", 
-          role = c("ctb", "ths"),
-          comment = c(ORCID = "0000-0002-9651-5732")))
+           email = "datkins8@uwyo.edu"))
 Author: Alice Stears [aut, cre], Jared Studyvin [aut], David Atkins [aut]
 Maintainer: Alice Stears <alice.e.stears@gmail.com>
 Description: This package contains functions to extract growth, survival, 
@@ -34,7 +22,7 @@ Description: This package contains functions to extract growth, survival,
   organism occurence. Further information about this package can be found in our 
   journal article, "plantTracker: An R package to translate maps of plant 
   occurrence into demographic data" published in 2022 in Methods in Ecology and 
-  Evolution (Stears, et al., 2022) <https://doi.org/10.1111/2041-210X.13950>. 
+  Evolution (Stears, et al., 2022) <doi.org/10.1111/2041-210X.13950>. 
 License: MIT + file LICENSE
 URL: http://github.com/aestears/plantTracker
 Encoding: UTF-8
@@ -48,7 +36,8 @@ Suggests:
     knitr,
     rmarkdown,
     spelling,
-    minidown
+    minidown,
+    ggplot2
 Config/testthat/edition: 3
 Imports: 
     Matrix,
@@ -56,7 +45,6 @@ Imports:
     sf,
     methods,
     stats,
-    ggplot2,
     graphics,
     grDevices,
     units

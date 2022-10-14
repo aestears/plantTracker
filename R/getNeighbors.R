@@ -411,9 +411,15 @@ per year.")
               ## get the number of overlaps for each focal ind. (each row) for
               # each 'm' species
               for (m in unique(colnames(overlapM))) {
-                overlapSpp[,colnames(overlapSpp) == m] <-
-                  rowSums(overlapM[,colnames(overlapM) == m])
-              }
+                # if there is more than one individual in that matrix (i.e. no
+                # overlaps)
+                if (nrow(overlapSpp) > 1) {
+                  overlapSpp[,colnames(overlapSpp) == m] <-
+                    rowSums(overlapM[,colnames(overlapM) == m])
+                } else {# if there is only one individual in the matrix
+                  overlapSpp[,colnames(overlapSpp) == m] <- sum(overlapM)
+                  }
+                }
 
               overlapSpp_List <- apply(overlapSpp, MARGIN = 1,
                                        FUN = function(x) as.list(x), simplify = FALSE)

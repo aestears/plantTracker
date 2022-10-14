@@ -1,7 +1,7 @@
 Package: plantTracker
 Title: Extract Demographic and Competition Data from Fine-scale Maps
-Version: 1.0.0.0000
-Date: 2022-09-21
+Version: 1.0.1
+Date: 2022-10-14
 Authors@R: c(person(given = "Alice",
            family = "Stears",
            role = c("aut", "cre"),

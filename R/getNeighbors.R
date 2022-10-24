@@ -414,12 +414,21 @@ per year.")
                 # if there is more than one individual in that matrix (i.e. no
                 # overlaps)
                 if (nrow(overlapSpp) > 1) {
-                  overlapSpp[,colnames(overlapSpp) == m] <-
-                    rowSums(overlapM[,colnames(overlapM) == m])
+                  # is there more than one overlapping individual of species
+                  # "m"? (i.e. is there a matrix of overlaps?)
+                  if (is.matrix(overlapM[,colnames(overlapM) == m])) {
+                    overlapSpp[,colnames(overlapSpp) == m] <-
+                      rowSums(overlapM[,colnames(overlapM) == m])
+                  } else {
+                    # OR is there only one overlappign individual of species "m"?
+                    # (i.e.is there only a vector of overlaps?)
+                    overlapSpp[,colnames(overlapSpp) == m] <-
+                      as.numeric(overlapM[,colnames(overlapM) == m])
+                  }
                 } else {# if there is only one individual in the matrix
                   overlapSpp[,colnames(overlapSpp) == m] <- sum(overlapM)
-                  }
                 }
+              }
 
               overlapSpp_List <- apply(overlapSpp, MARGIN = 1,
                                        FUN = function(x) as.list(x), simplify = FALSE)

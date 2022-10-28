@@ -91,7 +91,8 @@ cutoff specified by \code{shrink}, so the observation of BOUGRA_1992_5' in year
 is \code{shrink = 0.10}.}
 
 \item{dormSize}{A single numeric value. This value is only used when
-\code{flagSuspects = TRUE} and \verb{dorm ≥ 1}. An individual is flagged as 'suspect'
+\code{flagSuspects = TRUE} and \code{dorm} is greater than or equal to 1. An individual
+is flagged as 'suspect'
 if it 'goes dormant' and has a size that is less than or equal to the
 percentile of the size distribution for this species that is designated by
 \code{dormSize}. For example, \code{dormSize = 0.05}, and the focal individual has a

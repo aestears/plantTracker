@@ -20,8 +20,8 @@ mapped.}
 }
 }
 \source{
-\url{http://dx.doi.org/10.1890/11-2200.1} \cr
-\url{https://doi.org/10.6084/m9.figshare.c.3304113.v1}
+\url{dx.doi.org/10.1890/11-2200.1} \cr
+\url{doi.org/10.6084/m9.figshare.c.3304113.v1}
 }
 \usage{
 grasslandInventory

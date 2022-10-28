@@ -15,11 +15,11 @@ Authors@R: c(person(given = "Alice",
            family = "Atkins", 
            role = c("aut"), 
            email = "datkins8@uwyo.edu"))
-Author: Alice Stears [aut, cre], Jared Studyvin [aut], David Atkins [aut]
+Author: Alice Stears [aut, cre] (<https://orcid.org/0000-0002-1325-6641>), Jared Studyvin [aut], David Atkins [aut]
 Maintainer: Alice Stears <alice.e.stears@gmail.com>
 Description: This package contains functions to extract growth, survival, 
   and local neighborhood density information from repeated, fine-scale maps of 
-  organism occurence. Further information about this package can be found in our 
+  organism occurrence. Further information about this package can be found in our 
   journal article, "plantTracker: An R package to translate maps of plant 
   occurrence into demographic data" published in 2022 in Methods in Ecology and 
   Evolution (Stears, et al., 2022) <doi.org/10.1111/2041-210X.13950>. 

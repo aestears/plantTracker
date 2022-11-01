@@ -159,7 +159,7 @@ yourself to working with spatial data in R generally:
   
 And the `sf` package more specifically:       
 
-  *  [https://cran.r-project.org/web/packages/sf/sf.pdf](https://cran.r-project.org/web/packages/sf/sf.pdf)      
+  *  [https://CRAN.R-project.org/package=sf](https://CRAN.R-project.org/package=sf)      
   *  [https://r-spatial.github.io/sf/](https://r-spatial.github.io/sf/)
 
 These resources provide a great orientation, and while I recommend looking over 

@@ -16,6 +16,6 @@
 #'   mapped.}
 #'   ...
 #' }
-#' @source \url{dx.doi.org/10.1890/11-2200.1} \cr
-#' \url{doi.org/10.6084/m9.figshare.c.3304113.v1}
+#' @source \doi{dx.doi.org/10.1890/11-2200.1} \cr
+#' \doi{doi.org/10.6084/m9.figshare.c.3304113.v1}
 "grasslandInventory"

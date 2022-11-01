@@ -53,7 +53,7 @@ so stay tuned!
 <a id="issues"></a>     
                               
 ## Contributing
-Please report any problems that you encounter while using `plantTracker` as "issues" on (our GitHub repository)[https://github.com/aestears/plantTracker/issues]. Help us make this package better! 
+Please report any problems that you encounter while using `plantTracker` as "issues" on (our GitHub repository)[https://github.com/aestears/plantTracker/issues/]. Help us make this package better! 
 
 <a id="license"></a>
 
@@ -162,7 +162,7 @@ yourself to working with spatial data in R generally:
   
 And the `sf` package more specifically:       
 
-  *  [https://cran.r-project.org/web/packages/sf/sf.pdf](https://cran.r-project.org/web/packages/sf/sf.pdf)      
+  *  [https://CRAN.R-project.org/package=sf](https://CRAN.R-project.org/package=sf)      
   *  [https://r-spatial.github.io/sf/](https://r-spatial.github.io/sf/)
 
 These resources provide a great orientation, and while I recommend looking over 

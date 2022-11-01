@@ -8,10 +8,6 @@ Welcome to `plantTracker`! This package was designed to transform
 **demographic data** that can be used to answer questions about
 population and community ecology.
 
-For more information about this package, you can head to the package website: [website](http://www.astearsresearch.com/package/plantTracker/)
-
-You can also read the publication describing the package, published in Methods in Ecology and Evolution: [paper](https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.13950)
-
 ## Table of Contents
 
 -   [Installing `plantTracker`](#Installation)  
@@ -54,8 +50,8 @@ future, so stay tuned!
 ## Contributing
 
 Please report any problems that you encounter while using `plantTracker`
-as “issues” on [our GitHub
-repository](https://github.com/aestears/plantTracker/issues>). Help
+as “issues” on (our GitHub
+repository)\[<https://github.com/aestears/plantTracker/issues/>\]. Help
 us make this package better!
 
 <a id="license"></a>
@@ -144,8 +140,8 @@ Below are the basic requirements for these data objects.
 -   `dat` does not need to have a coordinate reference system (i.e. CRS
     can be “NA”), but it can have one if you’d like.
 -   … *not* have columns called “neighbors”, “nearEdge”, “trackID”,
-    “age”, “size\_tplus1”, “recruit”, “survives\_tplus1”,
-    “basalArea\_ramet”, or “basalArea\_genet”, since these columns are
+    “age”, “size_tplus1”, “recruit”, “survives_tplus1”,
+    “basalArea_ramet”, or “basalArea_genet”, since these columns are
     added by `plantTracker` functions.
 -   Note: Additional columns can be included in the input data.frame,
     although they might not be included in the output of `plantTracker`
@@ -175,20 +171,13 @@ Here are the first few rows of a possible `dat` input data.frame:
 
 -   Note: that the required columns are “Species”, “Site”, “Quad”,
     “Year”, and “geometry”. The additional columns “Type” and
-    “sp\_code\_6” are just “along for the ride” in any analysis using
+    “sp_code_6” are just “along for the ride” in any analysis using
     `plantTracker` functions.
 
 Here’s what some of the example `dat` data (from the “SG2” quadrat at
 the “AZ” site in 1922) look like when plotted spatially:
 
-<div class="figure" style="text-align: center">
-
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
-<p class="caption">
-Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
-</p>
-
-</div>
+<img src="man/figures/README-unnamed-chunk-3-1.png" title="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" style="display: block; margin: auto;" />
 
 It’s important to note that, while `plantTracker` was designed to be
 used with small-scale maps of plant occurrence in quadrats, it is
@@ -215,7 +204,7 @@ in R generally:
 
 And the `sf` package more specifically:
 
--   <https://cran.r-project.org/web/packages/sf/sf.pdf>  
+-   <https://CRAN.R-project.org/package=sf>  
 -   <https://r-spatial.github.io/sf/>
 
 These resources provide a great orientation, and while I recommend
@@ -240,7 +229,7 @@ points. The following code reads in those shapefiles, transforms the
 points to polygons of a fixed radius, and puts all the data into one
 `sf` data frame. If you want to follow along, download the
 “shapefiles.zip” file from the data paper, un-zip it, and name it
-“AZ\_shapefiles”. The dataset that is the result of this example is the
+“AZ_shapefiles”. The dataset that is the result of this example is the
 same as part of the “grasslandData” dataset included in `plantTracker`.
 
 ``` r
@@ -440,11 +429,10 @@ Additional optional arguments to `checkDat()` are `species`, `site`,
     be included if the columns in `dat` that contain the data for
     species, site, quadrat, year and geometry of each observation are
     *different* from the names “Species”, “Site”, “Quad”, “Year,
-    and”geometry“. For example, if the column in your version of `dat`
-    that contains the species identity of each observation is
-    called”species\_names", then the argument
-    `species = "species_names"` must be included in your call to
-    `checkDat()`.
+    and”geometry”. For example, if the column in your version of `dat`
+    that contains the species identity of each observation is called
+    “species_names”, then the argument `species = "species_names"` must
+    be included in your call to `checkDat()`.
 
 -   **`reformatDat`** is a TRUE/FALSE argument that determines whether
     you want the `checkDat()` function to return a version of `dat` that
@@ -454,7 +442,7 @@ Additional optional arguments to `checkDat()` are `species`, `site`,
     an additional element called “userColNames”, which contains the
     column names in the input version of `dat` that are different from
     the expected column names of “Species”, “Site”, “Quad”, “Year,
-    and”geometry" (if there are any). If `reformatDat` = TRUE, then
+    and”geometry” (if there are any). If `reformatDat` = TRUE, then
     `checkDat()` will return a message indicating that your data is
     ready for the next step. The default value is FALSE.
 
@@ -525,15 +513,7 @@ alternative scenario, in years 3 and 4 there are not polygons of species
 a polygon in year 4 that overlaps our focal individual. If `dorm = 1`,
 then our focal individual would get a “0” for survival, but if
 `dorm = 2`, then it would get a 1 for survival.
-
-<div class="figure" style="text-align: center">
-
-<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
-<p class="caption">
-Figure 2.1: A visualization of the ‘dormancy’ scenario described above.
-</p>
-
-</div>
+<img src="man/figures/README-unnamed-chunk-11-1.png" title="Figure 2.1: A visualization of the 'dormancy' scenario described above." alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" style="display: block; margin: auto;" />
 
 If you’d like to be more specific and perhaps biologically accurate, you
 can also specify the `dorm` argument uniquely for each species. For
@@ -580,27 +560,9 @@ should look something like this:
     you want to allow no movement, use `buff = 0`. Below is a
     visualization of two different `buff` scenarios.
 
-<div class="figure" style="text-align: center">
+<img src="man/figures/README-unnamed-chunk-13-1.png" title="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" style="display: block; margin: auto;" />
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
-<p class="caption">
-Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
-and will be identified by trackSpp() as the **same** individual and
-receive the same trackID.
-</p>
-
-</div>
-
-<div class="figure" style="text-align: center">
-
-<img src="man/figures/README-unnamed-chunk-14-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
-<p class="caption">
-Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
-quite overlap, so will be identified by trackSpp() as **different**
-individuals and receive different trackIDs.
-</p>
-
-</div>
+<img src="man/figures/README-unnamed-chunk-14-1.png" title="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" style="display: block; margin: auto;" />
 
 -   **`clonal`** This is a logical argument (TRUE or FALSE) that
     indicates whether you want to allow plants to be clonal or not. In
@@ -658,8 +620,8 @@ contexts.
     function `aggregateByGenet()`. This function combines the `sf`
     “POLYGONS” for each ramet into one `sf` `MULTIPOLYGON` for the
     entire genet, and combines the associated metadata (“Species”,
-    “Site”, “Quad”, “Year”, “trackID”, “basalArea\_genet”, “age”,
-    “recruit”, “survives\_tplus1”, “size\_tplus1”, “nearEdge”) into one
+    “Site”, “Quad”, “Year”, “trackID”, “basalArea_genet”, “age”,
+    “recruit”, “survives_tplus1”, “size_tplus1”, “nearEdge”) into one
     row for this genet. Even if the input `dat` had additional columns,
     they will not be included in the output of `trackSpp` if
     `aggByGenet = TRUE`, since it is uncertain if they can be summed
@@ -680,17 +642,16 @@ contexts.
     be included if the columns in `dat` that contain the data for
     species, site, quadrat, year and geometry of each observation are
     *different* from the names “Species”, “Site”, “Quad”, “Year,
-    and”geometry“. For example, if the column in your version of `dat`
-    that contains the species identity of each observation is
-    called”species\_names", then the argument
-    `species = "species_names"` must be included in your call to
-    `trackSpp()`.
+    and”geometry”. For example, if the column in your version of `dat`
+    that contains the species identity of each observation is called
+    “species_names”, then the argument `species = "species_names"` must
+    be included in your call to `trackSpp()`.
 -   **`printMessages`** This is an optional logical argument that
     determines whether this function returns messages about genet
     aggregation, as well as messages indicating which year is the last
     year of sampling in each quadrat and which year(s) come before a gap
     in sampling that exceeds the `dorm` argument (and thus which years
-    of data have an “NA” for “survives\_tplus1” and “size\_tplus1”). If
+    of data have an “NA” for “survives_tplus1” and “size_tplus1”). If
     `printMessages = TRUE` (the default), then messages are printed. If
     `printMessages = FALSE`, then messages are not printed.
 -   **`flagSuspects`** This is an optional logical argument of length 1,
@@ -718,33 +679,37 @@ contexts.
 -   **`shrink`** This is an optional argument that takes a single
     numeric value. This value is only used when `flagSuspects = TRUE`.
     When two consecutive observations have the same trackID, and the
-    ratio of size\_t+1 to size\_t is smaller than the value of `shrink`,
+    ratio of size_t+1 to size_t is smaller than the value of `shrink`,
     the observation in year t gets a “TRUE” in the “Suspect” column. For
     example, `shrink = 0.2`, and an individual that the tracking
-    function has identified as “BOUGRA\_1992\_5” has an area of 9
-    cm<sup>2</sup> in year\_t and an area of 1.35 cm<sup>2</sup> in
-    year\_t+1. The ratio of size\_t+1 to size\_t is 1.35/9 = 0.15, which
+    function has identified as “BOUGRA_1992_5” has an area of 9
+    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2")
+    in year_t and an area of 1.35
+    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2")
+    in year_t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15, which
     is smaller than the cutoff specified by `shrink`, so the observation
-    of “BOUGRA\_1992\_5” in year t gets a “TRUE” in the “Suspect”
-    column. The default value is `shrink = 0.10`.
+    of “BOUGRA_1992_5” in year t gets a “TRUE” in the “Suspect” column.
+    The default value is `shrink = 0.10`.
 -   **`dormSize`** This is an optional argument that takes a single
     numeric value. This value is only used when `flagSuspects = TRUE`
     and `dorm ≥ 1`. An individual is flagged as “suspect” if it “goes
     dormant” and has a size that is less than or equal to the percentile
     of the size distribution for this species that is designated by
     `dormSize`. For example, `dormSize = 0.05`, and an individual has a
-    basal area of 0.5 cm<sup>2</sup>. The 5th percentile of the
-    distribution of size for this species, which is made using the mean
-    and standard deviation of all observations in `dat` for the species
-    in question, is 0.6 cm<sup>2</sup>. This individual does not have
-    any overlaps in the next year (year\_t+1), but does have an overlap
-    in year\_t+2. However, because the basal area of this observation is
-    smaller than the 5th percentile of size for this species, the
-    observation in year t will get a “TRUE” in the “Suspect” column. It
-    is possible that the tracking function has mistakenly assigned a “1”
-    for survival in year\_t, because it is unlikely that this individual
-    is large enough to survive dormancy. The default value is
-    `dormSize = .05`.
+    basal area of 0.5
+    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2").
+    The 5th percentile of the distribution of size for this species,
+    which is made using the mean and standard deviation of all
+    observations in `dat` for the species in question, is 0.6
+    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2").
+    This individual does not have any overlaps in the next year
+    (year_t+1), but does have an overlap in year_t+2. However, because
+    the basal area of this observation is smaller than the 5th
+    percentile of size for this species, the observation in year t will
+    get a “TRUE” in the “Suspect” column. It is possible that the
+    tracking function has mistakenly assigned a “1” for survival in
+    year_t, because it is unlikely that this individual is large enough
+    to survive dormancy. The default value is `dormSize = .05`.
 
 These are all of the possible arguments to `trackSpp()`!
 
@@ -877,42 +842,11 @@ local neighborhood density is calculated.
     a list that provides the neighborhood density for each species
     present in the neighborhood.
 
-<div class="figure" style="text-align: center">
+<img src="man/figures/README-unnamed-chunk-17-1.png" title="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" style="display: block; margin: auto;" />
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
-<p class="caption">
-Figure 3.1: This individual outlined in pink is a focal individual, and
-the pale pink shows a 10 cm buffer around it.
-</p>
+<img src="man/figures/README-unnamed-chunk-19-1.png" title="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" style="display: block; margin: auto;" />
 
-</div>
-
-<div class="figure" style="text-align: center">
-
-<img src="man/figures/README-unnamed-chunk-19-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
-<p class="caption">
-Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
-other unique individuals of two species. These overlapping individuals
-are outlined in dark grey. Using the ‘count’ method in `getNeighbors()`,
-we would get an intraspecific competition value of 3, and an
-interspecific competition value of 5.
-</p>
-
-</div>
-
-<div class="figure" style="text-align: center">
-
-<img src="man/figures/README-unnamed-chunk-20-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
-<p class="caption">
-Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
-other unique individuals of two species. The overlapping area is shaded
-in grey. Using the ‘area’ method in `getNeighbors()`, we would get an
-intraspecific competition metric of 0.0454, and an interspecific
-competition metric of 0.0462.
-</p>
-
-</div>
-
+<img src="man/figures/README-unnamed-chunk-20-1.png" title="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" style="display: block; margin: auto;" />
 Below are the arguments in the `getNeighbors()` function.
 
 -   **`dat`** An `sf` data frame in which each row represents data for a
@@ -953,21 +887,21 @@ Below are the arguments in the `getNeighbors()` function.
     `method = "count"` and `compType = "allSpp"`. A focal individual in
     your dataset has seven other plants inside its buffer zone, three of
     species A, two of species B, and 2 of species C. If
-    `output = "summed"`, the value in the “neighbors\_count” column of
+    `output = "summed"`, the value in the “neighbors_count” column of
     the returned data frame will simply contain the value “7”. If
-    `output = "bySpecies"`, the “neighbors\_count” column for this
+    `output = "bySpecies"`, the “neighbors_count” column for this
     individual will actually contain a named list
     `{r} list("Species A "= 5, "Species B" = 3, "Species C" = 7)`. The
     default value of `output` is `"summed"`.  
 -   **`trackID/species/quad/year/site/geometry`** These arguments only
     need to be included if the columns in `dat` that contain the data
     for trackID, species, site, quadrat, year and geometry of each
-    observation are *different* from the names
-    “trackID,”Species“,”Site“,”Quad“,”Year, and “geometry”. For example,
-    if the column in your version of `dat` that contains the species
-    identity of each observation is called “species\_names”, then the
-    argument `species = "species_names"` must be included in your call
-    to `getNeighbors()`.
+    observation are *different* from the names “trackID,”Species”,
+    “Site”, “Quad”, “Year, and”geometry”. For example, if the column in
+    your version of `dat` that contains the species identity of each
+    observation is called “species_names”, then the argument
+    `species = "species_names"` must be included in your call to
+    `getNeighbors()`.
 
 <a id="getNeigh_out"></a>
 
@@ -975,12 +909,12 @@ Below are the arguments in the `getNeighbors()` function.
 
 The output of `getNeighbors()` is an `sf` data frame that is identical
 to the input `dat`, but with either one or two additional columns. If
-`method = "area"`, there are two columns added called “nBuff\_area” and
-“neighbors\_area”. The first contains the area of the buffer zone around
+`method = "area"`, there are two columns added called “nBuff_area” and
+“neighbors_area”. The first contains the area of the buffer zone around
 each focal individual. The second contains the basal area of neighbors
 that overlap with a focal individual’s buffer zone. If
 `method = "count"`, there is only one additional column added to the
-output, called “neighbors\_count.” This column contains a count of the
+output, called “neighbors_count.” This column contains a count of the
 neighbors that occur within a focal individual’s buffer zone.
 
 Here’s an example of a `getNeighbors()` function call using the
@@ -1037,11 +971,11 @@ datNeighbors <- plantTracker::getNeighbors(dat = datTrackSpp,
 
 The example above uses the option `output = "summed"`, which is the
 default for the `getNeighbors()` function. With this option, the
-“neighbors\_area” or “neighbors\_count” column (depending on the
-`method` argument) contains just one value that sums the neighbor count
-or area across all neighbor species. However, if `output = "bySpecies"`,
-the “neighbors\_count” or “neighbors\_area” column contains a list with
-the counts or areas broken down by species. The `output` argument is
+“neighbors_area” or “neighbors_count” column (depending on the `method`
+argument) contains just one value that sums the neighbor count or area
+across all neighbor species. However, if `output = "bySpecies"`, the
+“neighbors_count” or “neighbors_area” column contains a list with the
+counts or areas broken down by species. The `output` argument is
 described in more detail in section *3.1*. If you want to use the
 `getNeighbors()` function to determine how the effect of neighbors
 differs according to the species identity of those neighbors, setting

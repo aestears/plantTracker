@@ -13,7 +13,7 @@ citEntry(
   volume = "00",
   pages = "1-9",
   year     = "2022",
-  doi      = "doi.org/10.1111/2041-210X.13950",
+  doi      = "10.1111/2041-210X.13950",
   textVersion = paste(
   )
 )

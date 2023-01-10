@@ -132,7 +132,7 @@ groupByGenet <-  function(dat, buffGenet,...){
 
   connects <- Matrix::tcrossprod(tab, boolArith = TRUE)
   group <- igraph::clusters(igraph::graph_from_adjacency_matrix(
-    methods::as(connects, "lsCMatrix")))$membership
+    methods::as(connects, "lMatrix")))$membership
 
   tapply(overlaps, group, function(x) sort(unique(unlist(x))))
   rametIDs <- tapply(1:length(overlaps), group, toString)

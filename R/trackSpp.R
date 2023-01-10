@@ -492,12 +492,12 @@ values of either FALSE or TRUE for each species with no NAs.")
   ## get the site(s)
   for(i in unique(dat$Site)) { ## i = the name of the site
     if(printMessages==TRUE){
-      cat(paste0("Site: ",i, "\n"))
+      message(paste0("Site: ",i, "\n"))
     }
     ## get the quadrats w/in that site
     for (j in unique(dat[dat$Site==i,]$Quad)) { ## j = the name of the quad
       if(printMessages==TRUE) {
-        cat(paste0("-- Quadrat: ",j, "\n"))
+        message(paste0("-- Quadrat: ",j, "\n"))
       }
       ## get the quadratInventory data for this quad
       if (is.list(inv)==TRUE) { ## if there is inv data for >1 quadrat
@@ -567,16 +567,16 @@ values of either FALSE or TRUE for each species with no NAs.")
         ## print the name of the species that was just finished
         if (k == unique(dat[dat$Site==i & dat$Quad==j,]$Species)[1]) {
           if(printMessages==TRUE) {
-            cat(paste0("---- Species: ",k))
+            message(paste0("---- Species: ",k))
           }
         } else if (k == tail(unique(dat[dat$Site==i & dat$Quad==j,]$Species),
                              n = 1)) {
           if(printMessages==TRUE) {
-            cat(paste0("; ",k, "\n"))
+            message(paste0("; ",k, "\n"))
           }
         } else {
           if(printMessages==TRUE) {
-            cat(paste0("; ",k))
+            message(paste0("; ",k))
           }
         }
         if (printMessages == TRUE) {
@@ -586,7 +586,7 @@ values of either FALSE or TRUE for each species with no NAs.")
           gapYears <- invComp[invComp$diff > (dormK + 1) &
                                 is.na(invComp$diff) == FALSE,"inv"]
           if (length(gapYears) > 0) {
-            print(paste0("Also Note: Individuals of the species ",
+            message(paste0("Also Note: Individuals of the species ",
                          unique(datSp$Species)," in year(s) ", gapYears,
                          " have a value of 'NA' in the 'survives_tplus1' and",
                          " 'size_tplus1' columns because ", gapYears," is the"
@@ -598,7 +598,7 @@ values of either FALSE or TRUE for each species with no NAs.")
       ## notify user of last year of sampling (or last year of sampling before a
       # gap)
       if (printMessages == TRUE) {
-        print(paste0("Note: Individuals in year ", max(invQuad)," have a value "
+        message(paste0("Note: Individuals in year ", max(invQuad)," have a value "
                  ,"of 'NA' in the 'survives_tplus1' and 'size_tplus1' columns ",
                    "because ",max(invQuad), " is the last year of sampling in ",
                      "this quadrat."))
@@ -618,7 +618,7 @@ values of either FALSE or TRUE for each species with no NAs.")
     trackSppOut <- aggregateByGenet(dat = trackSppOut)
 
     if (printMessages == TRUE) {
-      print(paste0("Note: The output data.frame from this function is shorter",
+      message(paste0("Note: The output data.frame from this function is shorter",
                    " than your input data.frame because demographic data has",
                    " been aggregated by genet. Because of this, some columns",
                    " that were present in your input data.frame may no longer",

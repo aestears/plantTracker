@@ -195,7 +195,7 @@ getLambda <- function(dat,
           ## print a message if there is only one year of data (need at least
           # two time points to calculate lambda)
           if (nrow(datSpp) <= 1) {
-            print(paste0("A value of lambda for ", k, " in quadrat ", j,
+            message(paste0("A value of lambda for ", k, " in quadrat ", j,
                  " cannot be calculated, since data was only available for one",
                    " year (or this species was not observed in more than one ",
                  " year). Data from at least two time points are required to",
@@ -262,7 +262,7 @@ getLambda <- function(dat,
           ## print a message if there is only one year of data (need at least
           # two time points to calculate lambda)
           if (nrow(datSpp) <= 1) {
-            print(paste0("A value of lambda for ", k, " in quadrat ", j,
+            message(paste0("A value of lambda for ", k, " in quadrat ", j,
                  " cannot be calculated, since data was only available for one",
                    " year (or this species was not observed in more than one ",
                    " year). Data from at least two time points are required to",

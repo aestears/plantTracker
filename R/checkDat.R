@@ -126,9 +126,9 @@ checkDat <- function (dat, inv = NULL,
     badArgs <- paste("'",names( which(sapply(newNames, is.character) == FALSE)),
                      "'", collapse = ", and ")
 
-    stop(paste0("The argument(s) ", badArgs, " must each contain a single
-    character string that gives the name(s) of the column(s) in 'dat' that
-    contain the data for ", badArgs))
+    stop(paste0("The checkDat() argument(s) ", badArgs, " must each contain a
+    single character string that gives the name(s) of the column(s) in 'dat'
+    that contain the data for ", badArgs))
 
   } else { ## if each of the elements of 'newNames' is a character vector
     ## make sure that each of the elements of newNames is present as a column
@@ -138,9 +138,10 @@ checkDat <- function (dat, inv = NULL,
       badBadArgs <- paste("'",names(newNames)[which(!unlist(newNames) %in%
                                                       names(dat))],"'",
                           collapse = ", and ")
-      stop(paste0("The argument(s) ", badBadArgs, " contain values that are not
-      column names in 'dat'. These arguments must be character vectors that give
-      the name(s) of the column(s) in 'dat' that contain the data for ",
+      stop(paste0("The checkDat argument(s) ", badBadArgs, " contain values that
+      are not column names in 'dat'. These arguments must be character vectors
+      that give the name(s) of the column(s) in 'dat' that contain the data
+                  for ",
       badBadArgs, ". Check for spelling errors, or make sure that you have
       included values for these arguments that give the name of the columns in
       'dat' that contain these data types." ))
@@ -348,7 +349,7 @@ vector of years in which that quadrat was sampled."))
       if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO
         # differences in column names between the input 'dat' d.f. and the
         # defualt required names
-        cat("The data you put into the 'checkDat()' function for the 'dat' and
+        message("The data you put into the 'checkDat()' function for the 'dat' and
         'inv' arguments are ready to be used in the 'trackSpp()' function! You
         do not need to include any values for the 'species', 'site', 'quad',
         'year', and 'geometry' arguments in 'trackSpp()")
@@ -358,7 +359,7 @@ vector of years in which that quadrat was sampled."))
         # defualt required names
         ## get the usrNames that are different than the default Names
         neededArgs <- newNames[!usrNames %in% defaultNames]
-        cat(paste0("The data you put into the 'checkDat()' function for the
+        message(paste0("The data you put into the 'checkDat()' function for the
         'dat' and 'inv' arguments are ready to be used in the 'trackSpp()'
         function! However, make sure that you include the character value(s): "
                    , paste0("'", unlist(neededArgs), "'", collapse = ", and "),
@@ -391,7 +392,8 @@ vector of years in which that quadrat was sampled."))
       if (sum(!usrNames %in% defaultNames) == 0) { ## if there are NO
         # differences in column names between the input 'dat' d.f. and the
         # defualt required names
-        print(paste0("The data you put into the 'checkDat()' function for the",
+        message(
+          paste0("The data you put into the 'checkDat()' function for the",
         "'dat' and 'inv'arguments are ready to be used in the 'trackSpp()'",
         "function! You do not need to include any values for the 'species',",
         "'site', 'quad', 'year', and 'geometry' arguments in 'trackSpp()"))
@@ -400,10 +402,11 @@ vector of years in which that quadrat was sampled."))
         # defualt required names
         ## get the usrNames that are different than the default Names
         neededArgs <- newNames[!usrNames %in% defaultNames]
-        cat(paste0("The data you put into the 'checkDat()' function for the",
+        message(
+          paste0("The data you put into the 'checkDat()' function for the",
         "'dat' and 'inv' arguments are ready to be used in the 'trackSpp()'",
         "function! However, make sure that you include the character value(s): "
-        , paste0("'", unlist(neededArgs), "'", collapse = ", and "), " in the",
+        , paste0("'", unlist(neededArgs), "'", collapse = ", and "), " in the ",
         "corresponding ",paste0("'", names(neededArgs), "'", collapse =
                                   ", and ")," arguments"))
       }

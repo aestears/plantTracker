@@ -247,6 +247,10 @@ drawQuadMap <- function (dat,
   ## get the number of rows we need
   numRows <- ceiling(numYears/4)
 
+  ## save the previous margin and mfrow parameters
+  oldpar <- par(no.readonly = TRUE)
+  on.exit(par(oldpar)) # code line i + 1
+
   ## change the margins of the plots
   graphics::par(mar = c(1,1,1,1))
   ## change the size of the plotting area
@@ -350,8 +354,8 @@ drawQuadMap <- function (dat,
     graphics::legend(
       x = quadBox$xmin,
       y = quadBox$ymax,
-      legend = unique(datTemp$Species),
-      fill = unique(datTemp$col),
+      legend = unique(dat$Species),
+      fill = unique(dat$col),
       bty = "n",
       cex = 1,
       x.intersp = .2
@@ -453,8 +457,8 @@ drawQuadMap <- function (dat,
     graphics::legend(
       x = quadBox$xmin,
       y = quadBox$ymax,
-      legend = unique(datTemp$trackID),
-      fill = unique(datTemp$col),
+      legend = unique(dat$trackID),
+      fill = unique(dat$col),
       bty = "n",
       cex = 1,
       x.intersp = .2

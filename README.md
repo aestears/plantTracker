@@ -10,40 +10,44 @@ population and community ecology.
 
 ## Table of Contents
 
--   [Installing `plantTracker`](#Installation)  
--   [Contributing](#issues)
--   [License](#license)
--   [Contact](#contact)
--   [How to Use `plantTracker`](#how_to_use)
-    -   [Prepare data for use in `plantTracker`](#prep_data)
-        -   [The quadrat map data: `dat`](#dat_data)
-            -   [transform `dat` to the `sf` format](#dat_to_sf)
-        -   [The quadrat inventory data: `inv`](#dat_inv)
-    -   [Ensure data is in the correct format with
-        `checkDat()`](#check_dat)
-    -   [Track individuals through time using `trackSpp()`](#trackSpp)
-        -   [Arguments in `trackSpp()`](#trackSpp_args)
-        -   [Understanding the output of `trackSpp()`](#trackSpp_out)
-    -   [Calculate local neighborhood density using
-        `getNeighbors()`](#getNeigh)
-        -   [Arguments in `getNeighbors()`](#getNeigh_args)
-        -   [Understanding the output of `trackSpp()`](#getNeigh_out)
-    -   [Further analysis with more `plantTracker` functions](#next)
+- [Installing `plantTracker`](#Installation)  
+- [Contributing](#issues)
+- [License](#license)
+- [Contact](#contact)
+- [How to Use `plantTracker`](#how_to_use)
+  - [Prepare data for use in `plantTracker`](#prep_data)
+    - [The quadrat map data: `dat`](#dat_data)
+      - [transform `dat` to the `sf` format](#dat_to_sf)
+    - [The quadrat inventory data: `inv`](#dat_inv)
+  - [Ensure data is in the correct format with `checkDat()`](#check_dat)
+  - [Track individuals through time using `trackSpp()`](#trackSpp)
+    - [Arguments in `trackSpp()`](#trackSpp_args)
+    - [Understanding the output of `trackSpp()`](#trackSpp_out)
+  - [Calculate local neighborhood density using
+    `getNeighbors()`](#getNeigh)
+    - [Arguments in `getNeighbors()`](#getNeigh_args)
+    - [Understanding the output of `trackSpp()`](#getNeigh_out)
+  - [Further analysis with more `plantTracker` functions](#next)
 
 <a id="Installation"></a>
 
 ## Installation
 
-You can install the current version of `plantTracker` from
-[GitHub](https://github.com/) with:
+`plantTracker` is on
+[CRAN](https://CRAN.R-project.org/package=plantTracker), and installed
+with:
+
+``` r
+install.packages("plantTracker")
+```
+
+Alternatively, you can install the current version of `plantTracker`
+from [GitHub](https://github.com/) with:
 
 ``` r
 install.packages("devtools")
 devtools::install_github("aestears/plantTracker")
 ```
-
-`plantTracker` will also be available to download form CRAN in the near
-future, so stay tuned!
 
 <a id="issues"></a>
 
@@ -102,50 +106,50 @@ Below are the basic requirements for these data objects.
 
 #### *1.1* The `dat` data frame must . . .
 
--   … be an `sf` data.frame. More on this below in section
-    [*1.1.1*](#dat_to_sf)…
--   … contain a row for each individual observation in each year.
--   … have a column that contains character strings indicating the
-    specific epithet for each observation. This column must be a
-    character data type. The function expects this column to be called
-    “Species”, but a different name can be specified in function calls.
--   … have a column that contains character strings indicating the site
-    at which each observation was collected. This is a level of
-    classification “above” the quadrat (i.e. all quadrats measured at
-    the Central Plains Experimental Range in Nunn, CO might have the
-    value “CO” in this column). This column must be a character data
-    type. The function expects this column to be called “Site”, but a
-    different name can be specified in function calls.
--   … have a column that contains character strings indicating the
-    quadrat at which each observation was collected. This column must be
-    a character data type. The function expects this column to be called
-    “Quad”, but a different name can be specified in function calls.
--   … have a column that contains a value indicating the year when this
-    individual observation was collected. This must be a numeric data
-    type, and must be either a four or two digit year number. The
-    function expects this column to be called “Year”, but a different
-    name can be specified in function calls.
--   … have a column (almost always called “geometry” in the `sf` package
-    data format) that contains a polygon representing the location of
-    each observation. Each observation must be a `POLYGON` or
-    `MULTIPOLYGON`. Data cannot be stored as `POINTS`.
--   If the data was collected such that forbs or small grasses were
-    mapped as points and digitized as such, then these observations must
-    be converted to polygons. We recommend that you convert them to
-    small circular polygons with an identical radius. If you do this
-    transformation, we also recommend that you include a column that
-    indicates whether each row was originally mapped as a polygon or a
-    point, since the demographic data that deals with size will be
-    relatively meaningless for observations originally mapped as points.
--   `dat` does not need to have a coordinate reference system (i.e. CRS
-    can be “NA”), but it can have one if you’d like.
--   … *not* have columns called “neighbors”, “nearEdge”, “trackID”,
-    “age”, “size_tplus1”, “recruit”, “survives_tplus1”,
-    “basalArea_ramet”, or “basalArea_genet”, since these columns are
-    added by `plantTracker` functions.
--   Note: Additional columns can be included in the input data.frame,
-    although they might not be included in the output of `plantTracker`
-    functions.
+- … be an `sf` data.frame. More on this below in section
+  [*1.1.1*](#dat_to_sf)…
+- … contain a row for each individual observation in each year.
+- … have a column that contains character strings indicating the
+  specific epithet for each observation. This column must be a character
+  data type. The function expects this column to be called “Species”,
+  but a different name can be specified in function calls.
+- … have a column that contains character strings indicating the site at
+  which each observation was collected. This is a level of
+  classification “above” the quadrat (i.e. all quadrats measured at the
+  Central Plains Experimental Range in Nunn, CO might have the value
+  “CO” in this column). This column must be a character data type. The
+  function expects this column to be called “Site”, but a different name
+  can be specified in function calls.
+- … have a column that contains character strings indicating the quadrat
+  at which each observation was collected. This column must be a
+  character data type. The function expects this column to be called
+  “Quad”, but a different name can be specified in function calls.
+- … have a column that contains a value indicating the year when this
+  individual observation was collected. This must be a numeric data
+  type, and must be either a four or two digit year number. The function
+  expects this column to be called “Year”, but a different name can be
+  specified in function calls.
+- … have a column (almost always called “geometry” in the `sf` package
+  data format) that contains a polygon representing the location of each
+  observation. Each observation must be a `POLYGON` or `MULTIPOLYGON`.
+  Data cannot be stored as `POINTS`.
+- If the data was collected such that forbs or small grasses were mapped
+  as points and digitized as such, then these observations must be
+  converted to polygons. We recommend that you convert them to small
+  circular polygons with an identical radius. If you do this
+  transformation, we also recommend that you include a column that
+  indicates whether each row was originally mapped as a polygon or a
+  point, since the demographic data that deals with size will be
+  relatively meaningless for observations originally mapped as points.
+- `dat` does not need to have a coordinate reference system (i.e. CRS
+  can be “NA”), but it can have one if you’d like.
+- … *not* have columns called “neighbors”, “nearEdge”, “trackID”, “age”,
+  “size_tplus1”, “recruit”, “survives_tplus1”, “basalArea_ramet”, or
+  “basalArea_genet”, since these columns are added by `plantTracker`
+  functions.
+- Note: Additional columns can be included in the input data.frame,
+  although they might not be included in the output of `plantTracker`
+  functions.
 
 Here are the first few rows of a possible `dat` input data.frame:
 
@@ -169,15 +173,24 @@ Here are the first few rows of a possible `dat` input data.frame:
     #> 5 POLYGON ((0.03573306 0.5259...
     #> 6 POLYGON ((0.2441894 0.52689...
 
--   Note: that the required columns are “Species”, “Site”, “Quad”,
-    “Year”, and “geometry”. The additional columns “Type” and
-    “sp_code_6” are just “along for the ride” in any analysis using
-    `plantTracker` functions.
+- Note: that the required columns are “Species”, “Site”, “Quad”, “Year”,
+  and “geometry”. The additional columns “Type” and “sp_code_6” are just
+  “along for the ride” in any analysis using `plantTracker` functions.
 
 Here’s what some of the example `dat` data (from the “SG2” quadrat at
 the “AZ” site in 1922) look like when plotted spatially:
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" title="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" style="display: block; margin: auto;" />
+    #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    #> ℹ Please use `linewidth` instead.
+
+<div class="figure" style="text-align: center">
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
+<p class="caption">
+Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
+</p>
+
+</div>
 
 It’s important to note that, while `plantTracker` was designed to be
 used with small-scale maps of plant occurrence in quadrats, it is
@@ -199,13 +212,13 @@ with spatial data in R if you want to use `plantTracker`! There are many
 good resources to help you orient yourself to working with spatial data
 in R generally:
 
--   <https://cengel.github.io/R-spatial/intro.html>  
--   <https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/>
+- <https://cengel.github.io/R-spatial/intro.html>  
+- <https://www.r-bloggers.com/2021/06/using-geospatial-data-in-r/>
 
 And the `sf` package more specifically:
 
--   <https://CRAN.R-project.org/package=sf>  
--   <https://r-spatial.github.io/sf/>
+- <https://CRAN.R-project.org/package=sf>  
+- <https://r-spatial.github.io/sf/>
 
 These resources provide a great orientation, and while I recommend
 looking over them if you’re new to working with spatial data in R, I’ve
@@ -338,24 +351,23 @@ dat <- grasslandData[grasslandData$Site == "AZ",]
 
 #### *1.2* The `inv` list must . . .
 
--   … be a named list
--   … have element names that are each a character string identical to
-    the name of a quadrat in `dat`. There cannot be two elements with
-    the same name, and there cannot be an element with more than one
-    quadrat in its name. There must be an element for each quadrat with
-    data in `dat`.
--   … have list elements that are each a numeric vector of years in
-    which each quadrat was sampled. If a quadrat was “skipped” in a
-    year, then that year must be excluded from this vector. The format
-    of the years must be the same as the format of years in `dat`
-    (i.e. if year is a four-digit number in `dat`, then it must be a
-    four-digit number in `inv`). Make sure this is the years the quadrat
-    was actually sampled, not just the years that have data in the `dat`
-    data frame! This argument allows the function to differentiate
-    between years when the quadrat wasn’t sampled and years when there
-    just weren’t any individuals of a species present in that quadrat.
-    If a quadrat wasn’t sampled in a given year, don’t put an ‘NA’ in
-    `inv` for that year! Instead, just skip that year.
+- … be a named list
+- … have element names that are each a character string identical to the
+  name of a quadrat in `dat`. There cannot be two elements with the same
+  name, and there cannot be an element with more than one quadrat in its
+  name. There must be an element for each quadrat with data in `dat`.
+- … have list elements that are each a numeric vector of years in which
+  each quadrat was sampled. If a quadrat was “skipped” in a year, then
+  that year must be excluded from this vector. The format of the years
+  must be the same as the format of years in `dat` (i.e. if year is a
+  four-digit number in `dat`, then it must be a four-digit number in
+  `inv`). Make sure this is the years the quadrat was actually sampled,
+  not just the years that have data in the `dat` data frame! This
+  argument allows the function to differentiate between years when the
+  quadrat wasn’t sampled and years when there just weren’t any
+  individuals of a species present in that quadrat. If a quadrat wasn’t
+  sampled in a given year, don’t put an ‘NA’ in `inv` for that year!
+  Instead, just skip that year.
 
 Here is an example of an `inv` argument that corresponds to the example
 `dat` argument above. The quadrats that have data in `dat` are “SG2” and
@@ -425,26 +437,26 @@ either argument is not in the correct format.
 Additional optional arguments to `checkDat()` are `species`, `site`,
 `quad`, `year`, `geometry`, and `reformatDat`.
 
--   **`species/site/quad/year/geometry`** These arguments only need to
-    be included if the columns in `dat` that contain the data for
-    species, site, quadrat, year and geometry of each observation are
-    *different* from the names “Species”, “Site”, “Quad”, “Year,
-    and”geometry”. For example, if the column in your version of `dat`
-    that contains the species identity of each observation is called
-    “species_names”, then the argument `species = "species_names"` must
-    be included in your call to `checkDat()`.
+- **`species/site/quad/year/geometry`** These arguments only need to be
+  included if the columns in `dat` that contain the data for species,
+  site, quadrat, year and geometry of each observation are *different*
+  from the names “Species”, “Site”, “Quad”, “Year, and”geometry”. For
+  example, if the column in your version of `dat` that contains the
+  species identity of each observation is called “species_names”, then
+  the argument `species = "species_names"` must be included in your call
+  to `checkDat()`.
 
--   **`reformatDat`** is a TRUE/FALSE argument that determines whether
-    you want the `checkDat()` function to return a version of `dat` that
-    is ready to go into the steps of this workflow. If `reformatDat` =
-    TRUE then `checkDat()` will return a list that contains the
-    reformatted version of `dat`, the reformatted version of `inv` and
-    an additional element called “userColNames”, which contains the
-    column names in the input version of `dat` that are different from
-    the expected column names of “Species”, “Site”, “Quad”, “Year,
-    and”geometry” (if there are any). If `reformatDat` = TRUE, then
-    `checkDat()` will return a message indicating that your data is
-    ready for the next step. The default value is FALSE.
+- **`reformatDat`** is a TRUE/FALSE argument that determines whether you
+  want the `checkDat()` function to return a version of `dat` that is
+  ready to go into the steps of this workflow. If `reformatDat` = TRUE
+  then `checkDat()` will return a list that contains the reformatted
+  version of `dat`, the reformatted version of `inv` and an additional
+  element called “userColNames”, which contains the column names in the
+  input version of `dat` that are different from the expected column
+  names of “Species”, “Site”, “Quad”, “Year, and”geometry” (if there are
+  any). If `reformatDat` = TRUE, then `checkDat()` will return a message
+  indicating that your data is ready for the next step. The default
+  value is FALSE.
 
 ------------------------------------------------------------------------
 
@@ -477,25 +489,25 @@ trackSpp(dat, inv, dorm, buff, buffGenet, clonal, species = "Species",
 
 `trackSpp()` takes the following arguments:
 
--   **`dat`** This is the `sf` data frame that we’ve been calling `dat`
-    so far. This must be in the correct format (which you can check
-    before-hand using `checkDat()`), but informative error messages will
-    be returned if it is incorrect. It *must* have the columns outlined
-    in Section [1.1](#dat_to_sf), but they can have different names as
-    long as those names are included in this function call (more on that
-    later…).
--   **`inv`** This is the list of quadrat sampling years we’ve been
-    calling `inv`. If it is not in the correct format or does not
-    contain data for the correct quadrats, then an informative error
-    message will be returned.
--   **`dorm`** This is a positive integer value that indicates how long
-    you want the function to allow an individual to be “dormant”. In
-    this case, dormancy can be interpreted as the biological phenomenon
-    where a plant has above-ground tissue present in year 1, is alive
-    underground but with no above-ground tissue in year 2, and then has
-    above-ground tissue in a subsequent year. Dormancy can also be
-    interpreted here as data-collection error, whereby an individual is
-    accidentally not mapped in between years where it was recorded.
+- **`dat`** This is the `sf` data frame that we’ve been calling `dat` so
+  far. This must be in the correct format (which you can check
+  before-hand using `checkDat()`), but informative error messages will
+  be returned if it is incorrect. It *must* have the columns outlined in
+  Section [1.1](#dat_to_sf), but they can have different names as long
+  as those names are included in this function call (more on that
+  later…).
+- **`inv`** This is the list of quadrat sampling years we’ve been
+  calling `inv`. If it is not in the correct format or does not contain
+  data for the correct quadrats, then an informative error message will
+  be returned.
+- **`dorm`** This is a positive integer value that indicates how long
+  you want the function to allow an individual to be “dormant”. In this
+  case, dormancy can be interpreted as the biological phenomenon where a
+  plant has above-ground tissue present in year 1, is alive underground
+  but with no above-ground tissue in year 2, and then has above-ground
+  tissue in a subsequent year. Dormancy can also be interpreted here as
+  data-collection error, whereby an individual is accidentally not
+  mapped in between years where it was recorded.
 
 *Consider the following example*: There is a polygon of species “A” in
 year 1, which is our “focal individual”. In year 2, there is not a
@@ -513,7 +525,15 @@ alternative scenario, in years 3 and 4 there are not polygons of species
 a polygon in year 4 that overlaps our focal individual. If `dorm = 1`,
 then our focal individual would get a “0” for survival, but if
 `dorm = 2`, then it would get a 1 for survival.
-<img src="man/figures/README-unnamed-chunk-11-1.png" title="Figure 2.1: A visualization of the 'dormancy' scenario described above." alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" style="display: block; margin: auto;" />
+
+<div class="figure" style="text-align: center">
+
+<img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
+<p class="caption">
+Figure 2.1: A visualization of the ‘dormancy’ scenario described above.
+</p>
+
+</div>
 
 If you’d like to be more specific and perhaps biologically accurate, you
 can also specify the `dorm` argument uniquely for each species. For
@@ -541,175 +561,184 @@ should look something like this:
     #> 5  forb E    2
     #> 6  forb F    1
 
--   *Important Note:* Be very careful about how you define the `dorm`
-    argument. The bigger the `dorm` argument, the more likely you are to
-    overestimate survival. For annually-sampled data, I would need a
-    very biologically-compelling reason to to specify a `dorm` argument
-    greater than 1 year.
+- *Important Note:* Be very careful about how you define the `dorm`
+  argument. The bigger the `dorm` argument, the more likely you are to
+  overestimate survival. For annually-sampled data, I would need a very
+  biologically-compelling reason to to specify a `dorm` argument greater
+  than 1 year.
 
--   **`buff`** This is a positive numeric value that indicates how much
-    an individual can move from year 1 to year 2 and still be considered
-    the same individual (receive the same trackID). In addition to
-    accounting for true variation in location of a plant’s stem from
-    year to year, this argument also accounts for small inconsistencies
-    in mapping from year to year. The `buff` argument must be in the
-    same units as the spatial values in `dat`. For example, if the
-    spatial data in `dat` is measured in meters, and you want to allow a
-    plant to “move” 15 cm between year 1 and year 2, then you would
-    include the argument `buff = .15` in your call to `trackSpp()`. If
-    you want to allow no movement, use `buff = 0`. Below is a
-    visualization of two different `buff` scenarios.
+- **`buff`** This is a positive numeric value that indicates how much an
+  individual can move from year 1 to year 2 and still be considered the
+  same individual (receive the same trackID). In addition to accounting
+  for true variation in location of a plant’s stem from year to year,
+  this argument also accounts for small inconsistencies in mapping from
+  year to year. The `buff` argument must be in the same units as the
+  spatial values in `dat`. For example, if the spatial data in `dat` is
+  measured in meters, and you want to allow a plant to “move” 15 cm
+  between year 1 and year 2, then you would include the argument
+  `buff = .15` in your call to `trackSpp()`. If you want to allow no
+  movement, use `buff = 0`. Below is a visualization of two different
+  `buff` scenarios.
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" title="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" title="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
+<p class="caption">
+Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
+and will be identified by trackSpp() as the **same** individual and
+receive the same trackID.
+</p>
 
--   **`clonal`** This is a logical argument (TRUE or FALSE) that
-    indicates whether you want to allow plants to be clonal or not. In
-    the context of this type of data, “clonal” means that one genetic
-    individual (or “genet”) can be recorded as multiple polygons (or
-    “ramets”). If `clonal = TRUE`, then multiple polygons in the same
-    year can be part of the same individual and have the same trackID.
-    If `clonal = FALSE`, then every polygon in a given year is a unique
-    individual and has a unique trackID. This option can be defined
-    globally for all species present in `dat` by setting `clonal` equal
-    to FALSE or TRUE in the `trackSpp()` function call. Alternatively,
-    `clonal` can be specified uniquely for each species by creating a
-    data frame that contains a `clonal` argument for each species
-    (analogous to the data frame for the `dorm` argument shown in Table
-    2.1, but with a column called “clonal”).
+</div>
+
+<div class="figure" style="text-align: center">
+
+<img src="man/figures/README-unnamed-chunk-14-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
+<p class="caption">
+Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
+quite overlap, so will be identified by trackSpp() as **different**
+individuals and receive different trackIDs.
+</p>
+
+</div>
+
+- **`clonal`** This is a logical argument (TRUE or FALSE) that indicates
+  whether you want to allow plants to be clonal or not. In the context
+  of this type of data, “clonal” means that one genetic individual (or
+  “genet”) can be recorded as multiple polygons (or “ramets”). If
+  `clonal = TRUE`, then multiple polygons in the same year can be part
+  of the same individual and have the same trackID. If `clonal = FALSE`,
+  then every polygon in a given year is a unique individual and has a
+  unique trackID. This option can be defined globally for all species
+  present in `dat` by setting `clonal` equal to FALSE or TRUE in the
+  `trackSpp()` function call. Alternatively, `clonal` can be specified
+  uniquely for each species by creating a data frame that contains a
+  `clonal` argument for each species (analogous to the data frame for
+  the `dorm` argument shown in Table 2.1, but with a column called
+  “clonal”).
 
 The following arguments to `trackSpp()` are only required in certain
 contexts.
 
--   **`buffGenet`** is an argument that is only required if
-    `clonal = TRUE` or if `clonal` is a data frame that contains at
-    least a single `TRUE` in the “clonal” column. `buffGenet` is a
-    numeric value that indicates how close polygons of the same species
-    must be to one another in the first year in order to be considered
-    parts of the same genetic individual (ramets of the same genet).
-    Similar to `buff`, be very careful and conservative when defining
-    this argument. A large value for `buffGenet` can quickly lead to the
-    entire quadrat being treated as the same genetic individual! I
-    suggest experimenting with multiple values of `buffGenet`, looking
-    at maps that show the trackID assignment, and deciding on a value
-    that leads to trackID assignments that make the most biological
-    sense to you. This argument is passed to the `groupByGenet()`
-    function, which assigns the same trackID to individuals that are
-    within the `buffGenet` buffer of each other. Polygons are only
-    grouped by genet in the first year of data. After that point,
-    grouping by genet happens based on data in previous years. If there
-    are multiple polygons that overlap with a genet in the previous
-    year, they are given the same trackID and are considered ramets
-    belonging to the same genet. The value of `buffGenet` must be
-    greater than or equal to zero, and must be in the same units as the
-    spatial data in `dat`. `buffGenet` can be a single numeric value
-    which will be applied to all species present in `dat`, or can be
-    specified uniquely for each species by creating a data frame that
-    contains a `buffGenet` argument for each species (analogous to the
-    data frame for the `dorm` argument shown in Table 2.1, but with a
-    column called “buffGenet”).
--   **`aggByGenet`** is a logical argument that is only required if
-    `clonal = TRUE` or if `clonal` is a data frame that contains at
-    least a single `TRUE` in the “clonal” column. This argument
-    determines whether the output data frame from `trackSpp()` will have
-    a row for every single ramet, or will be aggregated so that each
-    genet is represented by a single row. If `aggByGenet = FALSE`, then
-    the output is not aggregated. If `aggByGenet = TRUE` (the default
-    setting), then the results are aggregated using the `plantTracker`
-    function `aggregateByGenet()`. This function combines the `sf`
-    “POLYGONS” for each ramet into one `sf` `MULTIPOLYGON` for the
-    entire genet, and combines the associated metadata (“Species”,
-    “Site”, “Quad”, “Year”, “trackID”, “basalArea_genet”, “age”,
-    “recruit”, “survives_tplus1”, “size_tplus1”, “nearEdge”) into one
-    row for this genet. Even if the input `dat` had additional columns,
-    they will not be included in the output of `trackSpp` if
-    `aggByGenet = TRUE`, since it is uncertain if they can be summed
-    across all ramets or are identical across all ramets. For example,
-    if each ramet has a unique character string in a column called
-    “name”, there is no easy way to “sum” the character strings in this
-    column to have one value for each genet. If you want the output data
-    frame from `trackSpp()` to have the same columns as your input `dat`
-    data.frame, set the `aggByGenet` argument to FALSE. However, Be
-    Careful, since any demographic analysis should be done with a
-    data.set that has only one row per genet, otherwise you will be
-    estimating survival and growth rates on the scale of ramets instead
-    of genets. If you take the `aggByGenet = FALSE` route, be sure to
-    pass your dataset through the `aggregateByGenet()` function (or
-    aggregate to the genet scale using your preferred method) before
-    demographic analysis.
--   **`species/site/quad/year/geometry`** These arguments only need to
-    be included if the columns in `dat` that contain the data for
-    species, site, quadrat, year and geometry of each observation are
-    *different* from the names “Species”, “Site”, “Quad”, “Year,
-    and”geometry”. For example, if the column in your version of `dat`
-    that contains the species identity of each observation is called
-    “species_names”, then the argument `species = "species_names"` must
-    be included in your call to `trackSpp()`.
--   **`printMessages`** This is an optional logical argument that
-    determines whether this function returns messages about genet
-    aggregation, as well as messages indicating which year is the last
-    year of sampling in each quadrat and which year(s) come before a gap
-    in sampling that exceeds the `dorm` argument (and thus which years
-    of data have an “NA” for “survives_tplus1” and “size_tplus1”). If
-    `printMessages = TRUE` (the default), then messages are printed. If
-    `printMessages = FALSE`, then messages are not printed.
--   **`flagSuspects`** This is an optional logical argument of length 1,
-    indicating whether observations that are “suspect” will be flagged.
-    The default is`flagSuspects = FALSE`. If `flagSuspects = TRUE`, then
-    a column called “Suspect” is added to the output data.frame. Any
-    suspect observations get a “TRUE” in the “Suspect” column, while
-    non-suspect observations receive a “FALSE”. There are two ways that
-    an observation can be classified as “suspect”. First, if two
-    consecutive observations have the same trackID, but the observation
-    in year t+1 is less that a certain percentage (defined by the
-    `shrink` arg.) of the observation in year t, it is possible that the
-    observation in year t+1 is a new recruit and not the same
-    individual. The second way an observation can be classified as
-    “suspect” is if it is very small before going dormant. It is
-    unlikely that a very small individual will survive dormancy, so it
-    is possible that the function has mistakenly given a survival value
-    of “1” to this individual. A “very small individual” is any
-    observation with an area below a certain percentile (specified by
-    `dormSize`) of the size distribution for this species, which is
-    generated using all of the size data for this species in `dat`. If
-    you are using the output dataset for demographic analysis, you may
-    want to exclude “Suspect” observations. If `flagSuspects = FALSE`,
-    then no additional column is added.
--   **`shrink`** This is an optional argument that takes a single
-    numeric value. This value is only used when `flagSuspects = TRUE`.
-    When two consecutive observations have the same trackID, and the
-    ratio of size_t+1 to size_t is smaller than the value of `shrink`,
-    the observation in year t gets a “TRUE” in the “Suspect” column. For
-    example, `shrink = 0.2`, and an individual that the tracking
-    function has identified as “BOUGRA_1992_5” has an area of 9
-    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2")
-    in year_t and an area of 1.35
-    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2")
-    in year_t+1. The ratio of size_t+1 to size_t is 1.35/9 = 0.15, which
-    is smaller than the cutoff specified by `shrink`, so the observation
-    of “BOUGRA_1992_5” in year t gets a “TRUE” in the “Suspect” column.
-    The default value is `shrink = 0.10`.
--   **`dormSize`** This is an optional argument that takes a single
-    numeric value. This value is only used when `flagSuspects = TRUE`
-    and `dorm ≥ 1`. An individual is flagged as “suspect” if it “goes
-    dormant” and has a size that is less than or equal to the percentile
-    of the size distribution for this species that is designated by
-    `dormSize`. For example, `dormSize = 0.05`, and an individual has a
-    basal area of 0.5
-    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2").
-    The 5th percentile of the distribution of size for this species,
-    which is made using the mean and standard deviation of all
-    observations in `dat` for the species in question, is 0.6
-    cm![^2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5E2 "^2").
-    This individual does not have any overlaps in the next year
-    (year_t+1), but does have an overlap in year_t+2. However, because
-    the basal area of this observation is smaller than the 5th
-    percentile of size for this species, the observation in year t will
-    get a “TRUE” in the “Suspect” column. It is possible that the
-    tracking function has mistakenly assigned a “1” for survival in
-    year_t, because it is unlikely that this individual is large enough
-    to survive dormancy. The default value is `dormSize = .05`.
+- **`buffGenet`** is an argument that is only required if
+  `clonal = TRUE` or if `clonal` is a data frame that contains at least
+  a single `TRUE` in the “clonal” column. `buffGenet` is a numeric value
+  that indicates how close polygons of the same species must be to one
+  another in the first year in order to be considered parts of the same
+  genetic individual (ramets of the same genet). Similar to `buff`, be
+  very careful and conservative when defining this argument. A large
+  value for `buffGenet` can quickly lead to the entire quadrat being
+  treated as the same genetic individual! I suggest experimenting with
+  multiple values of `buffGenet`, looking at maps that show the trackID
+  assignment, and deciding on a value that leads to trackID assignments
+  that make the most biological sense to you. This argument is passed to
+  the `groupByGenet()` function, which assigns the same trackID to
+  individuals that are within the `buffGenet` buffer of each other.
+  Polygons are only grouped by genet in the first year of data. After
+  that point, grouping by genet happens based on data in previous years.
+  If there are multiple polygons that overlap with a genet in the
+  previous year, they are given the same trackID and are considered
+  ramets belonging to the same genet. The value of `buffGenet` must be
+  greater than or equal to zero, and must be in the same units as the
+  spatial data in `dat`. `buffGenet` can be a single numeric value which
+  will be applied to all species present in `dat`, or can be specified
+  uniquely for each species by creating a data frame that contains a
+  `buffGenet` argument for each species (analogous to the data frame for
+  the `dorm` argument shown in Table 2.1, but with a column called
+  “buffGenet”).
+- **`aggByGenet`** is a logical argument that is only required if
+  `clonal = TRUE` or if `clonal` is a data frame that contains at least
+  a single `TRUE` in the “clonal” column. This argument determines
+  whether the output data frame from `trackSpp()` will have a row for
+  every single ramet, or will be aggregated so that each genet is
+  represented by a single row. If `aggByGenet = FALSE`, then the output
+  is not aggregated. If `aggByGenet = TRUE` (the default setting), then
+  the results are aggregated using the `plantTracker` function
+  `aggregateByGenet()`. This function combines the `sf` “POLYGONS” for
+  each ramet into one `sf` `MULTIPOLYGON` for the entire genet, and
+  combines the associated metadata (“Species”, “Site”, “Quad”, “Year”,
+  “trackID”, “basalArea_genet”, “age”, “recruit”, “survives_tplus1”,
+  “size_tplus1”, “nearEdge”) into one row for this genet. Even if the
+  input `dat` had additional columns, they will not be included in the
+  output of `trackSpp` if `aggByGenet = TRUE`, since it is uncertain if
+  they can be summed across all ramets or are identical across all
+  ramets. For example, if each ramet has a unique character string in a
+  column called “name”, there is no easy way to “sum” the character
+  strings in this column to have one value for each genet. If you want
+  the output data frame from `trackSpp()` to have the same columns as
+  your input `dat` data.frame, set the `aggByGenet` argument to FALSE.
+  However, Be Careful, since any demographic analysis should be done
+  with a data.set that has only one row per genet, otherwise you will be
+  estimating survival and growth rates on the scale of ramets instead of
+  genets. If you take the `aggByGenet = FALSE` route, be sure to pass
+  your dataset through the `aggregateByGenet()` function (or aggregate
+  to the genet scale using your preferred method) before demographic
+  analysis.
+- **`species/site/quad/year/geometry`** These arguments only need to be
+  included if the columns in `dat` that contain the data for species,
+  site, quadrat, year and geometry of each observation are *different*
+  from the names “Species”, “Site”, “Quad”, “Year, and”geometry”. For
+  example, if the column in your version of `dat` that contains the
+  species identity of each observation is called “species_names”, then
+  the argument `species = "species_names"` must be included in your call
+  to `trackSpp()`.
+- **`printMessages`** This is an optional logical argument that
+  determines whether this function returns messages about genet
+  aggregation, as well as messages indicating which year is the last
+  year of sampling in each quadrat and which year(s) come before a gap
+  in sampling that exceeds the `dorm` argument (and thus which years of
+  data have an “NA” for “survives_tplus1” and “size_tplus1”). If
+  `printMessages = TRUE` (the default), then messages are printed. If
+  `printMessages = FALSE`, then messages are not printed.
+- **`flagSuspects`** This is an optional logical argument of length 1,
+  indicating whether observations that are “suspect” will be flagged.
+  The default is`flagSuspects = FALSE`. If `flagSuspects = TRUE`, then a
+  column called “Suspect” is added to the output data.frame. Any suspect
+  observations get a “TRUE” in the “Suspect” column, while non-suspect
+  observations receive a “FALSE”. There are two ways that an observation
+  can be classified as “suspect”. First, if two consecutive observations
+  have the same trackID, but the observation in year t+1 is less that a
+  certain percentage (defined by the `shrink` arg.) of the observation
+  in year t, it is possible that the observation in year t+1 is a new
+  recruit and not the same individual. The second way an observation can
+  be classified as “suspect” is if it is very small before going
+  dormant. It is unlikely that a very small individual will survive
+  dormancy, so it is possible that the function has mistakenly given a
+  survival value of “1” to this individual. A “very small individual” is
+  any observation with an area below a certain percentile (specified by
+  `dormSize`) of the size distribution for this species, which is
+  generated using all of the size data for this species in `dat`. If you
+  are using the output dataset for demographic analysis, you may want to
+  exclude “Suspect” observations. If `flagSuspects = FALSE`, then no
+  additional column is added.
+- **`shrink`** This is an optional argument that takes a single numeric
+  value. This value is only used when `flagSuspects = TRUE`. When two
+  consecutive observations have the same trackID, and the ratio of
+  size_t+1 to size_t is smaller than the value of `shrink`, the
+  observation in year t gets a “TRUE” in the “Suspect” column. For
+  example, `shrink = 0.2`, and an individual that the tracking function
+  has identified as “BOUGRA_1992_5” has an area of 9 cm$^2$ in year_t
+  and an area of 1.35 cm$^2$ in year_t+1. The ratio of size_t+1 to
+  size_t is 1.35/9 = 0.15, which is smaller than the cutoff specified by
+  `shrink`, so the observation of “BOUGRA_1992_5” in year t gets a
+  “TRUE” in the “Suspect” column. The default value is `shrink = 0.10`.
+- **`dormSize`** This is an optional argument that takes a single
+  numeric value. This value is only used when `flagSuspects = TRUE` and
+  `dorm ≥ 1`. An individual is flagged as “suspect” if it “goes dormant”
+  and has a size that is less than or equal to the percentile of the
+  size distribution for this species that is designated by `dormSize`.
+  For example, `dormSize = 0.05`, and an individual has a basal area of
+  0.5 cm$^2$. The 5th percentile of the distribution of size for this
+  species, which is made using the mean and standard deviation of all
+  observations in `dat` for the species in question, is 0.6 cm$^2$. This
+  individual does not have any overlaps in the next year (year_t+1), but
+  does have an overlap in year_t+2. However, because the basal area of
+  this observation is smaller than the 5th percentile of size for this
+  species, the observation in year t will get a “TRUE” in the “Suspect”
+  column. It is possible that the tracking function has mistakenly
+  assigned a “1” for survival in year_t, because it is unlikely that
+  this individual is large enough to survive dormancy. The default value
+  is `dormSize = .05`.
 
 These are all of the possible arguments to `trackSpp()`!
 
@@ -826,82 +855,111 @@ will already have this unique identifier in a column called “trackID”.
 `getNeighbors()` has several options that allow you to customize how
 local neighborhood density is calculated.
 
--   First, the user can decide how the function “counts” other plants
-    inside the buffer zone around the focal individual. Option 1) The
-    function will tally the number of genets inside the buffer zone.
-    Option 2) The function will calculate the proportion of the buffer
-    zone that is occupied by other plants.
--   Second, the user can decide whether the function will calculate
-    intraspecific local neighborhood density (only consider other plants
-    in the buffer zone of the same species as the focal individual) or
-    interspecific local neighborhood density (consider all other plants
-    in the buffer zone, regardless of species).
--   Third, the user can decide whether the neighborhood density value
-    (either a count or area) for each focal individual is a single value
-    that sums the number or area of neighbors, or whether it is actually
-    a list that provides the neighborhood density for each species
-    present in the neighborhood.
+- First, the user can decide how the function “counts” other plants
+  inside the buffer zone around the focal individual. Option 1) The
+  function will tally the number of genets inside the buffer zone.
+  Option 2) The function will calculate the proportion of the buffer
+  zone that is occupied by other plants.
+- Second, the user can decide whether the function will calculate
+  intraspecific local neighborhood density (only consider other plants
+  in the buffer zone of the same species as the focal individual) or
+  interspecific local neighborhood density (consider all other plants in
+  the buffer zone, regardless of species).
+- Third, the user can decide whether the neighborhood density value
+  (either a count or area) for each focal individual is a single value
+  that sums the number or area of neighbors, or whether it is actually a
+  list that provides the neighborhood density for each species present
+  in the neighborhood.
 
-<img src="man/figures/README-unnamed-chunk-17-1.png" title="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
 
-<img src="man/figures/README-unnamed-chunk-19-1.png" title="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
+<p class="caption">
+Figure 3.1: This individual outlined in pink is a focal individual, and
+the pale pink shows a 10 cm buffer around it.
+</p>
 
-<img src="man/figures/README-unnamed-chunk-20-1.png" title="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" style="display: block; margin: auto;" />
+</div>
+
+<div class="figure" style="text-align: center">
+
+<img src="man/figures/README-unnamed-chunk-19-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
+<p class="caption">
+Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
+other unique individuals of two species. These overlapping individuals
+are outlined in dark grey. Using the ‘count’ method in `getNeighbors()`,
+we would get an intraspecific competition value of 3, and an
+interspecific competition value of 5.
+</p>
+
+</div>
+
+<div class="figure" style="text-align: center">
+
+<img src="man/figures/README-unnamed-chunk-20-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
+<p class="caption">
+Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
+other unique individuals of two species. The overlapping area is shaded
+in grey. Using the ‘area’ method in `getNeighbors()`, we would get an
+intraspecific competition metric of 0.0454, and an interspecific
+competition metric of 0.0462.
+</p>
+
+</div>
+
 Below are the arguments in the `getNeighbors()` function.
 
--   **`dat`** An `sf` data frame in which each row represents data for a
-    unique individual organism in a unique year. The `sf` geometry for
-    each row must be either `MULTIPOLYGON` or `POLYGON` geometry. In
-    addition to a “geometry” column, this data frame must have columns
-    that contain data indicating the site, quadrat, site, and year of
-    each observation. There also must be a column that contains a unique
-    identifying value for each genet in each year. If `dat` is coming
-    directly from `trackSpp()`, this column will be called “trackID”.  
--   **`buff`** This is a single numeric value that indicates the desired
-    width of the “buffer” around the focal individual in which the
-    competitors are to be counted. This value must be in the same units
-    as the spatial information in `dat`.  
--   **`method`** This is a character string that must equal either
-    `"count"` or `"area"`. If `method = "count"`, then the number of
-    individuals in the buffer area will be tallied. If
-    `method = "area"`, then the proportion of the buffer area that is
-    occupied by other individuals will be calculated.
--   **`compType`** This is a character string that must be either
-    `"allSpp"` or `"oneSpp"`. If `compType = "allSpp"`, then a metric of
-    interspecific competition is calculated, meaning that every
-    individual within the buffer around the focal individual is
-    considered, no matter the species. If `compType = "oneSpp"`, then a
-    metric of intraspecific competition is calculated, meaning that only
-    individuals of the same species as the focal individual will be
-    considered when calculating the competition metric. If no value is
-    provided, it will default to “allSpp”.
--   **`output`** This is a character string that is set to either
-    `"summed"` or `"bySpecies"`. The default is `"summed"`. This
-    argument is only important to consider if you are using
-    `compType = "allSpp"`. If `output = "summed"`, then only one
-    count/area value is returned for each individual. This value is the
-    total count or area of all neighbors within the focal species buffer
-    zone, regardless of species. If `output = "bySpecies"`, there is a
-    count or area value returned for each species present in the buffer
-    zone. For example, you are using `getNeighbors()` with
-    `method = "count"` and `compType = "allSpp"`. A focal individual in
-    your dataset has seven other plants inside its buffer zone, three of
-    species A, two of species B, and 2 of species C. If
-    `output = "summed"`, the value in the “neighbors_count” column of
-    the returned data frame will simply contain the value “7”. If
-    `output = "bySpecies"`, the “neighbors_count” column for this
-    individual will actually contain a named list
-    `{r} list("Species A "= 5, "Species B" = 3, "Species C" = 7)`. The
-    default value of `output` is `"summed"`.  
--   **`trackID/species/quad/year/site/geometry`** These arguments only
-    need to be included if the columns in `dat` that contain the data
-    for trackID, species, site, quadrat, year and geometry of each
-    observation are *different* from the names “trackID,”Species”,
-    “Site”, “Quad”, “Year, and”geometry”. For example, if the column in
-    your version of `dat` that contains the species identity of each
-    observation is called “species_names”, then the argument
-    `species = "species_names"` must be included in your call to
-    `getNeighbors()`.
+- **`dat`** An `sf` data frame in which each row represents data for a
+  unique individual organism in a unique year. The `sf` geometry for
+  each row must be either `MULTIPOLYGON` or `POLYGON` geometry. In
+  addition to a “geometry” column, this data frame must have columns
+  that contain data indicating the site, quadrat, site, and year of each
+  observation. There also must be a column that contains a unique
+  identifying value for each genet in each year. If `dat` is coming
+  directly from `trackSpp()`, this column will be called “trackID”.  
+- **`buff`** This is a single numeric value that indicates the desired
+  width of the “buffer” around the focal individual in which the
+  competitors are to be counted. This value must be in the same units as
+  the spatial information in `dat`.  
+- **`method`** This is a character string that must equal either
+  `"count"` or `"area"`. If `method = "count"`, then the number of
+  individuals in the buffer area will be tallied. If `method = "area"`,
+  then the proportion of the buffer area that is occupied by other
+  individuals will be calculated.
+- **`compType`** This is a character string that must be either
+  `"allSpp"` or `"oneSpp"`. If `compType = "allSpp"`, then a metric of
+  interspecific competition is calculated, meaning that every individual
+  within the buffer around the focal individual is considered, no matter
+  the species. If `compType = "oneSpp"`, then a metric of intraspecific
+  competition is calculated, meaning that only individuals of the same
+  species as the focal individual will be considered when calculating
+  the competition metric. If no value is provided, it will default to
+  “allSpp”.
+- **`output`** This is a character string that is set to either
+  `"summed"` or `"bySpecies"`. The default is `"summed"`. This argument
+  is only important to consider if you are using `compType = "allSpp"`.
+  If `output = "summed"`, then only one count/area value is returned for
+  each individual. This value is the total count or area of all
+  neighbors within the focal species buffer zone, regardless of species.
+  If `output = "bySpecies"`, there is a count or area value returned for
+  each species present in the buffer zone. For example, you are using
+  `getNeighbors()` with `method = "count"` and `compType = "allSpp"`. A
+  focal individual in your dataset has seven other plants inside its
+  buffer zone, three of species A, two of species B, and 2 of species C.
+  If `output = "summed"`, the value in the “neighbors_count” column of
+  the returned data frame will simply contain the value “7”. If
+  `output = "bySpecies"`, the “neighbors_count” column for this
+  individual will actually contain a named list
+  `{r} list("Species A "= 5, "Species B" = 3, "Species C" = 7)`. The
+  default value of `output` is `"summed"`.  
+- **`trackID/species/quad/year/site/geometry`** These arguments only
+  need to be included if the columns in `dat` that contain the data for
+  trackID, species, site, quadrat, year and geometry of each observation
+  are *different* from the names “trackID,”Species”, “Site”, “Quad”,
+  “Year, and”geometry”. For example, if the column in your version of
+  `dat` that contains the species identity of each observation is called
+  “species_names”, then the argument `species = "species_names"` must be
+  included in your call to `getNeighbors()`.
 
 <a id="getNeigh_out"></a>
 
@@ -1042,13 +1100,13 @@ At this point, this dataset should be ready for you to use in any
 applications wish! There are a few additional functions that may help
 you in your analyses, and these are outlined in this section.
 
--   Calculate recruitment by species-by-plot-by-year: the
-    `getRecruits()` function
--   Calculate population rate of increase (lambda) for each species in a
-    plot: the `getLambda()` function
--   Calculate the basal area of each species in each quadrat in each
-    year: the `getBasalAreas()` function
--   Make maps of quadrats over time: the `drawQuadMap()` function
+- Calculate recruitment by species-by-plot-by-year: the `getRecruits()`
+  function
+- Calculate population rate of increase (lambda) for each species in a
+  plot: the `getLambda()` function
+- Calculate the basal area of each species in each quadrat in each year:
+  the `getBasalAreas()` function
+- Make maps of quadrats over time: the `drawQuadMap()` function
 
 Specific instructions for how to use each of these functions can be
 found in their documentation!

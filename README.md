@@ -1,6 +1,18 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-project.org/package=plantTracker)
+[![check-standard](https://github.com/aestears/plantTracker/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/aestears/plantTracker/actions/workflows/check-standard.yaml)
+[![test-coverage](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml)
+
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
+<!-- badges: end -->
+
 # `plantTracker`
 
 Welcome to `plantTracker`! This package was designed to transform
@@ -64,8 +76,6 @@ us make this package better!
 
 This package is licensed under MIT License Copyright (c) 2022 Alice
 Stears
-
-[![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
 
 <a id="contact"></a>
 

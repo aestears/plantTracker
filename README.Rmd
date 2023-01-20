@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+# `plantTracker`
+
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-project.org/package=plantTracker)
 [![check-standard](https://github.com/aestears/plantTracker/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/aestears/plantTracker/actions/workflows/check-standard.yaml)
@@ -22,9 +24,8 @@ knitr::opts_chunk$set(
 [![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
 <!-- badges: end -->
 
-
-# `plantTracker`
 Welcome to `plantTracker`! This package was designed to transform **long-term quadrat maps** that show plant occurrence and size into **demographic data** that can be used to answer questions about population and community ecology. 
+
 
 ## Table of Contents 
 * [Installing `plantTracker`](#Installation)    

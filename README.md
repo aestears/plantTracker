@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# `plantTracker`
+
 <!-- badges: start -->
 
 [![CRAN
@@ -12,8 +14,6 @@ status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-proje
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
 <!-- badges: end -->
-
-# `plantTracker`
 
 Welcome to `plantTracker`! This package was designed to transform
 **long-term quadrat maps** that show plant occurrence and size into

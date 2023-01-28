@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `plantTracker`
+# `plantTracker` <a href="http://www.astearsresearch.com/package/plantTracker"><img src="man/figures/logo.png" align="right" height="139" /></a>
 
 <!-- badges: start -->
 

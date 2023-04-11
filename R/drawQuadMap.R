@@ -7,12 +7,19 @@
 #' (either a genet or a ramet) in a unique site/quadrat/year combination. It is
 #' recommended that you only input data for one quadrat at a time. A data.frame
 #' returned by \code{\link{trackSpp}} can be put into this function after being
-#' subset by quadrat. 'dat' must have columns that contain a unique
-#' identification for each research site (default name is "Site"), species name
-#' (default name is "Species"), quadrat identifier (default name is "Quad"),
-#' year of data collection (default name is "Year"), a unique identifier for
-#' each genet (default name is 'trackID') and an s.f 'geometry' column that
-#' contains a polygon or multipolygon data type for each individual observation.
+#' subset by quadrat. 'dat' must have columns that contain...
+#' * a unique identification for each research site in character format
+#' with no NAs (the default column name is "Site")
+#' * species name in character format with no NAs (the default column
+#' name is "Species")
+#' * unique quadrat identifier in character format with no NAs (the default
+#' column name is "Quad")
+#' *  year of data collection in integer format with no NAs (the
+#' default column name is "Year")
+#' * a unique identifier for each genet in character format with no NAs (the
+#' default column name is "trackID")
+#' * an s.f 'geometry' column that contains a polygon or multipolygon data type
+#' for each individual observation (the default column name is "geometry")
 #' @param type A character argument indicating how the plots returned by
 #' `drawQuadMap()` will be color coded. If `type = "bySpecies"`, then
 #' observations are color-coded by species. If `type = "bytrackID"`, then

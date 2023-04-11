@@ -18,11 +18,19 @@
 #' data.frame returned by \code{\link{trackSpp}} can be put directly into this
 #' function. However, it is not necessary for 'dat' to have demographic data or
 #' unique identifiers (i.e. 'trackIDs') assigned. 'dat' must have columns that
-#' contain a unique identification for each research site (default name is
-#' "Site"), species name (default name is "Species"), quadrat identifier
-#' (default name is "Quad"), year of data collection (default name is "Year"),
-#' and an s.f 'geometry' column that contains a polygon or multipolygon data
-#' type for each individual observation. This function should only be used if
+#' contain...
+#' * a unique identification for each research site in character format
+#' with no NAs (the default column name is "Site")
+#' * species name in character format with no NAs (the default column
+#' name is "Species")
+#' * unique quadrat identifier in character format with no NAs (the default
+#' column name is "Quad")
+#' *  year of data collection in integer format with no NAs (the
+#' default column name is "Year")
+#' * an s.f 'geometry' column that contains a polygon or multipolygon data type
+#' for each individual observation (the default column name is "geometry")
+#'
+#' This function should only be used if
 #' the individuals in 'dat' were mapped as polygons that are representative of
 #' their actual basal area, i.e. were not mapped as points.
 #' @param inv The name of each element of the list is a

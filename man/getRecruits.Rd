@@ -74,7 +74,7 @@ of the number of individuals of the species and in the site, quadrat, and
 year indicated in the other columns of the data frame.
 }
 \description{
-This function calculates the number of new plant recruits of
+This function calculates the number of new recruits of
 each species in each quadrat in each year. The input data must already
 contain a column indicating whether each observation is classified as a
 recruit or not. This recruit status can be generated from the

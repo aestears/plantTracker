@@ -1,6 +1,6 @@
 #' Tracks genets through time for multiple species and sites
 #'
-#' @description This function tracks individual plants in mapped quadrats
+#' @description This function tracks individual organisms in mapped quadrats
 #' through time to generate a demographic dataset that includes survival
 #' and growth for each individual.
 #'

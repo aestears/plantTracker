@@ -95,8 +95,8 @@ current year (basal area in year t+1/ basal area in year t). A lambda value
 greater than 1 indicates a population is growing, while a value less than 1
 indicates population decline. Lambda is 'infinity' when the basal area or
 number of individuals in year t is 0, and is NA when basal area or number of
-individuals in year t is zero (i.e. when there are no plants present in year
-t). Note that a lambda value is calculated between of the years when a
+individuals in year t is zero (i.e. when there are no organims present in
+year =t). Note that a lambda value is calculated between of the years when a
 quadrat was sampled, even if there is a gap in sampling. For example, a
 quadrat is sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A
 lambda value will be calculated for 1998-1999 and 2001-2002, which is a

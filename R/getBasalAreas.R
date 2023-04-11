@@ -61,12 +61,12 @@
 #' four of these columns. The column "absolute_basalArea" has the area of the
 #' quadrat that is occupied by a species in a given unique site/quadrat/year
 #' combination. This is in the same units as the area in 'dat'.
-#' "quad_basalArea" gives the combined basal area of all plants in a given
+#' "quad_basalArea" gives the combined basal area of all organisms in a given
 #' site/quadrat/year. "percent_basalArea" gives the percentage of occupied basal
 #' area within a quadrat that is occupied by each species in a given
 #' site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
 #' quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
-#' quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44% of the
+#' quadrat 1 that are occupied by organisms ("quad_basalArea" = 55). 44% of the
 #' occupied basal area in quadrat 1 in 2005 is occupied by species A
 #' ("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
 #' column if the "quad_basalArea" for that species and year is 0.
@@ -171,13 +171,14 @@ getBasalAreas <- function(dat,
                 by.y = c("Site","Quad","Species", "yearInv"),
                 all = TRUE)
   ## put 0s where they are appropriate (i.e. in years when quad was sampled but
-  # no plants of that species were present)
+  # no organisms of that species were present)
   tempArea[is.na(tempArea$absolute_basalArea),"absolute_basalArea"] <- 0
   datArea <- tempArea
 
   ## calculate the percent of total basal area in that year
-  # (the basal area of species A / basal area of quadrat occupied by any plants)
-  ## get the total plant area by site/quad/year
+  # (the basal area of species A / basal area of quadrat occupied by
+  # any organisms)
+  ## get the total organism area by site/quad/year
   quadBasalArea <- aggregate(x = datArea$absolute_basalArea,
                              by = list(
                                Year = datArea$Year,

@@ -71,12 +71,12 @@ unnecessary to include a value for this argument if the column name is
 four of these columns. The column "absolute_basalArea" has the area of the
 quadrat that is occupied by a species in a given unique site/quadrat/year
 combination. This is in the same units as the area in 'dat'.
-"quad_basalArea" gives the combined basal area of all plants in a given
+"quad_basalArea" gives the combined basal area of all organisms in a given
 site/quadrat/year. "percent_basalArea" gives the percentage of occupied basal
 area within a quadrat that is occupied by each species in a given
 site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
 quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
-quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44\% of the
+quadrat 1 that are occupied by organisms ("quad_basalArea" = 55). 44\% of the
 occupied basal area in quadrat 1 in 2005 is occupied by species A
 ("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
 column if the "quad_basalArea" for that species and year is 0.

@@ -208,7 +208,7 @@ identical to the 'basalArea_genet' column.}
 a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
 }
 \description{
-This function tracks individual plants in mapped quadrats
+This function tracks individual organisms in mapped quadrats
 through time to generate a demographic dataset that includes survival
 and growth for each individual.
 }

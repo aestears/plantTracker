@@ -17,7 +17,7 @@ aggregateByGenet(
 \arguments{
 \item{dat}{An sf data.frame. Typically this is a data.frame that has been
 returned from the \code{\link[=trackSpp]{trackSpp()}} function, although 'dat' can be any sf
-data.frame of plant demographic data in which each genet is given unique
+data.frame of organism demographic data in which each genet is given unique
 identifying value (what we call here a 'trackID'). If 'dat' already only has
 one row for each unique trackID in each unique year (i.e. there are no
 vegetative individuals--no ramets), then the output of \code{\link[=aggregateByGenet]{aggregateByGenet()}}

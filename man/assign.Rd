@@ -117,7 +117,7 @@ in 'trackSpp()'.}
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \description{
-This function tracks individual plants through time, but only
+This function tracks individual organisms through time, but only
 for one species in one quadrat. It is designed for use within the
 \code{\link{trackSpp}} function, and is not intended for use on its own.
 }

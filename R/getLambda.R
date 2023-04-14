@@ -292,7 +292,7 @@ getLambda <- function(dat,
           ## get the 'Year_tplus1' value (the next sequential year of sampling,
           # NOT necessarily the next sequential year)
           datSpp$Year_tplus1 <- c(datSpp$Year_t[2:length(datSpp$Year_t)], NA)
-          ## get the 'Yabsolute_basalArea_tplus1' value (the next sequential
+          ## get the 'absolute_basalArea_tplus1' value (the next sequential
           # year of sampling, NOT necessarily the next sequential year)
           datSpp$absolute_basalArea_tplus1 <-
             c(datSpp$absolute_basalArea_t[2:length(
@@ -318,10 +318,6 @@ getLambda <- function(dat,
   ## remove rows for quad/spp/year_t combos that don't have a year_tplus1
   # (have an NA for year_tplus1)
   datLambda <- datLambda[is.na(datLambda$Year_tplus1) == FALSE,]
-
-  ## change the values for lambda when area_t and area_tplus1 are both zero
-  # from NaN to NA
-  datLambda[is.nan(datLambda$lambda) == TRUE,"lambda"] <- NA
 
   ## rename the columns to the user-defined columns
   ## from above, user-provided names are stored in 'usrNames'

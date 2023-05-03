@@ -20,12 +20,21 @@ getRecruits(
 \item{dat}{An sf data.frame in which each row represents a unique polygon
 (either a genet or a ramet) in a unique site/quadrat/year combination. A
 data.frame returned by \code{\link{trackSpp}} can be put directly into this
-function. 'dat' must have columns that contain a unique identification for
-each research site (default name is "Site"), species name (default name is
-"Species"), quadrat identifier (default name is "Quad"), year of data
-collection (default name is "Year"), a unique identifier for each genet
-(default name is 'trackID'), and an s.f 'geometry' column that contains a
-polygon or multipolygon data type for each individual observation.}
+function. 'dat' must have columns that contain...
+\itemize{
+\item a unique identification for each research site in character format
+with no NAs (the default column name is "Site")
+\item species name in character format with no NAs (the default column
+name is "Species")
+\item unique quadrat identifier in character format with no NAs (the default
+column name is "Quad")
+\item year of data collection in integer format with no NAs (the
+default column name is "Year")
+\item a unique identifier for each genet in character format with no NAs (the
+default column name is "trackID")
+\item an s.f 'geometry' column that contains a polygon or multipolygon data type
+for each individual observation (the default column name is "geometry")
+}}
 
 \item{byGenet}{A logical argument. \code{TRUE} indicates that a new genet will be
 considered as only one recruit, even if it consists of multiple ramets.
@@ -74,7 +83,7 @@ of the number of individuals of the species and in the site, quadrat, and
 year indicated in the other columns of the data frame.
 }
 \description{
-This function calculates the number of new plant recruits of
+This function calculates the number of new recruits of
 each species in each quadrat in each year. The input data must already
 contain a column indicating whether each observation is classified as a
 recruit or not. This recruit status can be generated from the

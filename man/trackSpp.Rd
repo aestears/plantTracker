@@ -26,12 +26,22 @@ trackSpp(
 }
 \arguments{
 \item{dat}{An sf data.frame of the same format as
-\code{\link{grasslandData}}. It must have columns that contain a unique
-identification for each research site (default name is "Site"), species name
-(default name is "Species"), quadrat identifier (default name is "Quad"),
-year of data collection (default name is "Year") and an s.f 'geometry' column
-that contains a polygon or multipolygon data type for each
-individual observation. This function will add columns called
+\code{\link{grasslandData}}. It must have columns that contain ...
+#' * a unique identification for each research site in character format
+with no NAs (the default column name is "Site")
+\itemize{
+\item species name in character format with no NAs (the default column
+name is "Species")
+\item unique quadrat identifier in character format with no NAs (the default
+column name is "Quad")
+\item year of data collection in integer format with no NAs (the
+default column name is "Year")
+\item an s.f 'geometry' column that contains a polygon or multipolygon data type
+for each individual observation (the default column name is "geometry")
+and an s.f 'geometry' column
+}
+
+This function will add columns called
 "basalArea_ramet", "trackID", "age", "size_tplus1", "recruit," "nearEdge,"
 and "survives_tplus1", so 'dat' should not contain columns with these names.}
 
@@ -208,7 +218,7 @@ identical to the 'basalArea_genet' column.}
 a buffer (specified by the 'buff' argument) from the edge of the quadrat.}
 }
 \description{
-This function tracks individual plants in mapped quadrats
+This function tracks individual organisms in mapped quadrats
 through time to generate a demographic dataset that includes survival
 and growth for each individual.
 }

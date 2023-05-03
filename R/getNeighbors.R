@@ -18,12 +18,19 @@
 #'
 #' @param dat An sf data.frame. Each row must represent a unique individual
 #' organism in a unique year. This argument can be a data.frame that is returned
-#' by the \code{\link{trackSpp}} function. It must have columns that contain a
-#' unique identification for each research site (default name is "Site"),
-#' species name (default name is "Species"), quadrat identifier (default name is
-#' "Quad"), year of data collection (default name is "Year"), genet identity
-#' (default name is "trackID"), and an s.f 'geometry' column that contains a
-#' polygon or multipolygon data type for each individual observation.
+#' by the \code{\link{trackSpp}} function. It must have columns that contain...
+#' #' * a unique identification for each research site in character format
+#' with no NAs (the default column name is "Site")
+#' * species name in character format with no NAs (the default column
+#' name is "Species")
+#' * unique quadrat identifier in character format with no NAs (the default
+#' column name is "Quad")
+#' *  year of data collection in integer format with no NAs (the
+#' default column name is "Year")
+#' * a unique identifier for each genet in character format with no NAs (the
+#' default column name is "trackID")
+#' * an s.f 'geometry' column that contains a polygon or multipolygon data type
+#' for each individual observation (the default column name is "geometry")
 #' @param buff A numeric value that is greater than or equal to zero. This
 #' indicates the distance (in the same units as the spatial data in 'dat')
 #' around each focal individual within which you want to look for competitors.

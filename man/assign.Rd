@@ -22,12 +22,20 @@ assign(
 \arguments{
 \item{dat}{An sf data.frame of the same format as
 \code{\link{grasslandData}}. 'dat' must contain data for only one species in
-one quadrat. It must have columns that contain a unique
-identification for each research site (default name is "Site"), species name
-(default name is "Species"), quadrat identifier (default name is "Quad"),
-year of data collection (default name is "Year") and an s.f 'geometry' column
-that contains a polygon or multipolygon data type for each
-individual observation.
+one quadrat. It must have columns that contain...
+\itemize{
+\item a unique identification for each research site in character format
+with no NAs (the default column name is "Site")
+\item species name in character format with no NAs (the default column
+name is "Species")
+\item unique quadrat identifier in character format with no NAs (the default
+column name is "Quad")
+\item year of data collection in integer format with no NAs (the
+default column name is "Year")
+\item an s.f 'geometry' column that contains a= polygon or multipolygon data type
+for each individual observation (the default column name is "geometry")
+}
+
 This function will add columns called "basalArea_ramet", "trackID",
 "age", "size_tplus1", "recruit" and "survives_tplus1", so 'dat' should not
 contain columns with these names.}
@@ -117,7 +125,7 @@ in 'trackSpp()'.}
 \item{...}{Other arguments passed on to methods. Not currently used.}
 }
 \description{
-This function tracks individual plants through time, but only
+This function tracks individual organisms through time, but only
 for one species in one quadrat. It is designed for use within the
 \code{\link{trackSpp}} function, and is not intended for use on its own.
 }

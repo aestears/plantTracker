@@ -21,11 +21,21 @@ getBasalAreas(
 data.frame returned by \code{\link{trackSpp}} can be put directly into this
 function. However, it is not necessary for 'dat' to have demographic data or
 unique identifiers (i.e. 'trackIDs') assigned. 'dat' must have columns that
-contain a unique identification for each research site (default name is
-"Site"), species name (default name is "Species"), quadrat identifier
-(default name is "Quad"), year of data collection (default name is "Year"),
-and an s.f 'geometry' column that contains a polygon or multipolygon data
-type for each individual observation. This function should only be used if
+contain...
+\itemize{
+\item a unique identification for each research site in character format
+with no NAs (the default column name is "Site")
+\item species name in character format with no NAs (the default column
+name is "Species")
+\item unique quadrat identifier in character format with no NAs (the default
+column name is "Quad")
+\item year of data collection in integer format with no NAs (the
+default column name is "Year")
+\item an s.f 'geometry' column that contains a polygon or multipolygon data type
+for each individual observation (the default column name is "geometry")
+}
+
+This function should only be used if
 the individuals in 'dat' were mapped as polygons that are representative of
 their actual basal area, i.e. were not mapped as points.}
 
@@ -71,12 +81,12 @@ unnecessary to include a value for this argument if the column name is
 four of these columns. The column "absolute_basalArea" has the area of the
 quadrat that is occupied by a species in a given unique site/quadrat/year
 combination. This is in the same units as the area in 'dat'.
-"quad_basalArea" gives the combined basal area of all plants in a given
+"quad_basalArea" gives the combined basal area of all organisms in a given
 site/quadrat/year. "percent_basalArea" gives the percentage of occupied basal
 area within a quadrat that is occupied by each species in a given
 site/quadrat/year. For example, species A has a basal area of 22 cm^2 in
 quadrat 1 in 2005 ("absolute_basalArea = 22). In 2005, there are 50 cm^2 of
-quadrat 1 that are occupied by plants ("quad_basalArea" = 55). 44\% of the
+quadrat 1 that are occupied by organisms ("quad_basalArea" = 55). 44\% of the
 occupied basal area in quadrat 1 in 2005 is occupied by species A
 ("percent_basalArea" = 44). There may be an 'NA' in the "percent_basalArea"
 column if the "quad_basalArea" for that species and year is 0.

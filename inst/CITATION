@@ -1,19 +1,18 @@
-citHeader("To cite plantTracker in publications use:")
-
-citEntry(
-  entry    = "Article",
+bibentry(
+  bibtype = "Article",
+  header = "To cite plantTracker in publications use:",
   title    = "plantTracker: an R package to translate maps of plant occurrence into demographic data",
-  author   = c(as.person("Alice E Stears"),
-  as.person("Peter B Adler"),
-  as.person("Shannon E Albeke"),
-  as.person("David H Atkins"),
-  as.person("Jared Studyvin"),
-  as.person("Daniel C Laughlin")),
+  author = c(
+    person(given = "Alice E", family = "Stears", role = c("aut", "cre")),
+    person(given = "Peter B", family = "Adler", role = "aut"),
+    person(given = "Shannon E", family = "Albeke", role = "aut"),
+    person(given = "David H", family = "Atkins", role = "aut"),
+    person(given = "Jared", family = "Studyvin", role = "aut"),
+    person(given = "Daniel C", family = "Laughlin", role = "aut")
+  ),
   journal = "Methods in Ecology and Evolution",
   volume = "00",
   pages = "1-9",
   year     = "2022",
-  doi      = "10.1111/2041-210X.13950",
-  textVersion = paste(
-  )
+  doi      = "10.1111/2041-210X.13950"
 )

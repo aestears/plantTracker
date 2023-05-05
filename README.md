@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `plantTracker` <a href="http://www.astearsresearch.com/package/plantTracker"><img src="man/figures/logo.png" align="right" height="139" /></a>
+# `plantTracker` <a href="http://www.astearsresearch.com/package/planttracker/"><img src="man/figures/logo.png" align="right" height="139" /></a>
 
 <!-- badges: start -->
 
@@ -11,7 +11,7 @@ status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-proje
 [![test-coverage](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml)
 
 [![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit/)
 [![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
 <!-- badges: end -->
 
@@ -191,6 +191,9 @@ the “AZ” site in 1922) look like when plotted spatially:
 
     #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
     #> ℹ Please use `linewidth` instead.
+    #> This warning is displayed once every 8 hours.
+    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    #> generated.
 
 <div class="figure" style="text-align: center">
 

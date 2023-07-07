@@ -60,97 +60,97 @@ as the "help" file for this function (which you can access by typing `?trackSpp`
 in the R console).  However, I'll include a short description of the 
 arguments here: 
                      
-+--------------+--------------------------------------+---------+--------+
-|`trackSpp()`  | description                          |required?|default?|
-|argument      |                                      |         |        |
-+==============+======================================+=========+========+
-| dat          | An sf data frame in which each row   |  Yes    |  N/A   |
-|              | has spatial data for an individual   |         |        |
-|              | observation in one year.             |         |        |
-+--------------+--------------------------------------+---------+--------+
-| inv          | A named list in which the name of    |  Yes    |  N/A   |
-|              | each element of the list is a quadrat|         |        |
-|              | name in `dat`, and the contents of   |         |        |
-|              | that list element is  a numeric      |         |        |
-|              | vector of all of the years in which  |         |        |
-|              | that quadrat was actually sampled    |         |        |
-|              | (not just the years that have data   |         |        |
-|              |in `dat`!)                            |         |        |
-+--------------+--------------------------------------+---------+--------+
-| dorm         | A single value greater than or equal |  Yes    |  N/A   |
-|              | to 0 indicating  the number of years |         |        |
-|              | these species are allowed to go      |         |        |
-|              | dormant. **OR** a data frame with a  |         |        |
-|              | row for each species in `dat`,       |         |        |
-|              | species names in the "Species" column|         |        |
-|              | and a dormancy value in the          |         |        |
-|              | "dorm" column.                       |         |        |
-+--------------+--------------------------------------+---------+--------+
-| buff         | A single value greater than or equal |  Yes    |  N/A   |
-|              | equal to zero, indicating how  far a |         |        |
-|              | far a polygon can move from year `i` |         |        |
-|              | to year `i+1` and still be considered|         |        |
-|              | the same individual. **OR** a        |         |        |
-|              | data frame with a row for each       |         |        |
-|              | species present in `dat`, species    |         |        |
-|              | names in the "Species"  column, and a|         |        |
-|              | `buff` value in the "buff" column.   |         |        |
-+--------------+--------------------------------------+---------+--------+
-| clonal       | A logical value (TRUE or FALSE)      |  Yes    |  N/A   |
-|              | indicating whether a species is      |         |        |
-|              | allowed to be clonal or not. **OR**  |         |        |
-|              | a data frame with a row for each     |         |        |
-|              | species in `dat`, species names in   |         |        |
-|              | the "Species" column, and a `clonal` |         |        |
-|              | value in  the "clonal" column.       |         |        |
-+--------------+--------------------------------------+---------+--------+
-| buffGenet    | A single value greater than or equal | only if |  N/A   |
-|              | to zero indicating how close polygons| `clonal`|        |
-|              | must be to one another in the same   |`= TRUE` |        |
-|              | year to be grouped as a genet.       |         |        |
-|              | **OR** a data frame with a row       |         |        |
-|              | for each species in `dat`, species   |         |        |
-|              | names in the "Species" column, and a |         |        |
-|              | `buffGenet` value in the "buffGenet" |         |        |
-|              | column.                              |         |        |
-+--------------+--------------------------------------+---------+--------+
-| species/     | Five separate arguments, each a      |  No     |"Species"|
-| site/        | character string that indicates the  |         | /"Site"|
-| quad/        | name of the column in `dat` that     |         | /"Quad"|
-| year/        | contains data for each of these      |         | /"Year"|
-| geometry     | required data types. No value is     |         | /"geometry"|
-|              | required if the column name is the   |         |        |
-|              | same as the default. If only one     |         |        |
-|              |column names is different than the    |         |        |
-|              |default, then you only need to supply |         |        |
-|              |a value for that argument.            |         |        |
-+--------------+--------------------------------------+---------+--------+
-| aggByGenet   | A logical argument (TRUE or FALSE)   |  No     | TRUE   |
-|              | that determines whether the output   |         |        |
-|              | will be aggregated by genet.         |         |        |
-+--------------+--------------------------------------+---------+--------+
-| printMessages| A logical argument (TRUE or FALSE)   |  No     | TRUE   |
-|              |that determines if the function       |         |        |
-|              |returns informative messages.         |         |        |
-+--------------+--------------------------------------+---------+--------+
-| flagSuspects | A logical argument (TRUE or FALSE)   |  No     | FALSE  |
-|              |that indicates whether "suspect"      |         |        |
-|              |individuals will be flagged.          |         |        |
-+--------------+--------------------------------------+---------+--------+
-| shrink       | A numeric value. When two consecutive|  No     |  0.10  |
-|              | observations have the same trackID,  |         |        |
-|              | and the ratio of size_t+1 to size_t  |         |        |
-|              | is smaller than the value of         |         |        |
-|              | `shrink`, the observation in year_t  |         |        |
-|              | gets a `TRUE` in the "Suspect" column.|         |        |
-+--------------+--------------------------------------+---------+--------+
-| dormSize     | A numeric value. An individual is    |  No     | 0.05   |
-|              | flagged as "suspect" if it "goes     |         |        |
-|              |dormant" and has a size that is less  |         |        |
-|              |than or equal to the percentile of the|         |        |
-|              |size distribution for this species    |         |        |
-|              |that is designated by `dormSize`      |         |        |
-+--------------+--------------------------------------+---------+--------+
++--------------+---------------------------------------+---------+------------+
+|`trackSpp()`  | description                           |required?|default?    |
+|argument      |                                       |         |            |
++==============+=======================================+=========+============+
+| dat          | An sf data frame in which each row    |  Yes    |  N/A       |
+|              | has spatial data for an individual    |         |            |
+|              | observation in one year.              |         |            |
++--------------+---------------------------------------+---------+------------+
+| inv          | A named list in which the name of     |  Yes    |  N/A       |
+|              | each element of the list is a quadrat |         |            |
+|              | name in `dat`, and the contents of    |         |            |
+|              | that list element is  a numeric       |         |            |
+|              | vector of all of the years in which   |         |            |
+|              | that quadrat was actually sampled     |         |            |
+|              | (not just the years that have data    |         |            |
+|              |in `dat`!)                             |         |            |
++--------------+---------------------------------------+---------+------------+
+| dorm         | A single value greater than or equal  |  Yes    |  N/A       |
+|              | to 0 indicating  the number of years  |         |            |
+|              | these species are allowed to go       |         |            |
+|              | dormant. **OR** a data frame with a   |         |            |
+|              | row for each species in `dat`,        |         |            |
+|              | species names in the "Species" column |         |            |
+|              | and a dormancy value in the           |         |            |
+|              | "dorm" column.                        |         |            |
++--------------+---------------------------------------+---------+------------+
+| buff         | A single value greater than or equal  |  Yes    |  N/A       |
+|              | equal to zero, indicating how  far a  |         |            |
+|              | far a polygon can move from year `i`  |         |            |
+|              | to year `i+1` and still be considered |         |            |
+|              | the same individual. **OR** a         |         |            |
+|              | data frame with a row for each        |         |            |
+|              | species present in `dat`, species     |         |            |
+|              | names in the "Species"  column, and a |         |            |
+|              | `buff` value in the "buff" column.    |         |            |
++--------------+---------------------------------------+---------+------------+
+| clonal       | A logical value (TRUE or FALSE)       |  Yes    |  N/A       |
+|              | indicating whether a species is       |         |            |
+|              | allowed to be clonal or not. **OR**   |         |            |
+|              | a data frame with a row for each      |         |            |
+|              | species in `dat`, species names in    |         |            |
+|              | the "Species" column, and a `clonal`  |         |            |
+|              | value in  the "clonal" column.        |         |            |
++--------------+---------------------------------------+---------+------------+
+| buffGenet    | A single value greater than or equal  | only if |  N/A       |
+|              | to zero indicating how close polygons | `clonal`|            |
+|              | must be to one another in the same    |`= TRUE` |            |
+|              | year to be grouped as a genet.        |         |            |
+|              | **OR** a data frame with a row        |         |            |
+|              | for each species in `dat`, species    |         |            |
+|              | names in the "Species" column, and a  |         |            |
+|              | `buffGenet` value in the "buffGenet"  |         |            |
+|              | column.                               |         |            |
++--------------+---------------------------------------+---------+------------+
+| species/     | Five separate arguments, each a       |  No     |"Species"   |
+| site/        | character string that indicates the   |         | /"Site"    |
+| quad/        | name of the column in `dat` that      |         | /"Quad"    |
+| year/        | contains data for each of these       |         | /"Year"    |
+| geometry     | required data types. No value is      |         | /"geometry"|
+|              | required if the column name is the    |         |            |
+|              | same as the default. If only one      |         |            |
+|              |column names is different than the     |         |            |
+|              |default, then you only need to supply  |         |            |
+|              |a value for that argument.             |         |            |
++--------------+---------------------------------------+---------+------------+
+| aggByGenet   | A logical argument (TRUE or FALSE)    |  No     | TRUE       |
+|              | that determines whether the output    |         |            |
+|              | will be aggregated by genet.          |         |            |
++--------------+---------------------------------------+---------+------------+
+| printMessages| A logical argument (TRUE or FALSE)    |  No     | TRUE       |
+|              |that determines if the function        |         |            |
+|              |returns informative messages.          |         |            |
++--------------+---------------------------------------+---------+------------+
+| flagSuspects | A logical argument (TRUE or FALSE)    |  No     | FALSE      |
+|              |that indicates whether "suspect"       |         |            |
+|              |individuals will be flagged.           |         |            |
++--------------+---------------------------------------+---------+------------+
+| shrink       | A numeric value. When two consecutive |  No     |  0.10      |
+|              | observations have the same trackID,   |         |            |
+|              | and the ratio of size_t+1 to size_t   |         |            |
+|              | is smaller than the value of          |         |            |
+|              | `shrink`, the observation in year_t   |         |            |
+|              | gets a `TRUE` in the "Suspect" column.|         |            |
++--------------+---------------------------------------+---------+------------+
+| dormSize     | A numeric value. An individual is     |  No     | 0.05       |
+|              | flagged as "suspect" if it "goes      |         |            |
+|              |dormant" and has a size that is less   |         |            |
+|              |than or equal to the percentile of the |         |            |
+|              |size distribution for this species     |         |            |
+|              |that is designated by `dormSize`       |         |            |
++--------------+---------------------------------------+---------+------------+
 
 Throughout this vignette, we'll use a smaller subset of the `grasslandData` and
 `grasslandInventory` data sets that are included in `plantTracker` for examples. 
@@ -391,21 +391,21 @@ higher will likely *slightly* overestimate growth and survival, while
 using a value of "0" will likely slightly underestimate growth and
 survival.
 
-+------------------------------------------------------------+---------+
-| If a gap between `inv[i]` and `inv[i-1]` is...             |         |
-+============================================================+=========+
-| ... greater than the `dorm` value + 1 (e.g. if `dorm = 1`, | Go to   |
-| inv[i] = 1923, and inv[i-1] = 1920; 1923 - 1920 \> (1+1)), | step    |
++------------------------------------------------------------+-----------------+
+| If a gap between `inv[i]` and `inv[i-1]` is...             |                 |
++============================================================+=================+
+| ... greater than the `dorm` value + 1 (e.g. if `dorm = 1`, | Go to           |
+| inv[i] = 1923, and inv[i-1] = 1920; 1923 - 1920 \> (1+1)), | step            |
 | then we don't know if the observations in                  |[3.4.11](#3_4_11)|
-| `tempPreviousYear` survived or grew. They get an "NA" in   |         |
-| the "size_tplus1" and "survives_tplus1" columns .......... |         |
-+------------------------------------------------------------+---------+
-| ... less than or equal to the `dorm` value + 1 (e.g. if    |         |
-| `dorm = 1`, inv[i] = 1923, and inv[i-1] = 1921; 1923 -     | Proceed |
-| 1921 = (1+1)), then we can compare the data from year      | to step |
-| inv[i-1] (`tempPreviousYear`) to data from year inv[i]     |[3.4.2](#3_4_2)|
-| (`tempCurrentYear`)  ..................................... |         |
-+------------------------------------------------------------+---------+
+| `tempPreviousYear` survived or grew. They get an "NA" in   |                 |
+| the "size_tplus1" and "survives_tplus1" columns .......... |                 |
++------------------------------------------------------------+-----------------+
+| ... less than or equal to the `dorm` value + 1 (e.g. if    |                 |
+| `dorm = 1`, inv[i] = 1923, and inv[i-1] = 1921; 1923 -     | Proceed         |
+| 1921 = (1+1)), then we can compare the data from year      | to step         |
+| inv[i-1] (`tempPreviousYear`) to data from year inv[i]     |[3.4.2](#3_4_2)  |
+| (`tempCurrentYear`)  ..................................... |                 |
++------------------------------------------------------------+-----------------+
 
 <a id="3_4_2"></a>
 
@@ -426,17 +426,17 @@ applicable, and assign genetIDs. This data set is stored in the
 Even if a quadrat was sampled in `inv[i-1]`, it is possible that there
 weren't actually any plants there that year.
 
-+-----------------------------------------------------------+----------+
-| If there ...                                              |          |
-+===========================================================+==========+
-| ... is data in `tempPreviousYear`.............            |Proceed   |
-|                                                           | to step  |
-|                                                           |[3.4.4](#3_4_4)|
-+-----------------------------------------------------------+----------+
-| ... is *not* data in `tempPreviousYear`......             | Go to    |
-|                                                           | step     |
++-----------------------------------------------------------+-----------------+
+| If there ...                                              |                 |
++===========================================================+=================+
+| ... is data in `tempPreviousYear`.............            |Proceed          |
+|                                                           | to step         |
+|                                                           |[3.4.4](#3_4_4)  |
++-----------------------------------------------------------+-----------------+
+| ... is *not* data in `tempPreviousYear`......             | Go to           |
+|                                                           | step            |
 |                                                           |[3.4.12](#3_4_12)|
-+-----------------------------------------------------------+----------+
++-----------------------------------------------------------+-----------------+
 
 <a id="3_4_4"></a>
 
@@ -634,24 +634,24 @@ there is any overlap between polygons in the the previous year
 (`inv[i-1]`, stored in`tempPreviousYear`) and the current year
 (`inv[i]`, stored in `tempCurrentYear`).
 
-+-----------------------------------------------+----------------------+
-| If there ...                                  |                      |
-+===============================================+======================+
-| ... is overlap between `tempPreviousYear` and | Proceed to step      |
-| `tempCurrentYear`..................           | [3.4.8](#3_4_8)      |
-+-----------------------------------------------+----------------------+
-| ... is *not* overlap between                  | Take the             |
-| `tempPreviousYear` and `tempCurrentYear`...   | `tempPreviousYear`   |
-|                                               | data frame to step   |
++-----------------------------------------------+-------------------------+
+| If there ...                                  |                         |
++===============================================+=========================+
+| ... is overlap between `tempPreviousYear` and | Proceed to step         |
+| `tempCurrentYear`..................           | [3.4.8](#3_4_8)         |
++-----------------------------------------------+-------------------------+
+| ... is *not* overlap between                  | Take the                |
+| `tempPreviousYear` and `tempCurrentYear`...   | `tempPreviousYear`      |
+|                                               | data frame to step      |
 |                                               | [3.4.6](#3_4_6).Take the|
-|                                               | `tempCurrentYear`    |
-|                                               | data frame to step   |
-|                                               | [3.4.12](#3_4_12), but|
-|                                               | first assign them a  |
-|                                               | "1" in the "recruit" |
-|                                               | column and a "1" in  |
-|                                               | the "age" column.    |
-+-----------------------------------------------+----------------------+
+|                                               | `tempCurrentYear`       |
+|                                               | data frame to step      |
+|                                               | [3.4.12](#3_4_12), but  |
+|                                               | first assign them a     |
+|                                               | "1" in the "recruit"    |
+|                                               | column and a "1" in     |
+|                                               | the "age" column.       |
++-----------------------------------------------+-------------------------+
 
 
 <a id="3_4_8"></a>

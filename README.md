@@ -26,19 +26,13 @@ population and community ecology.
 - [Contributing](#issues)
 - [License](#license)
 - [Contact](#contact)
+- [Interactive tools to explore plantTracker functions](#ShinyApps)
 - [How to Use `plantTracker`](#how_to_use)
   - [Prepare data for use in `plantTracker`](#prep_data)
-    - [The quadrat map data: `dat`](#dat_data)
-      - [transform `dat` to the `sf` format](#dat_to_sf)
-    - [The quadrat inventory data: `inv`](#dat_inv)
   - [Ensure data is in the correct format with `checkDat()`](#check_dat)
   - [Track individuals through time using `trackSpp()`](#trackSpp)
-    - [Arguments in `trackSpp()`](#trackSpp_args)
-    - [Understanding the output of `trackSpp()`](#trackSpp_out)
   - [Calculate local neighborhood density using
     `getNeighbors()`](#getNeigh)
-    - [Arguments in `getNeighbors()`](#getNeigh_args)
-    - [Understanding the output of `trackSpp()`](#getNeigh_out)
   - [Further analysis with more `plantTracker` functions](#next)
 
 <a id="Installation"></a>
@@ -82,6 +76,14 @@ Stears
 
 Questions about `plantTracker` can be forwarded to Alice Stears, the
 package maintainer, at <alice.e.stears@gmail.com>.
+
+<a id="ShinyApps"></a>
+
+## Interactive tools to explore plantTracker functions
+
+Follow this link to a shiny app that lets you change arguments in the
+trackSpp() function, and see how that impacts individual ID assignment
+in an example dataset: <https://astears.shinyapps.io/shinyapp/>
 
 <a id="how_to_use"></a>
 

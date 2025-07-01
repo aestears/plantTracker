@@ -829,7 +829,7 @@ ggplot(datComp) +
   geom_sf(data = countMethod, aes(), alpha = 0, lwd = 1.5) +
   geom_sf_label(data = countMethod, label = c(1,2,3,4,5), nudge_x = .035, 
                 label.padding = unit(.15, "lines"),
-                label.size = unit(.05,"mm")) +
+                label.size = 0.1) +
   xlim(c(0,.5)) +
   ylim(c(.2,.7)) +
   xlab("quadrat horizontal edge (m)") +

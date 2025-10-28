@@ -181,13 +181,13 @@ exampleDat <- grasslandData[grasslandData$Site == "AZ" &
                               grasslandData$Year %in% c(1922:1927), ]
 ggplot(data = exampleDat) +
   geom_sf(aes(color = Species, fill = Species)) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -308,13 +308,13 @@ ggplot(figDat) +
   geom_sf(data = figDat[figDat$Species == "grouped",], aes(fill = genetID), alpha = .2, color = "grey80") +
   geom_sf(data = figDat[figDat$Species == "Heteropogon contortus",], aes(fill = genetID)) + 
   #geom_sf_text(aes(label = genetID), nudge_x = .05) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -473,13 +473,13 @@ exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNex
 ggplot(data = exampleDatIDs
        ) +
   geom_sf(aes(fill = ghost, alpha = ghost, color = ghost, lty = ghost)) +
-  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), size = .5, 
+  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), size = .5, 
+  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), size = .5, 
+  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30")+ 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -518,13 +518,13 @@ exampleDatIDs <- rbind(exampleDatIDsTemp, ghost, exampleBuffed, exampleBuffedNex
 ggplot(data = exampleDatIDs
        ) +
   geom_sf(aes(fill = ghost, alpha = ghost, color = ghost, lty = ghost)) +
-  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), size = .5, 
+  geom_segment(aes(x = .6, xend = 1, y = .4, yend = .4), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), size = .5, 
+  geom_segment(aes(x = .6, xend = 1, y = .8, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), size = .5, 
+  geom_segment(aes(x = .6, xend = .6, y = .4, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = .4, yend = .8), linewidth = .5, 
                lineend = "round", color = "grey30")+ 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -604,13 +604,13 @@ exampleSmall$ghost <- c("not ghost", "not ghost", "ghost")
 ggplot(data = exampleSmall) +
   geom_sf(data = exampleSmall[exampleSmall$ghost == "not ghost",] ,aes(), color = "red", fill = "red", alpha = .5) +
   geom_sf(data = exampleSmall[exampleSmall$ghost == "ghost",] ,aes(), color = "red", lty = 3, lwd = 1, fill = NA, alpha = .5) +
-  geom_segment(aes(x = .5, xend = .8, y = .85, yend = .85), size = .5, 
+  geom_segment(aes(x = .5, xend = .8, y = .85, yend = .85), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .5, xend = .8, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = .5, xend = .8, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .5, xend = .5, y = .85, yend = 1), size = .5, 
+  geom_segment(aes(x = .5, xend = .5, y = .85, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .8, xend = .8, y = 0.85, yend = 1), size = .5, 
+  geom_segment(aes(x = .8, xend = .8, y = 0.85, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -739,13 +739,13 @@ exampleSmall <- rbind(exampleSmall_22, exampleSmall_22_buff, exampleSmall_23)
 ggplot(data = exampleSmall) +
   geom_sf(data = exampleSmall[exampleSmall$buff == "yes",], aes(color = as.factor(Year), fill = as.factor(Year)), alpha = .2, lty = 3) +
   geom_sf(data = exampleSmall[exampleSmall$buff == "no",], aes(color = as.factor(Year), fill = as.factor(Year)), alpha = .7) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -764,13 +764,13 @@ ggplot(data = exampleSmall) +
 ggplot(data = exampleSmall) +
   geom_sf(data = exampleSmall[exampleSmall$buff == "yes",], aes(color = as.factor(Year), fill = as.factor(Year)), alpha = .2, lty = 3) +
   geom_sf(data = exampleSmall[exampleSmall$buff == "no" & exampleSmall$Year == 1923,], aes(color = as.factor(Year), fill = as.factor(Year)), alpha = .7) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -798,13 +798,13 @@ exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$t
 ggplot(data = exampleOut) +
   geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
   geom_sf_text(aes(label = trackID_new), nudge_x = .02, nudge_y = -.02) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -895,13 +895,13 @@ exampleOut[exampleOut$Year == 1923 &
 
 ggplot(data = exampleOut) +
   geom_sf(aes(fill = status)) +
-  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), size = .5, 
+  geom_segment(aes(x = 1, xend = 1, y = 0, yend = 1), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -1046,13 +1046,13 @@ exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$t
 ggplot(data = exampleOut) +
   geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
   geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
-  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -1082,13 +1082,13 @@ exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$t
 ggplot(data = exampleOut) +
   geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
   geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
-  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +
@@ -1119,13 +1119,13 @@ exampleOut$trackID_new <- labels$trackID_new[match( exampleOut$trackID, labels$t
 ggplot(data = exampleOut) +
   geom_sf(aes(color = trackID, fill = trackID), alpha = .9) +
   geom_sf_text(aes(label = trackID_new), nudge_x = .04) +
-  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = 0, yend = 0), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = .5, y = .7, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = 0, xend = 0, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
-  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), size = .5, 
+  geom_segment(aes(x = .5, xend = .5, y = 0, yend = .7), linewidth = .5, 
                lineend = "round", color = "grey30") + 
   xlab("quadrat horizontal edge (m)") +
   ylab("quadrat vertical edge (m)") +

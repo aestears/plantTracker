@@ -11,7 +11,7 @@ status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-proje
 [![test-coverage](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/aestears/plantTracker/actions/workflows/test-coverage.yaml)
 
 [![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit/)
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
 [![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
 <!-- badges: end -->
 
@@ -191,16 +191,11 @@ Here are the first few rows of a possible `dat` input data.frame:
 Here’s what some of the example `dat` data (from the “SG2” quadrat at
 the “AZ” site in 1922) look like when plotted spatially:
 
-    #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-    #> ℹ Please use `linewidth` instead.
-    #> This warning is displayed once every 8 hours.
-    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    #> generated.
-
 <div class="figure" style="text-align: center">
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" alt="Figure 1.1 : Spatial map of a subset of example 'dat' dataset" width="100%" />
 <p class="caption">
+
 Figure 1.1 : Spatial map of a subset of example ‘dat’ dataset
 </p>
 
@@ -540,10 +535,17 @@ a polygon in year 4 that overlaps our focal individual. If `dorm = 1`,
 then our focal individual would get a “0” for survival, but if
 `dorm = 2`, then it would get a 1 for survival.
 
+    #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    #> ℹ Please use `linewidth` instead.
+    #> This warning is displayed once every 8 hours.
+    #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    #> generated.
+
 <div class="figure" style="text-align: center">
 
 <img src="man/figures/README-unnamed-chunk-11-1.png" alt="Figure 2.1: A visualization of the 'dormancy' scenario described above." width="100%" />
 <p class="caption">
+
 Figure 2.1: A visualization of the ‘dormancy’ scenario described above.
 </p>
 
@@ -598,6 +600,7 @@ should look something like this:
 
 <img src="man/figures/README-unnamed-chunk-13-1.png" alt="Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap and will be identified by trackSpp() as the **same** individual and receive the same trackID." width="100%" />
 <p class="caption">
+
 Figure 2.2: With a 10 cm buffer, these polygons in 1922 and 1923 overlap
 and will be identified by trackSpp() as the **same** individual and
 receive the same trackID.
@@ -609,6 +612,7 @@ receive the same trackID.
 
 <img src="man/figures/README-unnamed-chunk-14-1.png" alt="Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don't quite overlap, so will be identified by trackSpp() as **different** individuals and receive different trackIDs." width="100%" />
 <p class="caption">
+
 Figure 2.3: With a 3 cm buffer, these polygons in 1922 and 1923 don’t
 quite overlap, so will be identified by trackSpp() as **different**
 individuals and receive different trackIDs.
@@ -889,6 +893,7 @@ local neighborhood density is calculated.
 
 <img src="man/figures/README-unnamed-chunk-17-1.png" alt="Figure 3.1: This individual outlined in pink is a focal individual, and the pale pink shows a 10 cm buffer around it." width="100%" />
 <p class="caption">
+
 Figure 3.1: This individual outlined in pink is a focal individual, and
 the pale pink shows a 10 cm buffer around it.
 </p>
@@ -899,6 +904,7 @@ the pale pink shows a 10 cm buffer around it.
 
 <img src="man/figures/README-unnamed-chunk-19-1.png" alt="Figure 3.2: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. These overlapping individuals are outlined in dark grey. Using the 'count' method in `getNeighbors()`, we would get an intraspecific competition value of 3, and an interspecific competition value of 5." width="100%" />
 <p class="caption">
+
 Figure 3.2: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. These overlapping individuals
 are outlined in dark grey. Using the ‘count’ method in `getNeighbors()`,
@@ -912,6 +918,7 @@ interspecific competition value of 5.
 
 <img src="man/figures/README-unnamed-chunk-20-1.png" alt="Figure 3.3: The 10cm buffer around the focal individual overlaps with 5 other unique individuals of two species. The overlapping area is shaded in grey. Using the 'area' method in `getNeighbors()`, we would get an intraspecific competition metric of 0.0454, and an interspecific competition metric of 0.0462." width="100%" />
 <p class="caption">
+
 Figure 3.3: The 10cm buffer around the focal individual overlaps with 5
 other unique individuals of two species. The overlapping area is shaded
 in grey. Using the ‘area’ method in `getNeighbors()`, we would get an

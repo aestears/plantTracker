@@ -55,11 +55,6 @@
 #' this argument if the column name is "recruit" (default is "recruit").
 #' @param ... Other arguments passed on to methods. Not currently used.
 #'
-#' @return This function returns a table with columns for site, quadrat,
-#' species name, year, and number of recruits.
-#'
-#' @export
-#'
 #' @examples
 #' dat <- grasslandData[grasslandData$Site == c("AZ") &
 #'  grasslandData$Species %in% c("Bouteloua rothrockii",

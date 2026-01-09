@@ -44,7 +44,7 @@
 #' this function across multiple species, quadrats, and years.
 #'
 #' @import Matrix
-#' @importFrom igraph clusters graph_from_adjacency_matrix
+#' @importFrom igraph components graph_from_adjacency_matrix
 #' @importFrom methods as
 #' @export
 #'
@@ -131,7 +131,7 @@ groupByGenet <-  function(dat, buffGenet,...){
                               dimnames = list(NULL, levels(j)))
 
   connects <- Matrix::tcrossprod(tab, boolArith = TRUE)
-  group <- igraph::clusters(igraph::graph_from_adjacency_matrix(
+  group <- igraph::components(igraph::graph_from_adjacency_matrix(
     methods::as(connects, "lMatrix")))$membership
 
   tapply(overlaps, group, function(x) sort(unique(unlist(x))))

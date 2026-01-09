@@ -10,3 +10,6 @@
 ^shinyapp
 ^\.github$
 ^packageHexSticker\.R
+^dev$
+^revdep$
+^cran-comments\.md$

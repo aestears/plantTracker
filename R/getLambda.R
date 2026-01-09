@@ -8,7 +8,7 @@
 #' greater than 1 indicates a population is growing, while a value less than 1
 #' indicates population decline. Lambda is 'infinity' when the basal area or
 #' number of individuals in year t is 0, and is NA when basal area or number of
-#' individuals in year t is zero (i.e. when there are no organims present in
+#' individuals in year t is zero (i.e. when there are no organisms present in
 #' year =t). Note that a lambda value is calculated between of the years when a
 #' quadrat was sampled, even if there is a gap in sampling. For example, a
 #' quadrat is sampled in 1998, 1999, 2001, and 2002 (but skipped in 2000). A
@@ -25,7 +25,7 @@
 #' function. However, it is not strictly necessary for 'dat' to have demographic
 #' data or unique identifiers (i.e. 'trackIDs') assigned. If there are not
 #' trackIDs assigned for each individual, then the function assumes that each
-#' row of data repesents one genetic individual.'dat' *must* have columns that
+#' row of data represents one genetic individual.'dat' *must* have columns that
 #' contain...
 #' * a unique identification for each research site in character format
 #' with no NAs (the default column name is "Site")

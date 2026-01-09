@@ -1,52 +1,49 @@
 Package: plantTracker
 Title: Extract Demographic and Competition Data from Fine-Scale Maps
-Version: 1.2.0
-Date: 2025-10-28
-Authors@R: c(person(given = "Alice",
-           family = "Stears",
-           role = c("aut", "cre"),
-           email = "alice.e.stears@gmail.com",
+Version: 1.2.1
+Date: 2026-01-09
+Authors@R: c(
+    person("Alice", "Stears", , "alice.e.stears@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-1325-6641")),
-    person(given = "Jared",
-           family = "Studyvin",
-           role = c("aut"),
-           email = "studyvin@uwyo.edu"),
-    person(given = "David", 
-           family = "Atkins", 
-           role = c("aut"), 
-           email = "datkins8@uwyo.edu"))
-Author: Alice Stears [aut, cre] (<https://orcid.org/0000-0002-1325-6641>), Jared Studyvin [aut], David Atkins [aut]
+    person("Jared", "Studyvin", , "studyvin@uwyo.edu", role = "aut"),
+    person("David", "Atkins", , "datkins8@uwyo.edu", role = "aut")
+  )
+Author: Alice Stears [aut, cre] (<https://orcid.org/0000-0002-1325-6641>),
+    Jared Studyvin [aut], David Atkins [aut]
 Maintainer: Alice Stears <alice.e.stears@gmail.com>
-Description: Extracts growth, survival, and local neighborhood density 
-  information from repeated, fine-scale maps of organism occurrence. Further 
-  information about this package can be found in our journal article, 
-  "plantTracker: An R package to translate maps of plant occurrence into 
-  demographic data" published in 2022 in Methods in Ecology and Evolution 
-  (Stears, et al., 2022) <doi:10.1111/2041-210X.13950>. 
+Description: Extracts growth, survival, and local neighborhood density
+    information from repeated, fine-scale maps of organism occurrence.
+    Further information about this package can be found in our journal
+    article, "plantTracker: An R package to translate maps of plant
+    occurrence into demographic data" published in 2022 in Methods in
+    Ecology and Evolution (Stears, et al., 2022)
+    <doi:10.1111/2041-210X.13950>.
 License: MIT + file LICENSE
 URL: https://github.com/aestears/plantTracker
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
 Depends: 
     R (>= 2.10)
-Suggests: 
-    testthat (>= 3.0.0),
-    knitr,
-    rmarkdown,
-    spelling,
-    minidown,
-    ggplot2
-Config/testthat/edition: 3
 Imports: 
-    Matrix,
-    igraph,
-    sf,
-    methods,
-    stats,
     graphics,
     grDevices,
-    units
-VignetteBuilder: knitr
+    igraph,
+    Matrix,
+    methods,
+    sf,
+    stats,
+    units,
+    utils
+Suggests: 
+    ggplot2,
+    knitr,
+    minidown,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
 Language: en-US
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

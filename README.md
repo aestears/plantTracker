@@ -12,7 +12,8 @@ status](https://www.r-pkg.org/badges/version/plantTracker)](https://CRAN.R-proje
 
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
-[![DOI](https://zenodo.org/badge/353094728.svg)](https://zenodo.org/badge/latestdoi/353094728)
+[![DOI](https://zenodo.org/badge/353094728.svg)](https://doi.org/10.5281/zenodo.18202995)
+
 <!-- badges: end -->
 
 Welcome to `plantTracker`! This package was designed to transform
